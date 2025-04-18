@@ -118,7 +118,13 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ onCalculate }) => {
         )}
         
         <div className="definition text-xs p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-900">
-          <strong>{t('calculator.form.abandonedDefinitionTitle')}</strong> {t('calculator.form.abandonedDefinitionText')}
+          <strong>{t('calculator.form.abandonedDefinitionTitle')}</strong> {t('calculator.form.abandonedDefinitionText')}{' '}
+          <a href="https://www.infolex.lt/teise/DocumentSinglePart.aspx?AktoId=41759&StrNr=2" 
+             target="_blank" 
+             rel="noopener noreferrer"
+             className="text-blue-600 hover:text-blue-800 underline">
+            {t('calculator.form.learnMore')}
+          </a>
         </div>
       </div>
       

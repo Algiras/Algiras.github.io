@@ -5,7 +5,7 @@ const Home = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="cv-page max-w-4xl mx-auto bg-white p-6 md:p-12 rounded-xl shadow-xl fade-in my-8">
+    <div className="cv-page max-w-4xl mx-auto bg-white p-6 md:p-12 rounded-xl shadow-xl my-8">
       <header className="text-center mb-16 border-b border-slate-200 pb-10">
         <h1 className="text-4xl md:text-5xl font-bold text-indigo-700 mb-3">{t('cv.title')}</h1>
         <p className="text-xl md:text-2xl text-slate-600">{t('cv.subtitle')}</p>

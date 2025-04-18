@@ -277,17 +277,8 @@ body {
 }
 
 .cv-page section {
-    opacity: 0;
-    animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    animation-delay: calc(var(--section-index, 0) * 0.1s + 0.3s);
-    will-change: opacity, transform;
+    opacity: 1;
+    /* Animation removed */
 }
 
-.cv-page section:nth-child(1) { --section-index: 1; }
-.cv-page section:nth-child(2) { --section-index: 2; }
-.cv-page section:nth-child(3) { --section-index: 3; }
-.cv-page section:nth-child(4) { --section-index: 4; }
-.cv-page section:nth-child(5) { --section-index: 5; }
-.cv-page section:nth-child(6) { --section-index: 6; }
-.cv-page section:nth-child(7) { --section-index: 7; }
-.cv-page section:nth-child(8) { --section-index: 8; }
+/* Section index variables removed */

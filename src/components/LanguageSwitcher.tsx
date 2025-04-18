@@ -28,7 +28,7 @@ const LanguageSwitcher = () => {
       options={languageOptions}
       value={currentLang}
       onChange={handleLanguageChange}
-      className="w-32"
+      className="w-28 sm:w-32"
     />
   );
 };
