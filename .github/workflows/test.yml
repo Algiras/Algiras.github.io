@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -29,10 +29,12 @@ jobs:
     
     # Enable Corepack to use the correct Yarn version
     - name: Enable Corepack
-      run: corepack enable
+      run: |
+        corepack enable
+        yarn set version 3.6.4
     
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      run: yarn install --immutable
       
     - name: Run tests
       run: yarn test
