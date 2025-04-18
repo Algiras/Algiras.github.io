@@ -1,0 +1,294 @@
+/* CV Page Styles */
+
+:root {
+    /* Light mode colors */
+    --bg-primary: #f8fafc; /* slate-50 */
+    --bg-secondary: #ffffff; /* white */
+    --text-primary: #334155; /* slate-700 */
+    --text-secondary: #64748b; /* slate-500 */
+    --text-heading: #1e293b; /* slate-800 */
+    --accent-primary: #4f46e5; /* indigo-600 */
+    --accent-secondary: #818cf8; /* indigo-400 */
+    --accent-hover: #3730a3; /* indigo-800 */
+    --border-color: #e2e8f0; /* slate-200 */
+    --hover-bg: #f1f5f9; /* slate-100 */
+    --timeline-dot-bg: #6366f1; /* indigo-500 */
+    --timeline-dot-border: #ffffff; /* white */
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+    /* Dark mode colors */
+    --bg-primary: #0f172a; /* slate-900 */
+    --bg-secondary: #1e293b; /* slate-800 */
+    --text-primary: #e2e8f0; /* slate-200 */
+    --text-secondary: #94a3b8; /* slate-400 */
+    --text-heading: #f1f5f9; /* slate-100 */
+    --accent-primary: #818cf8; /* indigo-400 */
+    --accent-secondary: #6366f1; /* indigo-500 */
+    --accent-hover: #a5b4fc; /* indigo-300 */
+    --border-color: #334155; /* slate-700 */
+    --hover-bg: #1e293b; /* slate-800 */
+    --timeline-dot-bg: #818cf8; /* indigo-400 */
+    --timeline-dot-border: #1e293b; /* slate-800 */
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Apply Inter font globally */
+body {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+    background-color: var(--bg-primary);
+    transition: background-color 0.3s ease;
+}
+
+/* Enhanced link styles with transition */
+.cv-page a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    /* Added transition for color change */
+    transition: color 0.2s ease-in-out;
+}
+
+.cv-page a:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+/* Section styling */
+.cv-page section {
+    margin-bottom: 2.5rem;
+    padding-top: 1rem;
+}
+
+/* Enhanced Section Headers */
+.cv-page h2 {
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.75rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+}
+
+/* Icon styling for section headers */
+.cv-page h2 i {
+    margin-right: 0.75rem;
+    color: var(--accent-primary);
+    /* Added subtle transition on icon */
+    transition: transform 0.3s ease-in-out;
+}
+
+.cv-page h2:hover i {
+    transform: rotate(-5deg); /* Slight rotation on header hover */
+}
+
+.cv-page h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-heading);
+}
+
+.cv-page h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Style for job/education entries with enhanced hover */
+.entry {
+    margin-bottom: 1.75rem;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid transparent;
+    border-radius: 0.375rem; /* rounded-md */
+    background-color: var(--bg-secondary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    /* Added transition for border and background */
+    transition: all 0.3s ease-in-out;
+}
+
+.entry:hover {
+    border-left-color: var(--accent-secondary);
+    background-color: var(--hover-bg);
+    box-shadow: var(--card-shadow);
+    transform: translateX(2px);
+}
+
+.entry-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.entry-details {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.entry-details:before {
+    content: '•';
+    margin-right: 0.5rem;
+    color: var(--accent-secondary);
+    font-weight: bold;
+}
+
+.entry-description {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-top: 0.75rem;
+    line-height: 1.6;
+}
+
+/* Enhanced Skill Badges with smooth transition */
+.skill-badge {
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0.25rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 0.5rem; /* rounded-lg */
+    /* Improved transition with scale effect */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease-in-out, background-color 0.3s ease;
+    cursor: default;
+    will-change: transform, box-shadow;
+}
+
+.skill-badge:hover {
+    /* Enhanced hover effect with slight scale */
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--card-shadow);
+}
+
+/* Badge colors - with dark mode support */
+.badge-blue { background-color: #dbeafe; color: #1e40af; }
+.badge-indigo { background-color: #e0e7ff; color: #3730a3; }
+.badge-sky { background-color: #e0f2fe; color: #075985; }
+.badge-emerald { background-color: #d1fae5; color: #065f46; }
+.badge-rose { background-color: #ffe4e6; color: #9f1239; }
+.badge-amber { background-color: #fef3c7; color: #92400e; }
+.badge-slate { background-color: #e2e8f0; color: #334155; }
+
+/* Dark mode badge colors */
+.dark .badge-blue { background-color: rgba(37, 99, 235, 0.2); color: #93c5fd; }
+.dark .badge-indigo { background-color: rgba(79, 70, 229, 0.2); color: #a5b4fc; }
+.dark .badge-sky { background-color: rgba(14, 165, 233, 0.2); color: #7dd3fc; }
+.dark .badge-emerald { background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+.dark .badge-rose { background-color: rgba(225, 29, 72, 0.2); color: #fda4af; }
+.dark .badge-amber { background-color: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+.dark .badge-slate { background-color: rgba(71, 85, 105, 0.2); color: #cbd5e1; }
+
+/* Contact icon styling with hover effect */
+.contact-item {
+    /* Added transition for icon effects */
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.375rem; /* rounded-md */
+    padding: 0.5rem; /* Increased padding for better touch target */
+}
+
+.contact-item:hover {
+    background-color: var(--hover-bg);
+    transform: translateX(2px);
+}
+
+.contact-item i {
+    width: 1.5em;
+    text-align: center;
+    color: var(--accent-primary);
+    margin-right: 0.5rem;
+    /* Added transition for scale/color */
+    transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.contact-item:hover i {
+    transform: scale(1.1); /* Scale icon on hover */
+    color: var(--accent-hover);
+}
+
+/* Basic list styling */
+.cv-page ul {
+    list-style-type: disc;
+    margin-left: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+.cv-page ul > li {
+    margin-bottom: 0.25rem;
+}
+
+/* Styling for lists in Certifications/Languages */
+.info-list {
+    list-style: none !important;
+    padding:  0;
+    margin: 0 !important;
+}
+
+.info-list li {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.375rem;
+}
+
+.info-list li:hover {
+    color: var(--text-heading);
+    background-color: var(--hover-bg);
+    transform: translateX(2px);
+}
+
+.info-list i {
+    margin-right: 0.75rem;
+    color: var(--text-secondary);
+    width: 1.2em;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.info-list li:hover i {
+    color: var(--accent-primary);
+    transform: scale(1.1);
+}
+
+/* Experience timeline dot styling - simplified and removed from main experience component */
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    /* Apply animation with improved easing */
+    animation: fadeIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: opacity, transform;
+}
+
+/* Staggered section animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cv-page section {
+    opacity: 0;
+    animation: fadeInUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(var(--section-index, 0) * 0.1s + 0.3s);
+    will-change: opacity, transform;
+}
+
+.cv-page section:nth-child(1) { --section-index: 1; }
+.cv-page section:nth-child(2) { --section-index: 2; }
+.cv-page section:nth-child(3) { --section-index: 3; }
+.cv-page section:nth-child(4) { --section-index: 4; }
+.cv-page section:nth-child(5) { --section-index: 5; }
+.cv-page section:nth-child(6) { --section-index: 6; }
+.cv-page section:nth-child(7) { --section-index: 7; }
+.cv-page section:nth-child(8) { --section-index: 8; }
