@@ -6,13 +6,13 @@ const CalculatorDisclaimer: React.FC = () => {
   
   return (
     <div className="mt-6 text-xs text-gray-600">
-      <strong>{t('disclaimer.title')}</strong> {t('disclaimer.subtitle')}
+      <strong>{t('calculator.disclaimer.title')}</strong> {t('calculator.disclaimer.subtitle')}
       <ul className="list-disc list-inside space-y-1 mt-2">
-        <li>{t('disclaimer.point1')}</li>
-        <li>{t('disclaimer.point2')}</li>
-        <li>{t('disclaimer.point3')}</li>
-        <li>{t('disclaimer.point4')}</li>
-        <li>{t('disclaimer.point5')}</li>
+        <li>{t('calculator.disclaimer.point1')}</li>
+        <li>{t('calculator.disclaimer.point2')}</li>
+        <li>{t('calculator.disclaimer.point3')}</li>
+        <li>{t('calculator.disclaimer.point4')}</li>
+        <li>{t('calculator.disclaimer.point5')}</li>
       </ul>
       
       <div className="mt-8 pt-4 border-t border-gray-200">

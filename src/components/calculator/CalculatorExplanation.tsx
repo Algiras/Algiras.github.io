@@ -25,6 +25,23 @@ interface CalculatorExplanationProps {
   };
 }
 
+// Helper component for explanation sections
+const ExplanationSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <div className="mb-5">
+    <h4 className="text-base font-semibold text-gray-700 mb-2 border-b border-gray-200 pb-1">{title}</h4>
+    <div className="space-y-2 text-xs md:text-sm">{children}</div>
+  </div>
+);
+
+// Helper component for calculation rows
+const CalcRow: React.FC<{ label: string; calculation?: string; result: string }> = ({ label, calculation, result }) => (
+  <div className="my-1 py-1.5 px-3 bg-white border border-gray-200 rounded-md flex flex-col sm:flex-row justify-between sm:items-center">
+    <span className="text-gray-600 mr-2 mb-1 sm:mb-0">{label}</span>
+    {calculation && <span className="text-xs text-gray-500 mr-2 hidden md:inline">({calculation})</span>}
+    <span className="font-medium text-gray-900 text-left sm:text-right">{result}</span>
+  </div>
+);
+
 const CalculatorExplanation: React.FC<CalculatorExplanationProps> = ({
   formData,
   currentResults,
@@ -34,305 +51,222 @@ const CalculatorExplanation: React.FC<CalculatorExplanationProps> = ({
   
   // Format currency
   const formatCurrency = (value: number) => {
-    return `€${value.toLocaleString('lt-LT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return new Intl.NumberFormat('lt-LT', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
+
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('lt-LT').format(value);
   };
   
   // Calculate maintained property value (primary residence + other properties)
   const maintainedValue = formData.primaryResidenceValue + formData.otherPropertiesValue;
   
+  const currentThresholdBasis = formData.isFamilyAdjusted ? 200000 : 150000;
+  const proposedThresholdBasis = formData.isFamilyAdjusted ? 50000 : 40000;
+
+  const renderTaxRates = (rates: {key: string, params?: { [key: string]: string | number }}[]) => (
+    <ul className="list-disc list-inside pl-2 space-y-1 mt-1 text-gray-600">
+      {rates.map((rate, index) => {
+        const params = rate.params ? Object.fromEntries(
+          Object.entries(rate.params).map(([key, value]) => 
+            typeof value === 'number' ? [key, formatNumber(value)] : [key, value]
+          )
+        ) : {};
+        return <li key={index}>{t(rate.key, params)}</li>;
+      })}
+    </ul>
+  );
+
   return (
-    <div className="mt-6 p-4 md:p-6 bg-white border border-gray-200 rounded-lg text-sm shadow">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+    <div className="mt-6 p-4 md:p-6 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+      <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center">
         {t('calculator.explanation.title')}
       </h3>
       
       {/* 1. Abandoned Property Tax */}
-      {formData.abandonedValue > 0 ? (
-        <>
-          <h4 className="text-base font-semibold text-gray-700 mt-5 mb-2">
-            {t('calculator.explanation.abandonedPropertyTaxTitle')}
-          </h4>
-          <p>
-            {t('calculator.explanation.abandonedPropertyTaxDescription', { rate: formData.municipalRate.toFixed(1) })}
-          </p>
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-            <span className="text-gray-600 mr-2">
-              {t('calculator.explanation.abandonedValueFormula', { rate: formData.municipalRate.toFixed(1) })}
-            </span>
-            <span className="font-medium text-gray-900 text-right">
-              {formatCurrency(formData.abandonedValue)} × ({formData.municipalRate.toFixed(1)}% / 100) = {formatCurrency(currentResults.abandonedTax)}
-            </span>
-          </div>
-        </>
-      ) : (
-        <>
-          <h4 className="text-base font-semibold text-gray-700 mt-5 mb-2">
-            {t('calculator.explanation.abandonedPropertyTaxTitle')}
-          </h4>
-          <p className="text-xs text-gray-500 italic mt-1">
-            {t('calculator.explanation.noAbandonedProperty')}
-          </p>
-        </>
-      )}
+      <ExplanationSection title={t('calculator.explanation.abandonedPropertyTaxTitle')}>
+        {formData.abandonedValue > 0 ? (
+          <>
+            <p>{t('calculator.explanation.abandonedPropertyTaxDescription', { value: formatCurrency(formData.abandonedValue), rate: formData.municipalRate.toFixed(1) })}</p>
+            <CalcRow
+              label={t('calculator.explanation.abandonedValueFormula', { rate: formData.municipalRate.toFixed(1) })}
+              calculation={`${formatCurrency(formData.abandonedValue)} × (${formData.municipalRate.toFixed(1)}% / 100)`}
+              result={`= ${formatCurrency(currentResults.abandonedTax)}`}
+            />
+          </>
+        ) : (
+          <p className="text-gray-500 italic">{t('calculator.explanation.noAbandonedProperty')}</p>
+        )}
+      </ExplanationSection>
       
       {/* 2. Standard Tax Calculation Comparison */}
-      <p className="mt-4">
+      <p className="mb-4 text-sm text-center text-gray-700">
         {t('calculator.explanation.maintainedPropertyComparison', { value: formatCurrency(maintainedValue) })}
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Current Rules Column */}
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="text-base font-semibold text-indigo-700 mb-3 border-b border-indigo-100 pb-2">
+        <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-inner">
+          <h4 className="text-lg font-semibold text-indigo-700 mb-4 text-center border-b border-indigo-100 pb-2">
             {t('calculator.explanation.currentRulesTitle')}
           </h4>
           
-          {/* Threshold */}
-          <p><strong>{t('calculator.explanation.thresholdTitle')}</strong></p>
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-            <span className="text-gray-600 mr-2">
-              {t('calculator.explanation.individualThreshold', { 
+          <ExplanationSection title={t('calculator.explanation.thresholdTitle')}>
+            <CalcRow
+              label={t('calculator.explanation.individualThreshold', {
                 type: formData.isFamilyAdjusted ? t('calculator.explanation.familyAdjusted') : t('calculator.explanation.standard'),
                 value: formData.isFamilyAdjusted ? '200k' : '150k'
               })}
-            </span>
-            <span className="font-medium text-gray-900 text-right">
-              {formatCurrency(formData.isFamilyAdjusted ? 200000 : 150000)}
-            </span>
-          </div>
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-            <span className="text-gray-600 mr-2">
-              {t('calculator.explanation.totalThreshold')}
-            </span>
-            <span className="font-medium text-gray-900 text-right">
-              {formatCurrency(formData.isFamilyAdjusted ? 200000 : 150000)} × {formData.numOwners} = {formatCurrency(currentResults.threshold)}
-            </span>
-          </div>
+              result={formatCurrency(currentThresholdBasis)}
+            />
+            <CalcRow
+              label={t('calculator.explanation.totalThreshold')}
+              calculation={`${formatCurrency(currentThresholdBasis)} × ${formData.numOwners}`}
+              result={`= ${formatCurrency(currentResults.threshold)}`}
+            />
+          </ExplanationSection>
           
-          {/* Taxable Base */}
-          <p><strong>{t('calculator.explanation.taxableBaseTitle')}</strong></p>
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-            <span className="text-gray-600 mr-2">
-              {t('calculator.explanation.taxableBaseFormula')}
-            </span>
-            <span className="font-medium text-gray-900 text-right">
-              Max(0, {formatCurrency(maintainedValue)} - {formatCurrency(currentResults.threshold)}) = {formatCurrency(currentResults.taxableBase)}
-            </span>
-          </div>
+          <ExplanationSection title={t('calculator.explanation.taxableBaseTitle')}>
+            <CalcRow
+              label={t('calculator.explanation.taxableBaseFormula')}
+              calculation={`Max(0, ${formatCurrency(maintainedValue)} - ${formatCurrency(currentResults.threshold)})`}
+              result={`= ${formatCurrency(currentResults.taxableBase)}`}
+            />
+          </ExplanationSection>
           
-          {/* Initial Standard Tax */}
           {currentResults.taxableBase > 0 ? (
-            <>
-              <p><strong>{t('calculator.explanation.initialStandardTaxTitle')}</strong></p>
-              <ul className="list-disc list-inside text-sm pl-2 space-y-1">
-                <li>{t('calculator.explanation.currentRate1', { value: (300000 * formData.numOwners).toLocaleString('lt-LT') })}</li>
-                <li>{t('calculator.explanation.currentRate2', { 
-                  min: (300000 * formData.numOwners).toLocaleString('lt-LT'),
-                  max: (500000 * formData.numOwners).toLocaleString('lt-LT')
-                })}</li>
-                <li>{t('calculator.explanation.currentRate3', { value: (500000 * formData.numOwners).toLocaleString('lt-LT') })}</li>
-              </ul>
-              <p className="text-xs text-gray-500 italic mt-1">
+            <ExplanationSection title={t('calculator.explanation.initialStandardTaxTitle')}>
+              {renderTaxRates([
+                { key: 'calculator.explanation.currentRate1' },
+                { key: 'calculator.explanation.currentRate2' },
+                { key: 'calculator.explanation.currentRate3' }
+              ])}
+              <p className="text-xs text-gray-500 italic mt-2">
                 {t('calculator.explanation.resultBeforeExemptions', { value: formatCurrency(currentResults.initialTax) })}
               </p>
-            </>
+            </ExplanationSection>
           ) : (
-            <p><strong>{t('calculator.explanation.initialStandardTaxZero')}</strong></p>
+            <ExplanationSection title={t('calculator.explanation.initialStandardTaxTitle')}>
+              <p className="text-gray-500 italic">{t('calculator.explanation.initialStandardTaxZero')}</p>
+            </ExplanationSection>
           )}
           
-          {/* Low Income Exemption */}
-          {formData.isLowIncome && formData.primaryResidenceValue > 0 ? (
-            <p><strong>{t('calculator.explanation.lowIncomeExemptionApplied')}</strong></p>
-          ) : (
-            <p className="text-xs text-gray-500 italic">
-              <strong>{t('calculator.explanation.lowIncomeExemptionNotApplied')}</strong>
-            </p>
-          )}
+          <ExplanationSection title={t('calculator.explanation.lowIncomeExemption')}>
+            {formData.isLowIncome && formData.primaryResidenceValue > 0 ? (
+              <p className="text-green-600 italic">{t('calculator.explanation.lowIncomeExemptionApplied')}</p>
+            ) : (
+              <p className="text-gray-500 italic">
+                <strong>{t('calculator.explanation.lowIncomeExemptionNotApplied')}</strong>
+              </p>
+            )}
+          </ExplanationSection>
           
-          {/* Final Standard Tax */}
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center mt-2">
-            <strong>{t('calculator.explanation.finalStandardTaxCurrent')}</strong>
-            <span>{formatCurrency(currentResults.finalTax - currentResults.abandonedTax)}</span>
-          </div>
+          <ExplanationSection title={t('calculator.explanation.finalTax')}>
+            <CalcRow
+              label={t('calculator.explanation.finalStandardTaxCurrent')}
+              result={formatCurrency(currentResults.finalTax - currentResults.abandonedTax)}
+            />
+            {currentResults.minimumTaxRuleApplied && <p className="text-xs text-green-600 italic text-right">{t('calculator.results.minimumTaxNote')}</p>}
+          </ExplanationSection>
         </div>
         
         {/* Proposed Rules Column */}
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="text-base font-semibold text-indigo-700 mb-3 border-b border-indigo-100 pb-2">
+        <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-inner">
+          <h4 className="text-lg font-semibold text-indigo-700 mb-4 text-center border-b border-indigo-100 pb-2">
             {t('calculator.explanation.proposedRulesTitle')}
           </h4>
           
-          {/* Threshold */}
-          <p><strong>{t('calculator.explanation.thresholdTitle')}</strong></p>
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-            <span className="text-gray-600 mr-2">
-              {t('calculator.explanation.individualThreshold', { 
+          <ExplanationSection title={t('calculator.explanation.thresholdTitle')}>
+            <CalcRow
+              label={t('calculator.explanation.individualThreshold', {
                 type: formData.isFamilyAdjusted ? t('calculator.explanation.familyAdjusted') : t('calculator.explanation.standard'),
                 value: formData.isFamilyAdjusted ? '50k' : '40k'
               })}
-            </span>
-            <span className="font-medium text-gray-900 text-right">
-              {formatCurrency(formData.isFamilyAdjusted ? 50000 : 40000)}
-            </span>
-          </div>
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-            <span className="text-gray-600 mr-2">
-              {t('calculator.explanation.totalThreshold')}
-            </span>
-            <span className="font-medium text-gray-900 text-right">
-              {formatCurrency(formData.isFamilyAdjusted ? 50000 : 40000)} × {formData.numOwners} = {formatCurrency(proposedResults.threshold)}
-            </span>
-          </div>
+              result={formatCurrency(proposedThresholdBasis)}
+            />
+            <CalcRow
+              label={t('calculator.explanation.totalThreshold')}
+              calculation={`${formatCurrency(proposedThresholdBasis)} × ${formData.numOwners}`}
+              result={`= ${formatCurrency(proposedResults.threshold)}`}
+            />
+          </ExplanationSection>
           
-          {/* Taxable Base */}
-          <p><strong>{t('calculator.explanation.taxableBaseTitle')}</strong></p>
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-            <span className="text-gray-600 mr-2">
-              {t('calculator.explanation.taxableBaseFormula')}
-            </span>
-            <span className="font-medium text-gray-900 text-right">
-              Max(0, {formatCurrency(maintainedValue)} - {formatCurrency(proposedResults.threshold)}) = {formatCurrency(proposedResults.taxableBase)}
-            </span>
-          </div>
+          <ExplanationSection title={t('calculator.explanation.taxableBaseTitle')}>
+            <CalcRow
+              label={t('calculator.explanation.taxableBaseFormula')}
+              calculation={`Max(0, ${formatCurrency(maintainedValue)} - ${formatCurrency(proposedResults.threshold)})`}
+              result={`= ${formatCurrency(proposedResults.taxableBase)}`}
+            />
+          </ExplanationSection>
           
-          {/* Initial Standard Tax */}
           {proposedResults.taxableBase > 0 ? (
-            <>
-              <p><strong>{t('calculator.explanation.initialStandardTaxTitle')}</strong></p>
-              <ul className="list-disc list-inside text-sm pl-2 space-y-1">
-                {formData.isFamilyAdjusted ? (
-                  <>
-                    <li>{t('calculator.explanation.proposedRateFamily1', { value: (250000 * formData.numOwners).toLocaleString('lt-LT') })}</li>
-                    <li>{t('calculator.explanation.proposedRateFamily2', { 
-                      min: (250000 * formData.numOwners).toLocaleString('lt-LT'),
-                      max: (500000 * formData.numOwners).toLocaleString('lt-LT')
-                    })}</li>
-                    <li>{t('calculator.explanation.proposedRateFamily3', { 
-                      min: (500000 * formData.numOwners).toLocaleString('lt-LT'),
-                      max: (750000 * formData.numOwners).toLocaleString('lt-LT')
-                    })}</li>
-                    <li>{t('calculator.explanation.proposedRateFamily4', { value: (750000 * formData.numOwners).toLocaleString('lt-LT') })}</li>
-                  </>
-                ) : (
-                  <>
-                    <li>{t('calculator.explanation.proposedRateStandard1', { value: (200000 * formData.numOwners).toLocaleString('lt-LT') })}</li>
-                    <li>{t('calculator.explanation.proposedRateStandard2', { 
-                      min: (200000 * formData.numOwners).toLocaleString('lt-LT'),
-                      max: (400000 * formData.numOwners).toLocaleString('lt-LT')
-                    })}</li>
-                    <li>{t('calculator.explanation.proposedRateStandard3', { 
-                      min: (400000 * formData.numOwners).toLocaleString('lt-LT'),
-                      max: (600000 * formData.numOwners).toLocaleString('lt-LT')
-                    })}</li>
-                    <li>{t('calculator.explanation.proposedRateStandard4', { value: (600000 * formData.numOwners).toLocaleString('lt-LT') })}</li>
-                  </>
-                )}
-              </ul>
-              <p className="text-xs text-gray-500 italic mt-1">
+            <ExplanationSection title={t('calculator.explanation.initialStandardTaxTitle')}>
+              {renderTaxRates([
+                { key: 'calculator.explanation.proposedRateStandard1' },
+                { key: 'calculator.explanation.proposedRateStandard2' },
+                { key: 'calculator.explanation.proposedRateStandard3' },
+                { key: 'calculator.explanation.proposedRateStandard4' }
+              ])}
+              <p className="text-xs text-gray-500 italic mt-2">
                 {t('calculator.explanation.resultBeforeExemptions', { value: formatCurrency(proposedResults.initialTax) })}
               </p>
-            </>
+            </ExplanationSection>
           ) : (
-            <p><strong>{t('calculator.explanation.initialStandardTaxZero')}</strong></p>
+            <ExplanationSection title={t('calculator.explanation.initialStandardTaxTitle')}>
+              <p className="text-gray-500 italic">{t('calculator.explanation.initialStandardTaxZero')}</p>
+            </ExplanationSection>
           )}
           
-          {/* Primary Residence Relief */}
-          {formData.primaryResidenceValue > 0 && !formData.isLowIncome ? (
-            <>
-              <p><strong>
-                {t('calculator.explanation.primaryResidenceReliefTitle', { 
-                  percent: formData.isFamilyAdjusted ? '75' : '50'
-                })}
-              </strong></p>
-              <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-                <span className="text-gray-600 mr-2">
-                  {t('calculator.explanation.estimatedReliefAmount')}
-                </span>
-                <span className="font-medium text-gray-900 text-right">
-                  {formatCurrency(proposedResults.reliefAmount)}
-                </span>
-              </div>
-              <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-                <span className="text-gray-600 mr-2">
-                  {t('calculator.explanation.taxAfterRelief')}
-                </span>
-                <span className="font-medium text-gray-900 text-right">
-                  {formatCurrency(Math.max(0, proposedResults.initialTax - proposedResults.reliefAmount))}
-                </span>
-              </div>
-            </>
-          ) : formData.primaryResidenceValue > 0 && formData.isLowIncome ? (
-            <p className="text-xs text-gray-500 italic">
-              <strong>{t('calculator.explanation.primaryResidenceReliefNotAppliedLowIncome')}</strong>
-            </p>
-          ) : (
-            <p className="text-xs text-gray-500 italic">
-              <strong>{t('calculator.explanation.primaryResidenceReliefNotAppliedNoValue')}</strong>
-            </p>
+          {formData.primaryResidenceValue > 0 && proposedResults.reliefAmount > 0 && (
+            <ExplanationSection title={t('calculator.explanation.primaryResidenceReliefTitle')}>
+              <p>{t('calculator.explanation.primaryResidenceReliefDescription', { primaryValue: formatCurrency(formData.primaryResidenceValue) })}</p>
+              <CalcRow
+                label={t('calculator.explanation.estimatedReliefAmount')}
+                result={formatCurrency(proposedResults.reliefAmount)}
+              />
+            </ExplanationSection>
           )}
           
-          {/* Low Income Exemption */}
-          {formData.isLowIncome && formData.primaryResidenceValue > 0 ? (
-            <p><strong>{t('calculator.explanation.lowIncomeExemptionApplied')}</strong></p>
-          ) : (
-            <p className="text-xs text-gray-500 italic">
-              <strong>{t('calculator.explanation.lowIncomeExemptionNotApplied')}</strong>
-            </p>
-          )}
+          <ExplanationSection title={t('calculator.explanation.lowIncomeExemption')}>
+            {formData.isLowIncome && formData.primaryResidenceValue > 0 ? (
+              <p className="text-green-600 italic">{t('calculator.explanation.lowIncomeExemptionApplied')}</p>
+            ) : (
+              <p className="text-gray-500 italic">
+                <strong>{t('calculator.explanation.lowIncomeExemptionNotApplied')}</strong>
+              </p>
+            )}
+          </ExplanationSection>
           
-          {/* Final Standard Tax */}
-          <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center mt-2">
-            <strong>{t('calculator.explanation.finalStandardTaxProposed')}</strong>
-            <span>{formatCurrency(proposedResults.finalTax - proposedResults.abandonedTax)}</span>
-          </div>
+          <ExplanationSection title={t('calculator.explanation.finalTax')}>
+            <CalcRow
+              label={t('calculator.explanation.finalStandardTaxProposed')}
+              result={formatCurrency(proposedResults.finalTax - proposedResults.abandonedTax)}
+            />
+            {proposedResults.minimumTaxRuleApplied && <p className="text-xs text-green-600 italic text-right">{t('calculator.results.minimumTaxNote')}</p>}
+          </ExplanationSection>
         </div>
       </div>
       
       {/* 3. Final Total Tax */}
-      <h4 className="text-base font-semibold text-gray-700 mt-5 mb-2">
-        {t('calculator.explanation.finalTotalTaxTitle')}
-      </h4>
-      <p>
-        {t('calculator.explanation.finalTotalTaxDescription')}
-      </p>
-      
-      {/* Current Rules - Final Sum */}
-      <h5 className="text-sm font-semibold text-gray-600 mt-4 mb-1">
-        {t('calculator.explanation.currentRulesFinalSum')}
-      </h5>
-      <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-        <span className="text-gray-600 mr-2">{t('calculator.explanation.taxOnAbandonedProperty')}</span>
-        <span className="font-medium text-gray-900 text-right">{formatCurrency(currentResults.abandonedTax)}</span>
-      </div>
-      <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-        <span className="text-gray-600 mr-2">{t('calculator.explanation.plusFinalStandardTaxCurrent')}</span>
-        <span className="font-medium text-gray-900 text-right">{formatCurrency(currentResults.finalTax - currentResults.abandonedTax)}</span>
-      </div>
-      <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center mt-2 pt-2 border-t-2 border-gray-300 font-semibold">
-        <span>{t('calculator.explanation.equalsPreliminaryTotalTaxCurrent')}</span>
-        <span>{formatCurrency(currentResults.abandonedTax + (currentResults.finalTax - currentResults.abandonedTax))}</span>
-      </div>
-      
-      {/* Proposed Rules - Final Sum */}
-      <h5 className="text-sm font-semibold text-gray-600 mt-4 mb-1">
-        {t('calculator.explanation.proposedRulesFinalSum')}
-      </h5>
-      <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-        <span className="text-gray-600 mr-2">{t('calculator.explanation.taxOnAbandonedProperty')}</span>
-        <span className="font-medium text-gray-900 text-right">{formatCurrency(proposedResults.abandonedTax)}</span>
-      </div>
-      <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center">
-        <span className="text-gray-600 mr-2">{t('calculator.explanation.plusFinalStandardTaxProposed')}</span>
-        <span className="font-medium text-gray-900 text-right">{formatCurrency(proposedResults.finalTax - proposedResults.abandonedTax)}</span>
-      </div>
-      <div className="my-1.5 py-2 px-3 bg-white border border-gray-200 rounded-md text-sm flex justify-between items-center mt-2 pt-2 border-t-2 border-gray-300 font-semibold">
-        <span>{t('calculator.explanation.equalsPreliminaryTotalTaxProposed')}</span>
-        <span>{formatCurrency(proposedResults.abandonedTax + (proposedResults.finalTax - proposedResults.abandonedTax))}</span>
-      </div>
-      
-      <p className="text-xs text-gray-500 italic mt-3">
-        <strong>{t('calculator.explanation.minimumTaxRuleTitle')}</strong> {t('calculator.explanation.minimumTaxRuleDescription')}
-      </p>
+      <ExplanationSection title={t('calculator.explanation.finalTaxCalculationTitle')}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CalcRow
+            label={t('calculator.explanation.totalFinalTax') + ` (${t('calculator.explanation.currentRulesTitle')})`}
+            calculation={`${formatCurrency(currentResults.abandonedTax)} + ${formatCurrency(currentResults.finalTax - currentResults.abandonedTax)}`}
+            result={`= ${formatCurrency(currentResults.finalTax)}`}
+          />
+          <CalcRow
+            label={t('calculator.explanation.totalFinalTax') + ` (${t('calculator.explanation.proposedRulesTitle')})`}
+            calculation={`${formatCurrency(proposedResults.abandonedTax)} + ${formatCurrency(proposedResults.finalTax - proposedResults.abandonedTax)}`}
+            result={`= ${formatCurrency(proposedResults.finalTax)}`}
+          />
+        </div>
+      </ExplanationSection>
     </div>
   );
 };

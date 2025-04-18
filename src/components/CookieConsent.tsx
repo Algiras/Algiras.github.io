@@ -27,14 +27,14 @@ const CookieConsent: React.FC = () => {
     <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 shadow-lg z-50">
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="text-sm">
-          {t('cookieConsent.message')}
+          {t('calculator.cookieConsent.message')}
         </div>
         <div className="flex gap-2">
           <Button 
             variant="primary" 
             onClick={handleAccept}
           >
-            {t('cookieConsent.accept')}
+            {t('calculator.cookieConsent.accept')}
           </Button>
         </div>
       </div>

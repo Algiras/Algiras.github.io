@@ -2,8 +2,8 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-import enTranslation from './locales/en/translation.json';
-import ltTranslation from './locales/lt/translation.json';
+import enTranslation from './locales/en/translation.flat.json';
+import ltTranslation from './locales/lt/translation.flat.json';
 
 i18n
   // detect user language
@@ -14,6 +14,7 @@ i18n
   .init({
     debug: true,
     fallbackLng: 'en',
+    keySeparator: false, // Use flat keys instead of nested ones
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
     },

@@ -13,22 +13,22 @@ const DisclaimerAcknowledgment: React.FC<DisclaimerAcknowledgmentProps> = ({ onA
   
   return (
     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4">{t('disclaimer.title')}</h2>
+      <h2 className="text-xl font-semibold mb-4">{t('calculator.disclaimer.title')}</h2>
       <div className="text-sm text-gray-700 mb-6">
-        <p className="mb-3">{t('disclaimer.notFinancialAdvice')}</p>
-        <p className="mb-3">{t('disclaimer.personalTool')}</p>
-        <p>{t('disclaimer.developerNote')} <a 
+        <p className="mb-3">{t('calculator.disclaimer.notFinancialAdvice')}</p>
+        <p className="mb-3">{t('calculator.disclaimer.personalTool')}</p>
+        <p>{t('calculator.disclaimer.developerNote')} <a 
           href="https://github.com/Algiras/Algiras.github.io" 
           className="text-blue-600 hover:underline"
           target="_blank"
           rel="noopener noreferrer"
-        >{t('disclaimer.submitPR')}</a></p>
+        >{t('calculator.disclaimer.submitPR')}</a></p>
       </div>
       
       <div className="mb-4">
         <Checkbox
           id="disclaimer-check"
-          label={t('disclaimer.acknowledgment')}
+          label={t('calculator.disclaimer.acknowledgment')}
           checked={isChecked}
           onChange={(e) => setIsChecked(e.target.checked)}
         />
@@ -38,7 +38,7 @@ const DisclaimerAcknowledgment: React.FC<DisclaimerAcknowledgmentProps> = ({ onA
         disabled={!isChecked}
         onClick={onAccept}
       >
-        {t('disclaimer.proceed')}
+        {t('calculator.disclaimer.proceed')}
       </Button>
     </div>
   );
