@@ -1,5 +1,5 @@
-import { CalculatorFormData } from '../../components/calculator/CalculatorForm';
-import { calculateProposedTax } from '../../utils/taxCalculator';
+import { CalculatorFormData } from 'src/components/calculator/CalculatorForm';
+import { calculateProposedTax } from 'src/utils/taxCalculator';
 
 // Test constants based on the Lithuanian tax law
 const PROPOSED_STANDARD_THRESHOLD_PER_PERSON = 40000;

@@ -1,8 +1,9 @@
+import React from 'react'
 import { Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navbar from './Navbar'
 
-const Layout = () => {
+const Layout: React.FC = () => {
   const { t } = useTranslation()
   const currentYear = new Date().getFullYear()
 

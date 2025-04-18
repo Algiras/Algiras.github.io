@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CalculatorForm, { CalculatorFormData } from '../components/calculator/CalculatorForm';
 import CalculatorResults from '../components/calculator/CalculatorResults';
@@ -7,7 +7,7 @@ import CalculatorDisclaimer from '../components/calculator/CalculatorDisclaimer'
 import DisclaimerAcknowledgment from '../components/DisclaimerAcknowledgment';
 import { calculateCurrentTax, calculateProposedTax } from '../utils/taxCalculator';
 
-const Calculator = () => {
+const Calculator: React.FC = () => {
   const { t } = useTranslation();
   
   // State for disclaimer acceptance

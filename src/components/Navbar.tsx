@@ -1,9 +1,9 @@
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useState } from 'react'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const location = useLocation()
   const { t } = useTranslation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

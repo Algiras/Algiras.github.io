@@ -1,8 +1,8 @@
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
 import Dropdown from './ui/Dropdown';
 
-const LanguageSwitcher = () => {
+const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
   const [currentLang, setCurrentLang] = useState(i18n.language);
 

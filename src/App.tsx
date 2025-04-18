@@ -1,5 +1,5 @@
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Suspense, lazy } from 'react'
 import { ThemeProvider } from './context/ThemeContext'
 
 // Lazy load pages for better performance
@@ -10,7 +10,7 @@ const Home = lazy(() => import('./pages/Home'))
 // Layout components
 import Layout from './components/Layout'
 
-function App() {
+const App: React.FC = () => {
   return (
     <ThemeProvider>
       <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
