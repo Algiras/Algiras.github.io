@@ -23,6 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables
+.env
+
 # Yarn 3 specific files
 .yarn/*
 !.yarn/patches
