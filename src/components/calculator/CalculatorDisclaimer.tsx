@@ -65,6 +65,18 @@ const CalculatorDisclaimer: React.FC = () => {
           <li>
             <strong>{t('calculator.resources.municipality.title')}</strong> {t('calculator.resources.municipality.description')}
           </li>
+          <li>
+            <strong>{t('calculator.resources.reliefTitle')}</strong> {t('calculator.resources.reliefDescription')} 
+            <a href="https://finmin.lrv.lt/lt/veiklos-sritys/mokesciai/mokesciu-teises-aktai" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:underline">
+              {t('calculator.resources.reliefLink')}
+            </a>
+          </li>
+          <li>
+            <strong>{t('calculator.resources.disabilityTitle')}</strong> {t('calculator.resources.disabilityDescription')} 
+            <a href="https://socmin.lrv.lt/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:underline">
+              {t('calculator.resources.disabilityLink')}
+            </a>
+          </li>
         </ul>
       </div>
     </div>

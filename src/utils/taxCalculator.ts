@@ -27,12 +27,52 @@ const CURRENT_BRACKET_2_RATE = 0.01; // 1% for value between €300,001-€500,0
 const CURRENT_BRACKET_3_RATE = 0.02; // 2% for value exceeding €500,000 (or €650,000 for family)
 
 // Proposed system (2026+) constants
-const PROPOSED_STANDARD_THRESHOLD_PER_PERSON = 40000;
-const PROPOSED_FAMILY_THRESHOLD_PER_PERSON = 50000;
-const PROPOSED_MINIMUM_TAX = 5; // Minimum tax amount in euros
-const PROPOSED_PRIMARY_RESIDENCE_RELIEF_STANDARD = 0.5; // 50% relief for standard cases
-const PROPOSED_PRIMARY_RESIDENCE_RELIEF_FAMILY = 0.75; // 75% relief for qualifying families
-const PROPOSED_PRIMARY_RESIDENCE_RELIEF_MAX_VALUE = 450000; // Relief applies to residence value up to €450,000
+
+/**
+ * Standard threshold per person (non-family adjusted)
+ * Every person gets this tax-free threshold for their property portfolio
+ */
+const PROPOSED_STANDARD_THRESHOLD_PER_PERSON = 40000; // €40,000 per person
+
+/**
+ * Family-adjusted threshold per person
+ * Eligibility criteria:
+ * - Individuals raising three or more children (including adopted) under 18 years
+ * - Individuals raising a child (including adopted) with a disability under 18 years
+ * - Individuals raising an older disabled child requiring special constant nursing care
+ * 
+ * Legal basis: Article 7 of the Lithuanian Real Estate Tax Law
+ */
+const PROPOSED_FAMILY_THRESHOLD_PER_PERSON = 50000; // €50,000 per qualifying owner
+
+/**
+ * Minimum tax amount - tax is not collected if calculated amount is below this value
+ */
+const PROPOSED_MINIMUM_TAX = 5; // €5 minimum tax
+
+/**
+ * Primary residence relief for standard cases
+ * Provides a 50% reduction on tax calculated for primary residence value up to €450,000
+ */
+const PROPOSED_PRIMARY_RESIDENCE_RELIEF_STANDARD = 0.5; // 50% relief
+
+/**
+ * Enhanced primary residence relief for qualifying families
+ * Provides a 75% reduction on tax calculated for primary residence value up to €450,000
+ * 
+ * Applies to the same family criteria as the increased threshold:
+ * - Families with 3+ children under 18
+ * - Families with disabled children
+ * 
+ * Legal basis: Article 7 of the Lithuanian Real Estate Tax Law
+ */
+const PROPOSED_PRIMARY_RESIDENCE_RELIEF_FAMILY = 0.75; // 75% relief
+
+/**
+ * Maximum property value eligible for primary residence relief
+ * Relief applies only to the portion of primary residence value up to this amount
+ */
+const PROPOSED_PRIMARY_RESIDENCE_RELIEF_MAX_VALUE = 450000; // €450,000 cap
 
 // Proposed system tax brackets
 const PROPOSED_BRACKET_1_RATE = 0.001; // 0.1% for value from threshold to €200,000 (or €250,000 for family)
@@ -54,7 +94,17 @@ export function calculateCurrentTax(formData: CalculatorFormData): TaxCalculatio
     isLowIncome
   } = formData;
 
-  // If low income, no tax is applied
+  /**
+   * Low Income Exemption
+   * 
+   * Eligibility criteria:
+   * - Individuals receiving heating cost compensation (šildymo išlaidų kompensacija)
+   * - Applies only to declared primary residence
+   * 
+   * Benefit: Complete exemption (100% tax relief) for primary residence only
+   * 
+   * Legal basis: Article 7 of the Lithuanian Real Estate Tax Law
+   */
   if (isLowIncome) {
     return {
       abandonedTax: 0,

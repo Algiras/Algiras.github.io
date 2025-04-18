@@ -149,7 +149,7 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ onCalculate }) => {
           name="isFamilyAdjusted"
           checked={formData.isFamilyAdjusted}
           onChange={handleInputChange}
-          helpText={t('calculator.form.familyAdjustmentHelp')}
+          helpText={t('calculator.form.familyAdjustmentDetailedHelp')}
         />
         
         <Checkbox
@@ -157,7 +157,7 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ onCalculate }) => {
           name="isLowIncome"
           checked={formData.isLowIncome}
           onChange={handleInputChange}
-          helpText={t('calculator.form.lowIncomeHelp')}
+          helpText={t('calculator.form.lowIncomeDetailedHelp')}
         />
       </div>
       

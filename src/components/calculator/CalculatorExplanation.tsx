@@ -156,9 +156,28 @@ const CalculatorExplanation: React.FC<CalculatorExplanationProps> = ({
             </ExplanationSection>
           )}
           
+          {formData.isFamilyAdjusted && (
+            <ExplanationSection title={t('calculator.explanation.familyAdjustmentDetailsTitle')}>
+              <p>{t('calculator.explanation.familyAdjustmentDetailsDescription')}</p>
+              <ul className="list-disc list-inside pl-2 space-y-1 mt-1 text-gray-600">
+                <li>{t('calculator.explanation.familyAdjustmentCriteria1')}</li>
+                <li>{t('calculator.explanation.familyAdjustmentCriteria2')}</li>
+                <li>{t('calculator.explanation.familyAdjustmentCriteria3')}</li>
+              </ul>
+              <p className="mt-2">{t('calculator.explanation.familyAdjustmentBenefits')}</p>
+            </ExplanationSection>
+          )}
+
           <ExplanationSection title={t('calculator.explanation.lowIncomeExemption')}>
             {formData.isLowIncome && formData.primaryResidenceValue > 0 ? (
-              <p className="text-green-600 italic">{t('calculator.explanation.lowIncomeExemptionApplied')}</p>
+              <>
+                <p className="text-green-600 italic">{t('calculator.explanation.lowIncomeExemptionApplied')}</p>
+                <ExplanationSection title={t('calculator.explanation.lowIncomeDetailsTitle')}>
+                  <p>{t('calculator.explanation.lowIncomeDetailsDescription')}</p>
+                  <p className="mt-2">{t('calculator.explanation.lowIncomeBenefits')}</p>
+                  <p className="text-xs text-gray-500 italic mt-2">{t('calculator.explanation.lowIncomeRestrictions')}</p>
+                </ExplanationSection>
+              </>
             ) : (
               <p className="text-gray-500 italic">
                 <strong>{t('calculator.explanation.lowIncomeExemptionNotApplied')}</strong>
@@ -232,9 +251,28 @@ const CalculatorExplanation: React.FC<CalculatorExplanationProps> = ({
             </ExplanationSection>
           )}
           
+          {formData.isFamilyAdjusted && (
+            <ExplanationSection title={t('calculator.explanation.familyAdjustmentDetailsTitle')}>
+              <p>{t('calculator.explanation.familyAdjustmentDetailsDescription')}</p>
+              <ul className="list-disc list-inside pl-2 space-y-1 mt-1 text-gray-600">
+                <li>{t('calculator.explanation.familyAdjustmentCriteria1')}</li>
+                                <li>{t('calculator.explanation.familyAdjustmentCriteria2')}</li>
+                <li>{t('calculator.explanation.familyAdjustmentCriteria3')}</li>
+              </ul>
+              <p className="mt-2">{t('calculator.explanation.familyAdjustmentBenefits')}</p>
+            </ExplanationSection>
+          )}
+          
           <ExplanationSection title={t('calculator.explanation.lowIncomeExemption')}>
             {formData.isLowIncome && formData.primaryResidenceValue > 0 ? (
-              <p className="text-green-600 italic">{t('calculator.explanation.lowIncomeExemptionApplied')}</p>
+              <>
+                <p className="text-green-600 italic">{t('calculator.explanation.lowIncomeExemptionApplied')}</p>
+                <ExplanationSection title={t('calculator.explanation.lowIncomeDetailsTitle')}>
+                  <p>{t('calculator.explanation.lowIncomeDetailsDescription')}</p>
+                  <p className="mt-2">{t('calculator.explanation.lowIncomeBenefits')}</p>
+                  <p className="text-xs text-gray-500 italic mt-2">{t('calculator.explanation.lowIncomeRestrictions')}</p>
+                </ExplanationSection>
+              </>
             ) : (
               <p className="text-gray-500 italic">
                 <strong>{t('calculator.explanation.lowIncomeExemptionNotApplied')}</strong>
