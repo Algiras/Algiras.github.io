@@ -4,7 +4,6 @@ import { calculateProposedTax } from '../../utils/taxCalculator';
 // Test constants based on the Lithuanian tax law
 const PROPOSED_STANDARD_THRESHOLD_PER_PERSON = 40000;
 const PROPOSED_FAMILY_THRESHOLD_PER_PERSON = 50000;
-const MINIMUM_TAX_AMOUNT = 5;
 
 // Helper function to create form data for testing
 const createFormData = (props: Partial<CalculatorFormData> = {}): CalculatorFormData => ({

@@ -4,7 +4,6 @@ import { calculateCurrentTax } from '../../utils/taxCalculator';
 // Test constants based on the Lithuanian tax law
 const CURRENT_STANDARD_THRESHOLD = 150000;
 const CURRENT_FAMILY_THRESHOLD = 200000;
-const MINIMUM_TAX_AMOUNT = 5;
 
 // Helper function to create form data for testing
 const createFormData = (props: Partial<CalculatorFormData> = {}): CalculatorFormData => ({

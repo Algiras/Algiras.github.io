@@ -1,23 +1,35 @@
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Dropdown from './ui/Dropdown';
 
 const LanguageSwitcher = () => {
-  const { i18n, t } = useTranslation();
+  const { i18n } = useTranslation();
   const [currentLang, setCurrentLang] = useState(i18n.language);
 
-  const toggleLanguage = () => {
-    const newLang = currentLang === 'en' ? 'lt' : 'en';
-    i18n.changeLanguage(newLang);
-    setCurrentLang(newLang);
+  // Language options with proper labels
+  const languageOptions = [
+    { value: 'en', label: 'English' },
+    { value: 'de', label: 'Deutsch' },
+    { value: 'lt', label: 'Lietuvių' }
+  ];
+
+  // Update local state when i18n language changes externally
+  useEffect(() => {
+    setCurrentLang(i18n.language);
+  }, [i18n.language]);
+
+  const handleLanguageChange = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+    setCurrentLang(langCode);
   };
 
   return (
-    <button 
-      onClick={toggleLanguage} 
-      className="px-3 py-1 border border-white rounded-md text-sm hover:bg-indigo-600"
-    >
-      {t('nav.language')}
-    </button>
+    <Dropdown
+      options={languageOptions}
+      value={currentLang}
+      onChange={handleLanguageChange}
+      className="w-32"
+    />
   );
 };
 

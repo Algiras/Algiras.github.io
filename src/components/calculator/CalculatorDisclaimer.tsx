@@ -47,9 +47,19 @@ const CalculatorDisclaimer: React.FC = () => {
             </a>
           </li>
           <li>
-            <strong>{t('calculator.resources.article.title')}</strong> 
+            <strong>{t('calculator.resources.article.title')}</strong> {t('calculator.resources.article.description')} 
             <a href="https://www.lrt.lt/naujienos/verslas/4/2538574/naujasis-nt-mokescio-projektas-kiek-tektu-susimoketi-uz-busta" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:underline">
               {t('calculator.resources.article.link')}
+            </a>
+          </li>
+          <li>
+            <strong>{t('calculator.resources.registru.title')}</strong> {t('calculator.resources.registru.description')} 
+            <a href="https://www.registrucentras.lt/masvert/paieska-un" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:underline">
+              {t('calculator.resources.registru.link1')}
+            </a>
+            {' | '}
+            <a href="https://www.registrucentras.lt/masvert/paieska-obj" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:underline">
+              {t('calculator.resources.registru.link2')}
             </a>
           </li>
           <li>

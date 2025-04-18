@@ -5,13 +5,13 @@ const Home = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="cv-page max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-xl fade-in">
-      <header className="text-center mb-12 border-b border-slate-200 pb-8">
+    <div className="cv-page max-w-4xl mx-auto bg-white p-6 md:p-12 rounded-xl shadow-xl fade-in my-8">
+      <header className="text-center mb-16 border-b border-slate-200 pb-10">
         <h1 className="text-4xl md:text-5xl font-bold text-indigo-700 mb-3">{t('cv.title')}</h1>
         <p className="text-xl md:text-2xl text-slate-600">{t('cv.subtitle')}</p>
       </header>
 
-      <section id="contact">
+      <section id="contact" className="mb-10">
         <h2><i className="fas fa-address-book"></i>{t('cv.sections.contact')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-slate-700">
 
@@ -34,17 +34,14 @@ const Home = () => {
         </div>
       </section>
 
-      <section id="summary">
+      <section id="summary" className="mb-10">
         <h2><i className="fas fa-user-alt"></i>{t('cv.sections.summary')}</h2>
         <p className="text-slate-700 leading-relaxed text-base">
           {t('cv.summary.text')}
         </p>
-        <p className="text-slate-700 leading-relaxed mt-4 text-base">
-          {t('cv.summary.blogText')} <a href="https://medium.com/@AlgimantasKras1" target="_blank" rel="noopener noreferrer" className="font-medium">{t('cv.contact.medium')}</a>
-        </p>
       </section>
 
-      <section id="experience">
+      <section id="experience" className="mb-10">
         <h2><i className="fas fa-briefcase"></i>{t('cv.sections.experience')}</h2>
 
         <div className="entry">
@@ -54,7 +51,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Back End Developer | Vilnius, Lithuania</p>
           <p className="entry-description">
-            Developing and maintaining a robust HR management system utilizing a combination of Spring and Sangria...
+            Developing and maintaining a robust HR management system utilizing a combination of Spring and Sangria GraphQL. Responsible for designing and implementing scalable backend solutions, optimizing database queries, and ensuring high performance across the platform. Collaborating with cross-functional teams to deliver new features and improvements to the HR system.
           </p>
         </div>
         
@@ -65,7 +62,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Frontend Developer | Vilnius, Lithuania</p>
           <p className="entry-description">
-            Provided technical support to a FrontEnd team utilizing cutting-edge technologies such as Typescript, GraphQL...
+            Provided technical support to a FrontEnd team utilizing cutting-edge technologies such as Typescript, GraphQL, and React. Collaborated on developing responsive user interfaces, implementing state management solutions, and ensuring cross-browser compatibility. Participated in code reviews and contributed to improving frontend architecture and performance.
           </p>
         </div>
 
@@ -76,7 +73,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Backend Developer | Vilnius, Lithuania</p>
           <p className="entry-description">
-            Expertise in developing and maintaining an internal Applicant Tracking System (ATS) using Spring and Sangria...
+            Expertise in developing and maintaining an internal Applicant Tracking System (ATS) using Spring and Sangria GraphQL. Implemented key features for candidate management, interview scheduling, and reporting. Worked closely with HR teams to understand requirements and deliver solutions that streamlined the recruitment process and improved user experience.
           </p>
         </div>
 
@@ -87,7 +84,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Senior Frontend Developer | Berlin Area, Germany</p>
           <p className="entry-description">
-            Led front-end R&D efforts in multilingual projects, resulting in the development of user-friendly...
+            Led front-end R&D efforts in multilingual projects, resulting in the development of user-friendly interfaces that supported multiple languages and localization requirements. Mentored junior developers, established coding standards, and implemented best practices for frontend development. Collaborated with UX designers to create intuitive and accessible user experiences.
           </p>
         </div>
         
@@ -98,7 +95,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Solution Engineer | Bristol, United Kingdom</p>
           <p className="entry-description">
-            Expertise in modernizing monolith architecture by implementing microservices utilizing Clojure...
+            Expertise in modernizing monolith architecture by implementing microservices utilizing Clojure. Led the transition from legacy systems to a more scalable and maintainable architecture. Designed and implemented RESTful APIs, improved system performance, and reduced deployment complexity. Collaborated with cross-functional teams to ensure smooth integration and minimal disruption during the transition.
           </p>
         </div>
 
@@ -109,7 +106,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Software Engineer | Fareham, Hampshire, United Kingdom</p>
           <p className="entry-description">
-            Expertise in working with a diverse range of systems, including Spring (Java), Play (Scala)...
+            Expertise in working with a diverse range of systems, including Spring (Java), Play (Scala), and various frontend technologies. Developed and maintained features for a high-traffic yacht listing platform. Implemented performance optimizations that improved page load times by 30%. Collaborated with UX designers to enhance user experience and implement responsive design principles across the platform.
           </p>
         </div>
 
@@ -120,7 +117,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Lead Front End Developer | London, United Kingdom</p>
           <p className="entry-description">
-            Lead a team of 3 developers in re-factoring complex Symphony code for use in the front-end...
+            Lead a team of 3 developers in re-factoring complex Symphony code for use in the front-end. Established coding standards and best practices that improved code quality and team productivity. Implemented a component-based architecture that enhanced reusability and maintainability. Worked closely with product managers to prioritize features and deliver a sports-focused social platform that met user needs and business objectives.
           </p>
         </div>
 
@@ -131,7 +128,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Solution Engineer | London, United Kingdom</p>
           <p className="entry-description">
-            Expertly leveraged AngularJs as a primary front-end developer, utilizing RESTful web services...
+            Expertly leveraged AngularJs as a primary front-end developer, utilizing RESTful web services to create dynamic and responsive user interfaces. Developed and maintained features for a political information platform. Implemented data visualization components that improved the presentation of complex legislative information. Collaborated with backend developers to optimize API integration and ensure consistent data flow throughout the application.
           </p>
         </div>
         
@@ -142,7 +139,7 @@ const Home = () => {
           </div>
           <p className="entry-details">Frontend Developer | Kaunas, Lithuania</p>
           <p className="entry-description">
-            Expertly led a team of 10 front-end developers as the primary AngularJs lead developer...
+            Expertly led a team of 10 front-end developers as the primary AngularJs lead developer. Established development workflows and coding standards that improved team efficiency. Implemented advanced frontend architecture patterns that enhanced application performance and maintainability. Mentored junior developers and conducted regular code reviews to ensure high-quality deliverables.
           </p>
         </div>
         
@@ -153,7 +150,7 @@ const Home = () => {
           </div>
           <p className="entry-details">System Analyst | Kaunas, Lithuania</p>
           <p className="entry-description">
-            Performed in-depth systems analysis utilizing UML standard notation, resulting in the successful creation...
+            Performed in-depth systems analysis utilizing UML standard notation, resulting in the successful creation of comprehensive system documentation. Created detailed diagrams and specifications that guided development efforts. Collaborated with stakeholders to gather requirements and translate business needs into technical specifications. Implemented process improvements that enhanced system reliability and performance.
           </p>
         </div>
         
@@ -164,7 +161,7 @@ const Home = () => {
           </div>
           <p className="entry-details">PHP Developer | Kaunas, Lithuania</p>
           <p className="entry-description">
-            Designed and developed highly scalable Facebook apps utilizing a blend of AJAX, JQuery JS...
+            Designed and developed highly scalable Facebook apps utilizing a blend of AJAX, JQuery JS, and PHP. Created interactive social applications that engaged users and drove platform adoption. Implemented responsive designs that worked across multiple devices and screen sizes. Integrated with Facebook's API to leverage social features and enhance user experience.
           </p>
         </div>
         
@@ -175,12 +172,12 @@ const Home = () => {
           </div>
           <p className="entry-details">Back-End Developer | Kaunas, Lithuania</p>
           <p className="entry-description">
-            Expertly blended front-end and back-end development utilizing Vanilla PHP and JQuery JS...
+            Expertly blended front-end and back-end development utilizing Vanilla PHP and JQuery JS. Developed and maintained SMS messaging platform features that supported high-volume message processing. Implemented database optimizations that improved query performance and system responsiveness. Created user-friendly interfaces that simplified complex messaging operations and improved overall user experience.
           </p>
         </div>
       </section>
 
-      <section id="education">
+      <section id="education" className="mb-10">
         <h2><i className="fas fa-graduation-cap"></i>{t('cv.sections.education')}</h2>
         <div className="entry">
           <div className="entry-title mb-1">
@@ -198,17 +195,17 @@ const Home = () => {
         </div>
       </section>
 
-      <section id="skills">
+      <section id="skills" className="mb-10">
         <h2><i className="fas fa-cogs"></i>{t('cv.sections.skills')}</h2>
         <h4 className="font-semibold text-slate-700 mb-3">{t('cv.skills.topSkills')}</h4>
         <div className="flex flex-wrap gap-2 mb-5">
-          <span className="skill-badge badge-indigo">Artificial Intelligence (AI)</span>
-          <span className="skill-badge badge-indigo">LangChain</span>
-          <span className="skill-badge badge-indigo">SQL</span>
+          <span className="skill-badge badge-indigo">Scala</span>
+          <span className="skill-badge badge-indigo">Event Sourcing</span>
+          <span className="skill-badge badge-indigo">Kafka</span>
         </div>
         <h4 className="font-semibold text-slate-700 mb-3">{t('cv.skills.otherSkills')}</h4>
         <div className="flex flex-wrap gap-2">
-          <span className="skill-badge badge-sky">Scala</span>
+
           <span className="skill-badge badge-amber">Java</span>
           <span className="skill-badge badge-emerald">Clojure</span>
           <span className="skill-badge badge-slate">PHP</span>
@@ -247,7 +244,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section id="languages">
+      <section id="languages" className="mb-10">
         <h2><i className="fas fa-language"></i>{t('cv.sections.languages')}</h2>
         <ul className="info-list">
           <li><i className="fas fa-check-circle"></i><strong className="font-medium w-32">{t('cv.languages.lithuanian')}:</strong> {t('cv.languages.nativeLevel')}</li>
@@ -256,7 +253,7 @@ const Home = () => {
         </ul>
       </section>
 
-      <section id="certifications">
+      <section id="certifications" className="mb-10">
         <h2><i className="fas fa-certificate"></i>{t('cv.sections.certifications')}</h2>
         <ul className="info-list space-y-2">
           <li><i className="fas fa-award"></i>Introduction to OAuth2, OpenID Connect and JSON Web Tokens (JWT)</li>
@@ -266,6 +263,7 @@ const Home = () => {
           <li><i className="fas fa-award"></i>Advanced Understanding of Stocks and Bonds</li>
         </ul>
       </section>
+
     </div>
   );
 };
