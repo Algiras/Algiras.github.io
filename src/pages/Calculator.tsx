@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import CalculatorForm, { CalculatorFormData } from '../components/calculator/CalculatorForm';
 import CalculatorResults from '../components/calculator/CalculatorResults';
 import CalculatorExplanation from '../components/calculator/CalculatorExplanation';
 import CalculatorDisclaimer from '../components/calculator/CalculatorDisclaimer';
+import CalculatorExamples from '../components/calculator/CalculatorExamples';
 import DisclaimerAcknowledgment from '../components/DisclaimerAcknowledgment';
 import { calculateCurrentTax, calculateProposedTax } from '../utils/taxCalculator';
 
@@ -19,6 +20,12 @@ const Calculator: React.FC = () => {
   const [proposedResults, setProposedResults] = useState<ReturnType<typeof calculateProposedTax> | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   
+  // Reference to the form section for scrolling
+  const formRef = useRef<HTMLDivElement>(null);
+  
+  // State for selected example data
+  const [selectedExampleData, setSelectedExampleData] = useState<CalculatorFormData | null>(null);
+  
   // Handle form submission and calculate results
   const handleCalculate = (data: CalculatorFormData) => {
     setFormData(data);
@@ -28,6 +35,27 @@ const Calculator: React.FC = () => {
     setCurrentResults(current);
     setProposedResults(proposed);
     setShowExplanation(false); // Reset to results view
+  };
+  
+  // Handle example selection
+  const handleExampleSelect = (data: CalculatorFormData, autoSubmit: boolean = false) => {
+    setSelectedExampleData(data);
+    setFormData(null); // Reset any previous results
+    setCurrentResults(null);
+    setProposedResults(null);
+    
+    // Scroll to the form section
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Auto-submit the form if requested
+    if (autoSubmit) {
+      // Use setTimeout to ensure the form is rendered with the new data before submitting
+      setTimeout(() => {
+        handleCalculate(data);
+      }, 100);
+    }
   };
   
   // Toggle between results and explanation
@@ -52,10 +80,13 @@ const Calculator: React.FC = () => {
       <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">{t('calculator.title')}</h1>
       <p className="text-sm text-center text-gray-600 mb-8">{t('calculator.subtitle')}</p>
       
-      <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+      <div ref={formRef} className="bg-white p-6 md:p-8 rounded-lg shadow-lg">
         {/* Show form if no results yet */}
         {!formData && (
-          <CalculatorForm onCalculate={handleCalculate} />
+          <CalculatorForm 
+            onCalculate={handleCalculate} 
+            initialData={selectedExampleData} 
+          />
         )}
         
         {/* Show results or explanation if we have calculated data */}
@@ -102,6 +133,9 @@ const Calculator: React.FC = () => {
           </>
         )}
       </div>
+      
+      {/* Examples */}
+      <CalculatorExamples onSelectExample={handleExampleSelect} />
       
       {/* Disclaimer */}
       <CalculatorDisclaimer />

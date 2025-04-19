@@ -6,6 +6,7 @@ import Button from '../ui/Button';
 
 interface CalculatorFormProps {
   onCalculate: (formData: CalculatorFormData) => void;
+  initialData?: CalculatorFormData | null;
 }
 
 export interface CalculatorFormData {
@@ -18,10 +19,10 @@ export interface CalculatorFormData {
   isLowIncome: boolean;
 }
 
-const CalculatorForm: React.FC<CalculatorFormProps> = ({ onCalculate }) => {
+const CalculatorForm: React.FC<CalculatorFormProps> = ({ onCalculate, initialData }) => {
   const { t } = useTranslation();
   
-  const [formData, setFormData] = useState<CalculatorFormData>({
+  const [formData, setFormData] = useState<CalculatorFormData>(initialData || {
     primaryResidenceValue: 0,
     otherPropertiesValue: 0,
     abandonedValue: 0,
