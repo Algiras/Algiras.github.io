@@ -184,6 +184,17 @@ export function calculateCurrentTax(formData: CalculatorFormData): TaxCalculatio
 
 /**
  * Calculate tax under the proposed system (from 2026)
+ * 
+ * Based on the updated tax system for 2026+:
+ * - 0% for property value up to €40,000 (€50,000 for families with 3+ children or disabled child)
+ * - 0.1% for value between €40,000 and €200,000 (€50,000 to €250,000 for qualifying families)
+ * - 0.2% for value between €200,000 and €400,000 (€250,000 to €500,000 for qualifying families)
+ * - 0.5% for value between €400,000 and €600,000 (€500,000 to €750,000 for qualifying families)
+ * - 1% for value exceeding €600,000 (€750,000 for qualifying families)
+ * 
+ * Primary residence relief:
+ * - 50% reduction (75% for qualifying families) on tax for primary residence up to €450,000
+ * - Minimum tax amount: €5 (tax is not collected if below this amount)
  */
 export function calculateProposedTax(formData: CalculatorFormData): ProposedTaxCalculationResult {
   const { 
@@ -236,24 +247,36 @@ export function calculateProposedTax(formData: CalculatorFormData): ProposedTaxC
     const bracket3Limit = isFamilyAdjusted ? 750000 : 600000;
     
     // Calculate tax for each bracket
-    if (taxableBase <= bracket1Limit) {
+    if (taxableBase <= (bracket1Limit - adjustedThreshold)) {
       // Only bracket 1 applies
       initialTax = taxableBase * PROPOSED_BRACKET_1_RATE;
-    } else if (taxableBase <= bracket2Limit) {
+    } else if (taxableBase <= (bracket2Limit - adjustedThreshold)) {
       // Brackets 1 and 2 apply
-      initialTax = (bracket1Limit * PROPOSED_BRACKET_1_RATE) + 
-                  ((taxableBase - bracket1Limit) * PROPOSED_BRACKET_2_RATE);
-    } else if (taxableBase <= bracket3Limit) {
+      const bracket1Amount = (bracket1Limit - adjustedThreshold);
+      const bracket2Amount = taxableBase - bracket1Amount;
+      
+      initialTax = (bracket1Amount * PROPOSED_BRACKET_1_RATE) + 
+                  (bracket2Amount * PROPOSED_BRACKET_2_RATE);
+    } else if (taxableBase <= (bracket3Limit - adjustedThreshold)) {
       // Brackets 1, 2, and 3 apply
-      initialTax = (bracket1Limit * PROPOSED_BRACKET_1_RATE) + 
-                  ((bracket2Limit - bracket1Limit) * PROPOSED_BRACKET_2_RATE) + 
-                  ((taxableBase - bracket2Limit) * PROPOSED_BRACKET_3_RATE);
+      const bracket1Amount = (bracket1Limit - adjustedThreshold);
+      const bracket2Amount = (bracket2Limit - bracket1Limit);
+      const bracket3Amount = taxableBase - (bracket1Amount + bracket2Amount);
+      
+      initialTax = (bracket1Amount * PROPOSED_BRACKET_1_RATE) + 
+                  (bracket2Amount * PROPOSED_BRACKET_2_RATE) + 
+                  (bracket3Amount * PROPOSED_BRACKET_3_RATE);
     } else {
       // All brackets apply
-      initialTax = (bracket1Limit * PROPOSED_BRACKET_1_RATE) + 
-                  ((bracket2Limit - bracket1Limit) * PROPOSED_BRACKET_2_RATE) + 
-                  ((bracket3Limit - bracket2Limit) * PROPOSED_BRACKET_3_RATE) + 
-                  ((taxableBase - bracket3Limit) * PROPOSED_BRACKET_4_RATE);
+      const bracket1Amount = (bracket1Limit - adjustedThreshold);
+      const bracket2Amount = (bracket2Limit - bracket1Limit);
+      const bracket3Amount = (bracket3Limit - bracket2Limit);
+      const bracket4Amount = taxableBase - (bracket1Amount + bracket2Amount + bracket3Amount);
+      
+      initialTax = (bracket1Amount * PROPOSED_BRACKET_1_RATE) + 
+                  (bracket2Amount * PROPOSED_BRACKET_2_RATE) + 
+                  (bracket3Amount * PROPOSED_BRACKET_3_RATE) + 
+                  (bracket4Amount * PROPOSED_BRACKET_4_RATE);
     }
   }
   
@@ -268,13 +291,52 @@ export function calculateProposedTax(formData: CalculatorFormData): ProposedTaxC
     const reliefPercentage = isFamilyAdjusted ? 
       PROPOSED_PRIMARY_RESIDENCE_RELIEF_FAMILY : PROPOSED_PRIMARY_RESIDENCE_RELIEF_STANDARD;
     
-    // Calculate the portion of tax attributable to primary residence
-    // (limited to the value up to PROPOSED_PRIMARY_RESIDENCE_RELIEF_MAX_VALUE)
-    const reliefEligibleValue = Math.min(primaryResidenceValue, PROPOSED_PRIMARY_RESIDENCE_RELIEF_MAX_VALUE);
-    const primaryResidencePortion = totalPropertyValue > 0 ? reliefEligibleValue / totalPropertyValue : 0;
+    // Calculate tax for primary residence only
+    const primaryResidenceTaxableValue = Math.max(0, Math.min(primaryResidenceValue, PROPOSED_PRIMARY_RESIDENCE_RELIEF_MAX_VALUE) - adjustedThreshold);
+    let primaryResidenceTax = 0;
     
-    // Calculate relief amount (excluding abandoned property tax)
-    reliefAmount = (initialTax - abandonedTax) * primaryResidencePortion * reliefPercentage;
+    if (primaryResidenceTaxableValue > 0) {
+      // Determine bracket limits based on family status
+      const bracket1Limit = isFamilyAdjusted ? 250000 : 200000;
+      const bracket2Limit = isFamilyAdjusted ? 500000 : 400000;
+      const bracket3Limit = isFamilyAdjusted ? 750000 : 600000;
+      
+      // Calculate tax for each bracket for primary residence
+      if (primaryResidenceTaxableValue <= (bracket1Limit - adjustedThreshold)) {
+        // Only bracket 1 applies
+        primaryResidenceTax = primaryResidenceTaxableValue * PROPOSED_BRACKET_1_RATE;
+      } else if (primaryResidenceTaxableValue <= (bracket2Limit - adjustedThreshold)) {
+        // Brackets 1 and 2 apply
+        const bracket1Amount = (bracket1Limit - adjustedThreshold);
+        const bracket2Amount = primaryResidenceTaxableValue - bracket1Amount;
+        
+        primaryResidenceTax = (bracket1Amount * PROPOSED_BRACKET_1_RATE) + 
+                        (bracket2Amount * PROPOSED_BRACKET_2_RATE);
+      } else if (primaryResidenceTaxableValue <= (bracket3Limit - adjustedThreshold)) {
+        // Brackets 1, 2, and 3 apply
+        const bracket1Amount = (bracket1Limit - adjustedThreshold);
+        const bracket2Amount = (bracket2Limit - bracket1Limit);
+        const bracket3Amount = primaryResidenceTaxableValue - (bracket1Amount + bracket2Amount);
+        
+        primaryResidenceTax = (bracket1Amount * PROPOSED_BRACKET_1_RATE) + 
+                        (bracket2Amount * PROPOSED_BRACKET_2_RATE) + 
+                        (bracket3Amount * PROPOSED_BRACKET_3_RATE);
+      } else {
+        // All brackets apply
+        const bracket1Amount = (bracket1Limit - adjustedThreshold);
+        const bracket2Amount = (bracket2Limit - bracket1Limit);
+        const bracket3Amount = (bracket3Limit - bracket2Limit);
+        const bracket4Amount = primaryResidenceTaxableValue - (bracket1Amount + bracket2Amount + bracket3Amount);
+        
+        primaryResidenceTax = (bracket1Amount * PROPOSED_BRACKET_1_RATE) + 
+                        (bracket2Amount * PROPOSED_BRACKET_2_RATE) + 
+                        (bracket3Amount * PROPOSED_BRACKET_3_RATE) + 
+                        (bracket4Amount * PROPOSED_BRACKET_4_RATE);
+      }
+    }
+    
+    // Calculate relief amount based on the tax for primary residence
+    reliefAmount = primaryResidenceTax * reliefPercentage;
   }
   
   // Calculate final tax after relief

@@ -1,6 +1,7 @@
-import React, { Suspense, lazy } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import React, { Suspense, lazy, useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
+import { trackPageView } from './utils/analytics'
 
 // Lazy load pages for better performance
 const Projects = lazy(() => import('./pages/Projects'))
@@ -11,6 +12,13 @@ const Home = lazy(() => import('./pages/Home'))
 import Layout from './components/Layout'
 
 const App: React.FC = () => {
+  const location = useLocation();
+
+  // Track page views when location changes
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location]);
+
   return (
     <ThemeProvider>
       <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>

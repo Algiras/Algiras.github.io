@@ -7,6 +7,7 @@ A React application for calculating Lithuanian real estate taxes under current a
 - Compare current (2023-2025) and proposed (2026+) Lithuanian real estate tax systems
 - Calculate taxes based on property values, ownership status, and other factors
 - Multilingual support (English, Lithuanian, German)
+- Google Analytics 4 integration with privacy-focused consent management
 - Detailed tax calculation explanations
 
 ## Development

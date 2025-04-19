@@ -178,7 +178,14 @@ const CalculatorResults: React.FC<CalculatorResultsProps> = ({
             </div>
             
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <span className="text-xs text-gray-600 mr-2">{t('calculator.results.threshold')}:</span>
+              <span className="text-xs text-gray-600 mr-2">{t('calculator.results.thresholdPerPerson')}:</span>
+              <span className="text-sm font-medium text-gray-900 text-right">
+                {formatCurrency(formData.isFamilyAdjusted ? 50000 : 40000)}
+              </span>
+            </div>
+            
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <span className="text-xs text-gray-600 mr-2">{t('calculator.results.totalThreshold')}:</span>
               <span className="text-sm font-medium text-gray-900 text-right">{formatCurrency(proposedResults.threshold)}</span>
             </div>
             
@@ -193,7 +200,10 @@ const CalculatorResults: React.FC<CalculatorResultsProps> = ({
             </div>
             
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <span className="text-xs text-gray-600 mr-2">{t('calculator.results.primaryResidenceRelief')}:</span>
+              <span className="text-xs text-gray-600 mr-2">
+                {t('calculator.results.primaryResidenceRelief')} 
+                ({formData.isFamilyAdjusted ? '75%' : '50%'}):
+              </span>
               <span className="text-sm font-medium text-gray-900 text-right">{formatCurrency(proposedResults.reliefAmount)}</span>
             </div>
             

@@ -5,15 +5,21 @@ import './index.css'
 import { HashRouter } from 'react-router-dom'
 import './i18n/i18n' // Import i18n configuration
 import * as Sentry from "@sentry/react";
+import { initializeAnalytics } from './utils/analytics';
+import { SENTRY_DSN, APP_VERSION } from './constants/config';
 
+// Initialize Sentry for error tracking
 Sentry.init({
-    dsn: "https://43828e1e77df99cff727020a2bda77ef@o4509176327241728.ingest.de.sentry.io/4509176331173968",
+    dsn: SENTRY_DSN,
     integrations: [],
     // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring
     tracesSampleRate: 1.0,
     // Enable source maps for better error reporting
-    release: "algiras-github-io@1.0.0", // Replace with your actual version
+    release: APP_VERSION,
 });
+
+// Initialize Google Analytics if user has given consent
+initializeAnalytics();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

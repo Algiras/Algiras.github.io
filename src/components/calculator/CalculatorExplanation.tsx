@@ -226,10 +226,10 @@ const CalculatorExplanation: React.FC<CalculatorExplanationProps> = ({
           {proposedResults.taxableBase > 0 ? (
             <ExplanationSection title={t('calculator.explanation.initialStandardTaxTitle')}>
               {renderTaxRates([
-                { key: 'calculator.explanation.proposedRateStandard1' },
-                { key: 'calculator.explanation.proposedRateStandard2' },
-                { key: 'calculator.explanation.proposedRateStandard3' },
-                { key: 'calculator.explanation.proposedRateStandard4' }
+                { key: 'calculator.explanation.proposedRateStandard1', params: { threshold: proposedThresholdBasis, limit: formData.isFamilyAdjusted ? 250000 : 200000 } },
+                { key: 'calculator.explanation.proposedRateStandard2', params: { limit1: formData.isFamilyAdjusted ? 250000 : 200000, limit2: formData.isFamilyAdjusted ? 500000 : 400000 } },
+                { key: 'calculator.explanation.proposedRateStandard3', params: { limit1: formData.isFamilyAdjusted ? 500000 : 400000, limit2: formData.isFamilyAdjusted ? 750000 : 600000 } },
+                { key: 'calculator.explanation.proposedRateStandard4', params: { limit: formData.isFamilyAdjusted ? 750000 : 600000 } }
               ])}
               <p className="text-xs text-gray-500 italic mt-2">
                 {t('calculator.explanation.resultBeforeExemptions', { value: formatCurrency(proposedResults.initialTax) })}
@@ -244,6 +244,11 @@ const CalculatorExplanation: React.FC<CalculatorExplanationProps> = ({
           {formData.primaryResidenceValue > 0 && proposedResults.reliefAmount > 0 && (
             <ExplanationSection title={t('calculator.explanation.primaryResidenceReliefTitle')}>
               <p>{t('calculator.explanation.primaryResidenceReliefDescription', { primaryValue: formatCurrency(formData.primaryResidenceValue) })}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {formData.isFamilyAdjusted 
+                  ? t('calculator.explanation.primaryResidenceReliefFamilyRate', { rate: '75%', maxValue: formatCurrency(450000) })
+                  : t('calculator.explanation.primaryResidenceReliefStandardRate', { rate: '50%', maxValue: formatCurrency(450000) })}
+              </p>
               <CalcRow
                 label={t('calculator.explanation.estimatedReliefAmount')}
                 result={formatCurrency(proposedResults.reliefAmount)}
