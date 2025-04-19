@@ -14,7 +14,7 @@ i18n
   // init i18next
   .init({
     debug: true,
-    fallbackLng: 'en',
+    fallbackLng: 'lt',
     keySeparator: false, // Use flat keys instead of nested ones
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
@@ -31,7 +31,9 @@ i18n
       }
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage', 'navigator', 'querystring', 'htmlTag'],
+      lookupQuerystring: 'lng',
+      lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
     },
     react: {
