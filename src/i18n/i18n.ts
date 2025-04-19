@@ -35,6 +35,8 @@ i18n
       lookupQuerystring: 'lng',
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
+      // Handle locale variants like en-US → en
+      convertDetectedLanguage: (lng) => lng.split('-')[0]
     },
     react: {
       useSuspense: false // Prevent issues during development
@@ -44,6 +46,11 @@ i18n
       console.warn(`Missing translation key: ${key} for language: ${lng} in namespace: ${ns}`);
     }
   });
+
+// Force Lithuanian language for first-time visitors
+if (!localStorage.getItem('i18nextLng')) {
+  i18n.changeLanguage('lt');
+}
 
 // Log loaded resources for debugging
 console.log('Loaded translations:', {
