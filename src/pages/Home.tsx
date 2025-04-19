@@ -34,12 +34,27 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-
-      <section id="summary" className="mb-10">
-        <h2><i className="fas fa-user-alt"></i>{t('cv.sections.summary')}</h2>
-        <p className="text-slate-700 leading-relaxed text-base">
-          {t('cv.summary.text')}
+      <section id="programming-interests" className="mb-10">
+        <h2><i className="fas fa-code"></i>{t('cv.sections.programming')}</h2>
+        <p className="text-slate-700 leading-relaxed text-base mb-4">
+          {t('cv.programming.general')}
         </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-slate-50 p-4 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-indigo-600 mb-2">
+              <i className="fas fa-project-diagram mr-2"></i>
+              {t('cv.programming.functional.title')}
+            </h3>
+            <p className="text-slate-700">{t('cv.programming.functional.description')}</p>
+          </div>
+          <div className="bg-slate-50 p-4 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold text-indigo-600 mb-2">
+              <i className="fas fa-robot mr-2"></i>
+              {t('cv.programming.ai.title')}
+            </h3>
+            <p className="text-slate-700">{t('cv.programming.ai.description')}</p>
+          </div>
+        </div>
       </section>
 
     </div>
