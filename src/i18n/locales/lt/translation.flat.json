@@ -101,6 +101,8 @@
   "calculator.results.familyAdjustment": "Šeimos lengvata",
   "calculator.results.lowIncome": "Mažos pajamos",
   "calculator.results.totalValue": "Bendra vertė",
+  "calculator.results.thresholdPerPerson": "Neapmokestinama riba vienam asmeniui",
+  "calculator.results.totalThreshold": "Bendra neapmokestinama riba",
   "calculator.results.currentRules": "Dabartiniai įstatymai (2023-2025)",
   "calculator.results.abandonedTax": "Apleisto turto mokestis",
   "calculator.results.standardTaxLabel": "Standartinis turto mokestis",

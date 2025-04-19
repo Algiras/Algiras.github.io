@@ -117,6 +117,8 @@
   "calculator.results.familyAdjustment": "Family Adjustment",
   "calculator.results.lowIncome": "Low Income",
   "calculator.results.totalValue": "Total Value",
+  "calculator.results.thresholdPerPerson": "Threshold Per Person",
+  "calculator.results.totalThreshold": "Total Threshold",
   "calculator.results.currentRules": "Current Laws (2023-2025)",
   "calculator.results.abandonedTax": "Abandoned Property Tax",
   "calculator.results.standardTaxLabel": "Standard Property Tax",

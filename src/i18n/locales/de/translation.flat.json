@@ -101,6 +101,8 @@
   "calculator.results.familyAdjustment": "Familienanpassung",
   "calculator.results.lowIncome": "Niedriges Einkommen",
   "calculator.results.totalValue": "Gesamtwert",
+  "calculator.results.thresholdPerPerson": "Freibetrag pro Person",
+  "calculator.results.totalThreshold": "Gesamtfreibetrag",
   "calculator.results.currentRules": "Aktuelle Gesetze (2023-2025)",
   "calculator.results.abandonedTax": "Steuer auf verlassene Immobilien",
   "calculator.results.standardTaxLabel": "Standardimmobiliensteuer",
