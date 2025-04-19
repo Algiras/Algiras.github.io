@@ -40,32 +40,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.11.6, @babel/core@npm:^7.12.3, @babel/core@npm:^7.23.9, @babel/core@npm:^7.26.10":
+"@babel/core@npm:^7.11.6, @babel/core@npm:^7.12.3, @babel/core@npm:^7.18.5, @babel/core@npm:^7.23.9, @babel/core@npm:^7.26.10":
   version: 7.26.10
   resolution: "@babel/core@npm:7.26.10"
-  dependencies:
-    "@ampproject/remapping": ^2.2.0
-    "@babel/code-frame": ^7.26.2
-    "@babel/generator": ^7.26.10
-    "@babel/helper-compilation-targets": ^7.26.5
-    "@babel/helper-module-transforms": ^7.26.0
-    "@babel/helpers": ^7.26.10
-    "@babel/parser": ^7.26.10
-    "@babel/template": ^7.26.9
-    "@babel/traverse": ^7.26.10
-    "@babel/types": ^7.26.10
-    convert-source-map: ^2.0.0
-    debug: ^4.1.0
-    gensync: ^1.0.0-beta.2
-    json5: ^2.2.3
-    semver: ^6.3.1
-  checksum: e046e0e988ab53841b512ee9d263ca409f6c46e2a999fe53024688b92db394346fa3aeae5ea0866331f62133982eee05a675d22922a4603c3f603aa09a581d62
-  languageName: node
-  linkType: hard
-
-"@babel/core@npm:^7.18.5":
-  version: 7.26.10
-  resolution: "@babel/core@npm:7.26.10::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40babel%2Fcore%2F-%2Fcore-7.26.10.tgz"
   dependencies:
     "@ampproject/remapping": ^2.2.0
     "@babel/code-frame": ^7.26.2
@@ -964,16 +941,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jridgewell/sourcemap-codec@npm:^1.4.10, @jridgewell/sourcemap-codec@npm:^1.4.14":
+"@jridgewell/sourcemap-codec@npm:^1.4.10, @jridgewell/sourcemap-codec@npm:^1.4.14, @jridgewell/sourcemap-codec@npm:^1.4.15":
   version: 1.5.0
   resolution: "@jridgewell/sourcemap-codec@npm:1.5.0"
-  checksum: 2eb864f276eb1096c3c11da3e9bb518f6d9fc0023c78344cdc037abadc725172c70314bdb360f2d4b7bffec7f5d657ce006816bc5d4ecb35e61b66132db00c18
-  languageName: node
-  linkType: hard
-
-"@jridgewell/sourcemap-codec@npm:^1.4.15":
-  version: 1.5.0
-  resolution: "@jridgewell/sourcemap-codec@npm:1.5.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40jridgewell%2Fsourcemap-codec%2F-%2Fsourcemap-codec-1.5.0.tgz"
   checksum: 2eb864f276eb1096c3c11da3e9bb518f6d9fc0023c78344cdc037abadc725172c70314bdb360f2d4b7bffec7f5d657ce006816bc5d4ecb35e61b66132db00c18
   languageName: node
   linkType: hard
@@ -1091,7 +1061,7 @@ __metadata:
 
 "@sentry-internal/tracing@npm:7.120.3":
   version: 7.120.3
-  resolution: "@sentry-internal/tracing@npm:7.120.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry-internal%2Ftracing%2F-%2Ftracing-7.120.3.tgz"
+  resolution: "@sentry-internal/tracing@npm:7.120.3"
   dependencies:
     "@sentry/core": 7.120.3
     "@sentry/types": 7.120.3
@@ -1102,12 +1072,12 @@ __metadata:
 
 "@sentry/babel-plugin-component-annotate@npm:3.3.1":
   version: 3.3.1
-  resolution: "@sentry/babel-plugin-component-annotate@npm:3.3.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fbabel-plugin-component-annotate%2F-%2Fbabel-plugin-component-annotate-3.3.1.tgz"
+  resolution: "@sentry/babel-plugin-component-annotate@npm:3.3.1"
   checksum: f7be2e93be57f6391cbf01b04f0ccb5fc60f939cd3b834269748b70c38cc9dbaba288539afa19f066b9b4bf32cf6c3ef7ad86505d8370d5ac062bfd93940c7a1
   languageName: node
   linkType: hard
 
-"@sentry/browser@npm:9.13.0":
+"@sentry/browser@npm:9.13.0, @sentry/browser@npm:^9.13.0":
   version: 9.13.0
   resolution: "@sentry/browser@npm:9.13.0"
   dependencies:
@@ -1120,22 +1090,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/browser@npm:^9.13.0":
-  version: 9.13.0
-  resolution: "@sentry/browser@npm:9.13.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fbrowser%2F-%2Fbrowser-9.13.0.tgz"
-  dependencies:
-    "@sentry-internal/browser-utils": 9.13.0
-    "@sentry-internal/feedback": 9.13.0
-    "@sentry-internal/replay": 9.13.0
-    "@sentry-internal/replay-canvas": 9.13.0
-    "@sentry/core": 9.13.0
-  checksum: 0e1126be2546c9f99d2c883e8f1f1ede427e186d05f7d940f8e5374757a884d4e82a193da29face5cf07c3f1ec05206d09a04ceebd264b77419c92096de76162
-  languageName: node
-  linkType: hard
-
 "@sentry/bundler-plugin-core@npm:3.3.1":
   version: 3.3.1
-  resolution: "@sentry/bundler-plugin-core@npm:3.3.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fbundler-plugin-core%2F-%2Fbundler-plugin-core-3.3.1.tgz"
+  resolution: "@sentry/bundler-plugin-core@npm:3.3.1"
   dependencies:
     "@babel/core": ^7.18.5
     "@sentry/babel-plugin-component-annotate": 3.3.1
@@ -1151,56 +1108,56 @@ __metadata:
 
 "@sentry/cli-darwin@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli-darwin@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli-darwin%2F-%2Fcli-darwin-2.42.2.tgz"
+  resolution: "@sentry/cli-darwin@npm:2.42.2"
   conditions: os=darwin
   languageName: node
   linkType: hard
 
 "@sentry/cli-linux-arm64@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli-linux-arm64@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli-linux-arm64%2F-%2Fcli-linux-arm64-2.42.2.tgz"
+  resolution: "@sentry/cli-linux-arm64@npm:2.42.2"
   conditions: (os=linux | os=freebsd) & cpu=arm64
   languageName: node
   linkType: hard
 
 "@sentry/cli-linux-arm@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli-linux-arm@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli-linux-arm%2F-%2Fcli-linux-arm-2.42.2.tgz"
+  resolution: "@sentry/cli-linux-arm@npm:2.42.2"
   conditions: (os=linux | os=freebsd) & cpu=arm
   languageName: node
   linkType: hard
 
 "@sentry/cli-linux-i686@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli-linux-i686@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli-linux-i686%2F-%2Fcli-linux-i686-2.42.2.tgz"
+  resolution: "@sentry/cli-linux-i686@npm:2.42.2"
   conditions: (os=linux | os=freebsd) & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
 "@sentry/cli-linux-x64@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli-linux-x64@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli-linux-x64%2F-%2Fcli-linux-x64-2.42.2.tgz"
+  resolution: "@sentry/cli-linux-x64@npm:2.42.2"
   conditions: (os=linux | os=freebsd) & cpu=x64
   languageName: node
   linkType: hard
 
 "@sentry/cli-win32-i686@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli-win32-i686@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli-win32-i686%2F-%2Fcli-win32-i686-2.42.2.tgz"
+  resolution: "@sentry/cli-win32-i686@npm:2.42.2"
   conditions: os=win32 & (cpu=x86 | cpu=ia32)
   languageName: node
   linkType: hard
 
 "@sentry/cli-win32-x64@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli-win32-x64@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli-win32-x64%2F-%2Fcli-win32-x64-2.42.2.tgz"
+  resolution: "@sentry/cli-win32-x64@npm:2.42.2"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
 "@sentry/cli@npm:2.42.2":
   version: 2.42.2
-  resolution: "@sentry/cli@npm:2.42.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcli%2F-%2Fcli-2.42.2.tgz"
+  resolution: "@sentry/cli@npm:2.42.2"
   dependencies:
     "@sentry/cli-darwin": 2.42.2
     "@sentry/cli-linux-arm": 2.42.2
@@ -1237,7 +1194,7 @@ __metadata:
 
 "@sentry/core@npm:7.120.3":
   version: 7.120.3
-  resolution: "@sentry/core@npm:7.120.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fcore%2F-%2Fcore-7.120.3.tgz"
+  resolution: "@sentry/core@npm:7.120.3"
   dependencies:
     "@sentry/types": 7.120.3
     "@sentry/utils": 7.120.3
@@ -1267,7 +1224,7 @@ __metadata:
 
 "@sentry/tracing@npm:^7.120.3":
   version: 7.120.3
-  resolution: "@sentry/tracing@npm:7.120.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Ftracing%2F-%2Ftracing-7.120.3.tgz"
+  resolution: "@sentry/tracing@npm:7.120.3"
   dependencies:
     "@sentry-internal/tracing": 7.120.3
   checksum: 181f7414f61286f4af54b56d750957a1b70dd424d119e2623e45ac9358d0c82c31fdb291ebdf8ee10b8211493b711f5ef5e82ca4b2eff680b38cbeb3ce09d402
@@ -1276,14 +1233,14 @@ __metadata:
 
 "@sentry/types@npm:7.120.3":
   version: 7.120.3
-  resolution: "@sentry/types@npm:7.120.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Ftypes%2F-%2Ftypes-7.120.3.tgz"
+  resolution: "@sentry/types@npm:7.120.3"
   checksum: f7c4a46c72dd66a88053d579ad5a0137eaf6882dfe5e942828e750ad80fd8fe98ceec1a6328dfcf31f5a56849dda8ee27f7419125f905f19751119b9662dbdcb
   languageName: node
   linkType: hard
 
 "@sentry/utils@npm:7.120.3":
   version: 7.120.3
-  resolution: "@sentry/utils@npm:7.120.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Futils%2F-%2Futils-7.120.3.tgz"
+  resolution: "@sentry/utils@npm:7.120.3"
   dependencies:
     "@sentry/types": 7.120.3
   checksum: 15a1e0a0d29aae668023f68f4b3e4b3bd5353b5f033874d2bf51264206f05036e68b8d6d88078cf807fbb051c20244b1ac73b19a875da76a97e635a38b9fd180
@@ -1292,7 +1249,7 @@ __metadata:
 
 "@sentry/vite-plugin@npm:^3.3.1":
   version: 3.3.1
-  resolution: "@sentry/vite-plugin@npm:3.3.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2F%40sentry%2Fvite-plugin%2F-%2Fvite-plugin-3.3.1.tgz"
+  resolution: "@sentry/vite-plugin@npm:3.3.1"
   dependencies:
     "@sentry/bundler-plugin-core": 3.3.1
     unplugin: 1.0.1
@@ -1643,16 +1600,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.8.1":
-  version: 8.14.1
-  resolution: "acorn@npm:8.14.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Facorn%2F-%2Facorn-8.14.1.tgz"
-  bin:
-    acorn: bin/acorn
-  checksum: dbd36c1ed1d2fa3550140000371fcf721578095b18777b85a79df231ca093b08edc6858d75d6e48c73e431c174dcf9214edbd7e6fa5911b93bd8abfa54e47123
-  languageName: node
-  linkType: hard
-
-"acorn@npm:^8.9.0":
+"acorn@npm:^8.8.1, acorn@npm:^8.9.0":
   version: 8.14.1
   resolution: "acorn@npm:8.14.1"
   bin:
@@ -1663,7 +1611,7 @@ __metadata:
 
 "agent-base@npm:6":
   version: 6.0.2
-  resolution: "agent-base@npm:6.0.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fagent-base%2F-%2Fagent-base-6.0.2.tgz"
+  resolution: "agent-base@npm:6.0.2"
   dependencies:
     debug: 4
   checksum: dc4f757e40b5f3e3d674bc9beb4f1048f4ee83af189bae39be99f57bf1f48dde166a8b0a5342a84b5944ee8e6ed1e5a9d801858f4ad44764e84957122fe46261
@@ -2039,26 +1987,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:^3.5.3":
-  version: 3.6.0
-  resolution: "chokidar@npm:3.6.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fchokidar%2F-%2Fchokidar-3.6.0.tgz"
-  dependencies:
-    anymatch: ~3.1.2
-    braces: ~3.0.2
-    fsevents: ~2.3.2
-    glob-parent: ~5.1.2
-    is-binary-path: ~2.1.0
-    is-glob: ~4.0.1
-    normalize-path: ~3.0.0
-    readdirp: ~3.6.0
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  checksum: 8361dcd013f2ddbe260eacb1f3cb2f2c6f2b0ad118708a343a5ed8158941a39cb8fb1d272e0f389712e74ee90ce8ba864eece9e0e62b9705cb468a2f6d917462
-  languageName: node
-  linkType: hard
-
-"chokidar@npm:^3.6.0":
+"chokidar@npm:^3.5.3, chokidar@npm:^3.6.0":
   version: 3.6.0
   resolution: "chokidar@npm:3.6.0"
   dependencies:
@@ -2290,7 +2219,7 @@ __metadata:
 
 "dotenv@npm:^16.3.1":
   version: 16.5.0
-  resolution: "dotenv@npm:16.5.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fdotenv%2F-%2Fdotenv-16.5.0.tgz"
+  resolution: "dotenv@npm:16.5.0"
   checksum: 5bc94c919fbd955bf0ba44d33922a1e93d1078e64a1db5c30faeded1d996e7a83c55332cb8ea4fae5a9ca4d0be44cbceb95c5811e70f9f095298df09d1997dd9
   languageName: node
   linkType: hard
@@ -2314,9 +2243,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.73":
-  version: 1.5.138
-  resolution: "electron-to-chromium@npm:1.5.138"
-  checksum: f8e8b334857c3f858bb9ba1fa78b211e4174682fcc62316669a7cad6c86bbd01883a6433841b32effec694f90542bc439f28926826bb7e48d285ba951b4772ec
+  version: 1.5.139
+  resolution: "electron-to-chromium@npm:1.5.139"
+  checksum: 1b468c0c02a38322261b50b12ed090ff792a0d2ea24f299368babd484d5b81829528540463158572a3524fd835014d877d6c4bf097509bdb13ca696609b04aca
   languageName: node
   linkType: hard
 
@@ -2704,14 +2633,14 @@ __metadata:
   linkType: hard
 
 "fdir@npm:^6.4.3":
-  version: 6.4.3
-  resolution: "fdir@npm:6.4.3"
+  version: 6.4.4
+  resolution: "fdir@npm:6.4.4"
   peerDependencies:
     picomatch: ^3 || ^4
   peerDependenciesMeta:
     picomatch:
       optional: true
-  checksum: d13c10120e9625adf21d8d80481586200759928c19405a816b77dd28eaeb80e7c59c5def3e2941508045eb06d34eb47fad865ccc8bf98e6ab988bb0ed160fb6f
+  checksum: 6ccc33be16945ee7bc841e1b4178c0b4cf18d3804894cb482aa514651c962a162f96da7ffc6ebfaf0df311689fb70091b04dd6caffe28d56b9ebdc0e7ccadfdd
   languageName: node
   linkType: hard
 
@@ -2917,7 +2846,7 @@ __metadata:
 
 "glob@npm:^9.3.2":
   version: 9.3.5
-  resolution: "glob@npm:9.3.5::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fglob%2F-%2Fglob-9.3.5.tgz"
+  resolution: "glob@npm:9.3.5"
   dependencies:
     fs.realpath: ^1.0.0
     minimatch: ^8.0.2
@@ -3031,7 +2960,7 @@ __metadata:
 
 "https-proxy-agent@npm:^5.0.0":
   version: 5.0.1
-  resolution: "https-proxy-agent@npm:5.0.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fhttps-proxy-agent%2F-%2Fhttps-proxy-agent-5.0.1.tgz"
+  resolution: "https-proxy-agent@npm:5.0.1"
   dependencies:
     agent-base: 6
     debug: 4
@@ -4001,7 +3930,7 @@ __metadata:
 
 "magic-string@npm:0.30.8":
   version: 0.30.8
-  resolution: "magic-string@npm:0.30.8::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fmagic-string%2F-%2Fmagic-string-0.30.8.tgz"
+  resolution: "magic-string@npm:0.30.8"
   dependencies:
     "@jridgewell/sourcemap-codec": ^1.4.15
   checksum: 51a1f06f678c082aceddfb5943de9b6bdb88f2ea1385a1c2adf116deb73dfcfa50df6c222901d691b529455222d4d68d0b28be5689ac6f69b3baa3462861f922
@@ -4112,7 +4041,7 @@ __metadata:
 
 "minimatch@npm:^8.0.2":
   version: 8.0.4
-  resolution: "minimatch@npm:8.0.4::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fminimatch%2F-%2Fminimatch-8.0.4.tgz"
+  resolution: "minimatch@npm:8.0.4"
   dependencies:
     brace-expansion: ^2.0.1
   checksum: a0a394c356dd5b4cb7f821720841a82fa6f07c9c562c5b716909d1b6ec5e56a7e4c4b5029da26dd256b7d2b3a3f38cbf9ddd8680e887b9b5282b09c05501c1ca
@@ -4190,7 +4119,7 @@ __metadata:
 
 "minipass@npm:^4.2.4":
   version: 4.2.8
-  resolution: "minipass@npm:4.2.8::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fminipass%2F-%2Fminipass-4.2.8.tgz"
+  resolution: "minipass@npm:4.2.8"
   checksum: 4ea76b030d97079f4429d6e8a8affd90baf1b6a1898977c8ccce4701c5a2ba2792e033abc6709373f25c2c4d4d95440d9d5e9464b46b7b76ca44d2ce26d939ce
   languageName: node
   linkType: hard
@@ -4263,7 +4192,7 @@ __metadata:
 
 "node-fetch@npm:^2.6.7":
   version: 2.7.0
-  resolution: "node-fetch@npm:2.7.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fnode-fetch%2F-%2Fnode-fetch-2.7.0.tgz"
+  resolution: "node-fetch@npm:2.7.0"
   dependencies:
     whatwg-url: ^5.0.0
   peerDependencies:
@@ -4495,19 +4424,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-scurry@npm:^1.11.1":
+"path-scurry@npm:^1.11.1, path-scurry@npm:^1.6.1":
   version: 1.11.1
   resolution: "path-scurry@npm:1.11.1"
-  dependencies:
-    lru-cache: ^10.2.0
-    minipass: ^5.0.0 || ^6.0.2 || ^7.0.0
-  checksum: 32a13711a2a505616ae1cc1b5076801e453e7aae6ac40ab55b388bb91b9d0547a52f5aaceff710ea400205f18691120d4431e520afbe4266b836fadede15872d
-  languageName: node
-  linkType: hard
-
-"path-scurry@npm:^1.6.1":
-  version: 1.11.1
-  resolution: "path-scurry@npm:1.11.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fpath-scurry%2F-%2Fpath-scurry-1.11.1.tgz"
   dependencies:
     lru-cache: ^10.2.0
     minipass: ^5.0.0 || ^6.0.2 || ^7.0.0
@@ -4674,7 +4593,7 @@ __metadata:
 
 "progress@npm:^2.0.3":
   version: 2.0.3
-  resolution: "progress@npm:2.0.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fprogress%2F-%2Fprogress-2.0.3.tgz"
+  resolution: "progress@npm:2.0.3"
   checksum: 1697e07cb1068055dbe9fe858d242368ff5d2073639e652b75a7eb1f2a1a8d4afd404d719de23c7b48481a6aa0040686310e2dac2f53d776daa2176d3f96369c
   languageName: node
   linkType: hard
@@ -4701,7 +4620,7 @@ __metadata:
 
 "proxy-from-env@npm:^1.1.0":
   version: 1.1.0
-  resolution: "proxy-from-env@npm:1.1.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fproxy-from-env%2F-%2Fproxy-from-env-1.1.0.tgz"
+  resolution: "proxy-from-env@npm:1.1.0"
   checksum: fe7dd8b1bdbbbea18d1459107729c3e4a2243ca870d26d34c2c1bcd3e4425b7bcc5112362df2d93cc7fb9746f6142b5e272fd1cc5c86ddf8580175186f6ad42b
   languageName: node
   linkType: hard
@@ -4741,7 +4660,7 @@ __metadata:
 
 "react-ga4@npm:^2.1.0":
   version: 2.1.0
-  resolution: "react-ga4@npm:2.1.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Freact-ga4%2F-%2Freact-ga4-2.1.0.tgz"
+  resolution: "react-ga4@npm:2.1.0"
   checksum: 314aa86dd7cb868535f26bfb8b537d3b3c20649c66b2b942fba72e081295441446932a4ae96499231c8a4836ab0a222a97b1bd03633b8cc1477991efe93444cd
   languageName: node
   linkType: hard
@@ -5341,7 +5260,7 @@ __metadata:
 
 "tr46@npm:~0.0.3":
   version: 0.0.3
-  resolution: "tr46@npm:0.0.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Ftr46%2F-%2Ftr46-0.0.3.tgz"
+  resolution: "tr46@npm:0.0.3"
   checksum: 047cb209a6b60c742f05c9d3ace8fa510bff609995c129a37ace03476a9b12db4dbf975e74600830ef0796e18882b2381fb5fb1f6b4f96b832c374de3ab91a11
   languageName: node
   linkType: hard
@@ -5484,7 +5403,7 @@ __metadata:
 
 "unplugin@npm:1.0.1":
   version: 1.0.1
-  resolution: "unplugin@npm:1.0.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Funplugin%2F-%2Funplugin-1.0.1.tgz"
+  resolution: "unplugin@npm:1.0.1"
   dependencies:
     acorn: ^8.8.1
     chokidar: ^3.5.3
@@ -5593,28 +5512,28 @@ __metadata:
 
 "webidl-conversions@npm:^3.0.0":
   version: 3.0.1
-  resolution: "webidl-conversions@npm:3.0.1::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fwebidl-conversions%2F-%2Fwebidl-conversions-3.0.1.tgz"
+  resolution: "webidl-conversions@npm:3.0.1"
   checksum: 5612d5f3e54760a797052eb4927f0ddc01383550f542ccd33d5238cfd65aeed392a45ad38364970d0a0f4fea32e1f4d231b3d8dac4a3bdd385e5cf802ae097db
   languageName: node
   linkType: hard
 
 "webpack-sources@npm:^3.2.3":
   version: 3.2.3
-  resolution: "webpack-sources@npm:3.2.3::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fwebpack-sources%2F-%2Fwebpack-sources-3.2.3.tgz"
+  resolution: "webpack-sources@npm:3.2.3"
   checksum: 2ef63d77c4fad39de4a6db17323d75eb92897b32674e97d76f0a1e87c003882fc038571266ad0ef581ac734cbe20952912aaa26155f1905e96ce251adbb1eb4e
   languageName: node
   linkType: hard
 
 "webpack-virtual-modules@npm:^0.5.0":
   version: 0.5.0
-  resolution: "webpack-virtual-modules@npm:0.5.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fwebpack-virtual-modules%2F-%2Fwebpack-virtual-modules-0.5.0.tgz"
+  resolution: "webpack-virtual-modules@npm:0.5.0"
   checksum: 0742e069cd49d91ccd0b59431b3666903d321582c1b1062fa6bdae005c3538af55ff8787ea5eafbf72662f3496d3a879e2c705d55ca0af8283548a925be18484
   languageName: node
   linkType: hard
 
 "whatwg-url@npm:^5.0.0":
   version: 5.0.0
-  resolution: "whatwg-url@npm:5.0.0::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fwhatwg-url%2F-%2Fwhatwg-url-5.0.0.tgz"
+  resolution: "whatwg-url@npm:5.0.0"
   dependencies:
     tr46: ~0.0.3
     webidl-conversions: ^3.0.0
@@ -5622,20 +5541,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"which@npm:^2.0.1":
+"which@npm:^2.0.1, which@npm:^2.0.2":
   version: 2.0.2
   resolution: "which@npm:2.0.2"
-  dependencies:
-    isexe: ^2.0.0
-  bin:
-    node-which: ./bin/node-which
-  checksum: 66522872a768b60c2a65a57e8ad184e5372f5b6a9ca6d5f033d4b0dc98aff63995655a7503b9c0a2598936f532120e81dd8cc155e2e92ed662a2b9377cc4374f
-  languageName: node
-  linkType: hard
-
-"which@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "which@npm:2.0.2::__archiveUrl=https%3A%2F%2Fnpm.dev.wixpress.com%2Fapi%2Fnpm%2Fnpm-repos%2Fwhich%2F-%2Fwhich-2.0.2.tgz"
   dependencies:
     isexe: ^2.0.0
   bin:
