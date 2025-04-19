@@ -18,7 +18,7 @@ const DisclaimerAcknowledgment: React.FC<DisclaimerAcknowledgmentProps> = ({ onA
         <p className="mb-3">{t('calculator.disclaimer.notFinancialAdvice')}</p>
         <p className="mb-3">{t('calculator.disclaimer.personalTool')}</p>
         <p>{t('calculator.disclaimer.developerNote')} <a 
-          href="https://github.com/Algiras/Algiras.github.io" 
+          href="https://github.com/Algiras/Algiras.github.io/issues/new" 
           className="text-blue-600 hover:underline"
           target="_blank"
           rel="noopener noreferrer"
