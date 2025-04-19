@@ -120,6 +120,8 @@ const CalculatorResults: React.FC<CalculatorResultsProps> = ({
               <span className="text-sm font-medium text-gray-900 text-right">{formatCurrency(currentResults.threshold)}</span>
             </div>
             
+
+            
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-xs text-gray-600 mr-2">{t('calculator.results.taxableBase')}:</span>
               <span className="text-sm font-medium text-gray-900 text-right">{formatCurrency(currentResults.taxableBase)}</span>
@@ -142,6 +144,16 @@ const CalculatorResults: React.FC<CalculatorResultsProps> = ({
               <span className="text-base font-semibold text-gray-800">{t('calculator.results.finalTax')}:</span>
               <span className="text-base font-bold text-indigo-700 text-right">{formatCurrency(currentResults.finalTax)}</span>
             </div>
+            
+            {formData.numOwners > 1 && (
+              <div className="text-xs text-gray-600 text-right pt-1">
+                {t('calculator.results.multipleOwnersTaxNote', {
+                  totalTax: formatCurrency(currentResults.finalTax),
+                  numOwners: formData.numOwners,
+                  taxPerOwner: formatCurrency(currentResults.finalTax / formData.numOwners)
+                })}
+              </div>
+            )}
             
             {currentResults.minimumTaxRuleApplied && (
               <div className="text-xs text-green-600 text-right pt-1">{t('calculator.results.minimumTaxNote')}</div>
@@ -189,6 +201,8 @@ const CalculatorResults: React.FC<CalculatorResultsProps> = ({
               <span className="text-sm font-medium text-gray-900 text-right">{formatCurrency(proposedResults.threshold)}</span>
             </div>
             
+
+            
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
               <span className="text-xs text-gray-600 mr-2">{t('calculator.results.taxableBase')}:</span>
               <span className="text-sm font-medium text-gray-900 text-right">{formatCurrency(proposedResults.taxableBase)}</span>
@@ -219,6 +233,16 @@ const CalculatorResults: React.FC<CalculatorResultsProps> = ({
               <span className="text-base font-semibold text-gray-800">{t('calculator.results.finalTax')}:</span>
               <span className="text-base font-bold text-indigo-700 text-right">{formatCurrency(proposedResults.finalTax)}</span>
             </div>
+            
+            {formData.numOwners > 1 && (
+              <div className="text-xs text-gray-600 text-right pt-1">
+                {t('calculator.results.multipleOwnersTaxNote', {
+                  totalTax: formatCurrency(proposedResults.finalTax),
+                  numOwners: formData.numOwners,
+                  taxPerOwner: formatCurrency(proposedResults.finalTax / formData.numOwners)
+                })}
+              </div>
+            )}
             
             {proposedResults.minimumTaxRuleApplied && (
               <div className="text-xs text-green-600 text-right pt-1">{t('calculator.results.minimumTaxNote')}</div>

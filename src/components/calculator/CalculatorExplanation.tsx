@@ -295,6 +295,8 @@ const CalculatorExplanation: React.FC<CalculatorExplanationProps> = ({
         </div>
       </div>
       
+      {/* Examples have been moved to CalculatorDisclaimer.tsx next to 'Naudingi šaltiniai' section */}
+      
       {/* 3. Final Total Tax */}
       <ExplanationSection title={t('calculator.explanation.finalTaxCalculationTitle')}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

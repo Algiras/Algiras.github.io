@@ -168,19 +168,18 @@ describe('Tax Calculator - Proposed System (2026+) Examples', () => {
       expect(result.taxableBase).toBe(220000); // €300,000 - €80,000 = €220,000
       
       // Initial tax calculation
-      // First bracket: (€200,000 - €80,000) * 0.1% = €120
-      // Second bracket: (€220,000 - €200,000) * 0.2% = €40
-      // Total: €120 + €40 = €160 (actual implementation gives €320 due to different bracket calculation)
-      expect(result.initialTax).toBeCloseTo(320, 2);
+      // Per owner: (€150,000 - €40,000) * 0.1% = €110 per owner
+      // Total for both owners: €110 * 2 = €220
+      expect(result.initialTax).toBeCloseTo(220, 2);
       
       // Relief calculation
-      // Primary residence relief: €160 * 50% = €80 (actual implementation gives €160 due to different calculation)
-      expect(result.reliefAmount).toBeCloseTo(160, 2);
+      // Primary residence relief: €110 * 50% = €55 per owner
+      // Total relief for both owners: €55 * 2 = €110
+      expect(result.reliefAmount).toBeCloseTo(110, 2);
       
-      // Final tax: €320 - €160 = €160
-      // Note: The example says €110, but our calculation gives €160.
-      // This discrepancy is due to different calculation methods in the implementation.
-      expect(result.finalTax).toBeCloseTo(160, 2);
+      // Final tax: €220 - €110 = €110
+      // This matches the example where each spouse pays €55 for a total of €110
+      expect(result.finalTax).toBeCloseTo(110, 2);
     });
   });
 });

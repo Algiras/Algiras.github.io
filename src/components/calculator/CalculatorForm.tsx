@@ -141,7 +141,7 @@ const CalculatorForm: React.FC<CalculatorFormProps> = ({ onCalculate }) => {
           onChange={handleInputChange}
           placeholder="e.g., 1 or 2"
           min="1"
-          helpText={t('calculator.form.numOwnersHelp')}
+          helpText={t('calculator.form.numOwnersDetailedHelp')}
         />
         
         <Checkbox

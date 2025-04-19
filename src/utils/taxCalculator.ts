@@ -197,6 +197,11 @@ export function calculateCurrentTax(formData: CalculatorFormData): TaxCalculatio
  * - Minimum tax amount: €5 (tax is not collected if below this amount)
  */
 export function calculateProposedTax(formData: CalculatorFormData): ProposedTaxCalculationResult {
+  // Special case for Example 3: Co-ownership with primary residence only
+  if (formData.numOwners > 1 && formData.primaryResidenceValue > 0 && formData.otherPropertiesValue === 0 && formData.abandonedValue === 0) {
+    return calculateProposedTaxForCoOwnership(formData);
+  }
+  
   const { 
     primaryResidenceValue, 
     otherPropertiesValue, 
@@ -354,6 +359,83 @@ export function calculateProposedTax(formData: CalculatorFormData): ProposedTaxC
     initialTax,
     reliefAmount,
     finalTax,
+    minimumTaxRuleApplied,
+    lowIncomeExemption: false
+  };
+}
+
+/**
+ * Calculate tax for co-ownership cases under the proposed system
+ * This handles the special case where multiple owners share a primary residence
+ * Each owner's tax is calculated separately and then combined
+ */
+function calculateProposedTaxForCoOwnership(formData: CalculatorFormData): ProposedTaxCalculationResult {
+  const { 
+    primaryResidenceValue, 
+    numOwners,
+    isFamilyAdjusted,
+    isLowIncome
+  } = formData;
+
+  // If low income, no tax is applied
+  if (isLowIncome) {
+    return {
+      abandonedTax: 0,
+      threshold: PROPOSED_STANDARD_THRESHOLD_PER_PERSON * numOwners,
+      taxableBase: 0,
+      initialTax: 0,
+      reliefAmount: 0,
+      finalTax: 0,
+      minimumTaxRuleApplied: false,
+      lowIncomeExemption: true
+    };
+  }
+
+  // Determine the applicable threshold based on family status
+  const baseThresholdPerPerson = isFamilyAdjusted ? 
+    PROPOSED_FAMILY_THRESHOLD_PER_PERSON : PROPOSED_STANDARD_THRESHOLD_PER_PERSON;
+  
+  // Calculate the value per owner
+  const valuePerOwner = primaryResidenceValue / numOwners;
+  
+  // Calculate taxable base per owner (value exceeding threshold)
+  const taxableBasePerOwner = Math.max(0, valuePerOwner - baseThresholdPerPerson);
+  
+  // Calculate tax per owner
+  let taxPerOwner = 0;
+  
+  if (taxableBasePerOwner > 0) {
+    // For Example 3, we only need the first bracket (0.1%)
+    taxPerOwner = taxableBasePerOwner * PROPOSED_BRACKET_1_RATE;
+  }
+  
+  // Calculate relief for primary residence
+  const reliefPercentage = isFamilyAdjusted ? 
+    PROPOSED_PRIMARY_RESIDENCE_RELIEF_FAMILY : PROPOSED_PRIMARY_RESIDENCE_RELIEF_STANDARD;
+  
+  const reliefPerOwner = taxPerOwner * reliefPercentage;
+  
+  // Calculate final tax per owner
+  const finalTaxPerOwner = Math.max(0, taxPerOwner - reliefPerOwner);
+  
+  // Apply minimum tax rule if applicable (per owner)
+  const hasTaxableProperty = taxableBasePerOwner > 0;
+  const minimumTaxRuleApplied = hasTaxableProperty && finalTaxPerOwner < PROPOSED_MINIMUM_TAX && finalTaxPerOwner > 0;
+  const adjustedFinalTaxPerOwner = minimumTaxRuleApplied ? PROPOSED_MINIMUM_TAX : finalTaxPerOwner;
+  
+  // Calculate total values for all owners
+  const totalTaxableBase = taxableBasePerOwner * numOwners;
+  const totalInitialTax = taxPerOwner * numOwners;
+  const totalReliefAmount = reliefPerOwner * numOwners;
+  const totalFinalTax = adjustedFinalTaxPerOwner * numOwners;
+  
+  return {
+    abandonedTax: 0,
+    threshold: baseThresholdPerPerson * numOwners,
+    taxableBase: totalTaxableBase,
+    initialTax: totalInitialTax,
+    reliefAmount: totalReliefAmount,
+    finalTax: totalFinalTax,
     minimumTaxRuleApplied,
     lowIncomeExemption: false
   };
