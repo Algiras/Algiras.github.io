@@ -273,7 +273,9 @@
   "calculator.common.applied": "Applied",
   "calculator.common.notApplied": "Not Applied",
   "calculator.cookieConsent.message": "This calculator uses cookies to enhance your experience. By using this calculator, you agree to our use of cookies.",
+  "cookieConsent.message": "This website uses cookies to enhance your experience across all tools and projects. By continuing to use this site, you agree to our use of cookies.",
   "calculator.cookieConsent.accept": "Accept",
+  "cookieConsent.accept": "Accept",
   "contact.facebook": "facebook.com/algimantask",
   "disclaimer.title": "Important Disclaimer",
   "disclaimer.subtitle": "This calculator provides estimates based on publicly available information.",
@@ -288,7 +290,7 @@
   "disclaimer.submitPR": "Submit an issue on GitHub",
   "disclaimer.acknowledgment": "I understand that this is not financial advice and I should consult with a tax professional for my specific situation.",
   "disclaimer.proceed": "Proceed to Calculator",
-  "cookieConsent.message": "This calculator uses cookies to enhance your experience. By using this calculator, you agree to our use of cookies.",
+
   "cookieConsent.accept": "Accept",
   "common.yes": "Yes",
   "common.no": "No",

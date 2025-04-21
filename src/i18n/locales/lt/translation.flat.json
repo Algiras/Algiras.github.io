@@ -257,7 +257,9 @@
   "calculator.explanation.singleExample2Title": "Pavyzdys 2: Didelės vertės turtas",
   "calculator.explanation.singleExample2Description": "Žmogus turi 300 000 eurų vertės butą, kuriame deklaruota jo gyvenamoji vieta, ir sodo namelį, kurio vertė – 50 000 eurų, bendra turto suma – 350 000 eurų.",
   "calculator.cookieConsent.message": "Ši skaičiuoklė naudoja slapukus, kad pagerintų jūsų patirtį. Naudodamiesi šia skaičiuokle, sutinkate su mūsų slapukų naudojimu.",
+  "cookieConsent.message": "Šis tinklalapis naudoja slapukus, kad pagerintų jūsų patirtį visuose įrankiuose ir projektuose. Toliau naudodamiesi šiuo tinklalapiu, sutinkate su mūsų slapukų naudojimu.",
   "calculator.cookieConsent.accept": "Sutinku",
+  "cookieConsent.accept": "Sutinku",
   "contact.facebook": "facebook.com/algimantask",
   "disclaimer.title": "Svarbus įspėjimas",
   "disclaimer.subtitle": "Ši skaičiuoklė pateikia įvertinimus, pagrįstus viešai prieinama informacija.",
@@ -272,7 +274,7 @@
   "disclaimer.submitPR": "Pateikite problemą GitHub platformoje",
   "disclaimer.acknowledgment": "Suprantu, kad tai nėra finansinė konsultacija ir turėčiau konsultuotis su mokesčių specialistu dėl savo konkrečios situacijos.",
   "disclaimer.proceed": "Pereiti prie skaičiuoklės",
-  "cookieConsent.message": "Ši skaičiuoklė naudoja slapukus, kad pagerintų jūsų patirtį. Naudodamiesi šia skaičiuokle, sutinkate su mūsų slapukų naudojimu.",
+
   "cookieConsent.accept": "Sutinku",
   "common.yes": "Taip",
   "common.no": "Ne",

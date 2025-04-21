@@ -253,7 +253,9 @@
   "calculator.common.applied": "Angewendet",
   "calculator.common.notApplied": "Nicht angewendet",
   "calculator.cookieConsent.message": "Dieser Rechner verwendet Cookies, um Ihre Erfahrung zu verbessern. Durch die Nutzung dieses Rechners stimmen Sie unserer Verwendung von Cookies zu.",
+  "cookieConsent.message": "Diese Website verwendet Cookies, um Ihre Erfahrung bei allen Tools und Projekten zu verbessern. Durch die weitere Nutzung dieser Website stimmen Sie unserer Verwendung von Cookies zu.",
   "calculator.cookieConsent.accept": "Akzeptieren",
+  "cookieConsent.accept": "Akzeptieren",
   "contact.facebook": "facebook.com/algimantask",
   "disclaimer.title": "Wichtiger Haftungsausschluss",
   "disclaimer.subtitle": "Dieser Rechner bietet Schätzungen basierend auf öffentlich verfügbaren Informationen.",
@@ -268,7 +270,7 @@
   "disclaimer.submitPR": "Reichen Sie ein Problem auf GitHub ein",
   "disclaimer.acknowledgment": "Ich verstehe, dass dies keine Finanzberatung ist und ich für meine spezifische Situation einen Steuerberater konsultieren sollte.",
   "disclaimer.proceed": "Zum Rechner fortfahren",
-  "cookieConsent.message": "Dieser Rechner verwendet Cookies, um Ihre Erfahrung zu verbessern. Durch die Nutzung dieses Rechners stimmen Sie unserer Verwendung von Cookies zu.",
+
   "cookieConsent.accept": "Akzeptieren",
   "common.yes": "Ja",
   "common.no": "Nein",

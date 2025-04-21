@@ -2,6 +2,7 @@ import React from 'react'
 import { Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navbar from './Navbar'
+import CookieConsent from './CookieConsent'
 
 const Layout: React.FC = () => {
   const { t } = useTranslation()
@@ -48,6 +49,7 @@ const Layout: React.FC = () => {
           <span>{t('layout.footer.tools')}</span>
         </p>
       </footer>
+      <CookieConsent />
     </div>
   )
 }

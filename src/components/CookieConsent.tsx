@@ -1,34 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from './ui/Button';
-import { setAnalyticsConsent, hasAnalyticsConsent } from '../utils/analytics';
+import { setAnalyticsConsent } from '../utils/analytics';
 
-const COOKIE_CONSENT_KEY = 'calculator_cookie_consent';
+// Key for tracking if the consent banner has been shown across the entire site
+const COOKIE_CONSENT_SHOWN_KEY = 'site_cookie_consent_shown';
 
 const CookieConsent: React.FC = () => {
   const { t } = useTranslation();
   const [showConsent, setShowConsent] = useState(false);
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
   
   useEffect(() => {
     // Check if user has already given consent
-    const hasConsent = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (!hasConsent) {
+    const hasConsentBannerBeenShown = localStorage.getItem(COOKIE_CONSENT_SHOWN_KEY);
+    if (!hasConsentBannerBeenShown) {
       setShowConsent(true);
-    } else {
-      // If they've already consented, check if analytics was enabled
-      setAnalyticsEnabled(hasAnalyticsConsent());
     }
   }, []);
   
   const handleAccept = () => {
-    localStorage.setItem(COOKIE_CONSENT_KEY, 'true');
-    setAnalyticsConsent(analyticsEnabled);
+    localStorage.setItem(COOKIE_CONSENT_SHOWN_KEY, 'true');
+    // Always enable analytics when user accepts
+    setAnalyticsConsent(true);
     setShowConsent(false);
-  };
-
-  const handleAnalyticsToggle = () => {
-    setAnalyticsEnabled(!analyticsEnabled);
   };
   
   if (!showConsent) return null;
@@ -37,29 +31,15 @@ const CookieConsent: React.FC = () => {
     <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 shadow-lg z-50">
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="text-sm">
-          {t('calculator.cookieConsent.message')}
+          {t('cookieConsent.message', 'This website uses cookies to enhance your experience across all tools and projects. By continuing to use this site, you agree to our use of cookies.')}
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="analytics-consent"
-              checked={analyticsEnabled}
-              onChange={handleAnalyticsToggle}
-              className="h-4 w-4"
-            />
-            <label htmlFor="analytics-consent" className="text-sm">
-              {t('calculator.cookieConsent.analytics', 'Enable analytics')}
-            </label>
-          </div>
-          <Button 
-            variant="primary" 
-            onClick={handleAccept}
-            className="w-full"
-          >
-            {t('calculator.cookieConsent.accept')}
-          </Button>
-        </div>
+        <Button 
+          variant="primary" 
+          onClick={handleAccept}
+          className="whitespace-nowrap"
+        >
+          {t('cookieConsent.accept', 'Accept')}
+        </Button>
       </div>
     </div>
   );
