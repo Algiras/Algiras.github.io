@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '../utils/documentUtils';
 import CalculatorForm, { CalculatorFormData } from '../components/calculator/CalculatorForm';
 import CalculatorResults from '../components/calculator/CalculatorResults';
 import CalculatorExplanation from '../components/calculator/CalculatorExplanation';
@@ -10,6 +11,7 @@ import { calculateCurrentTax, calculateProposedTax } from '../utils/taxCalculato
 
 const Calculator: React.FC = () => {
   const { t } = useTranslation();
+  useDocumentTitle('document.title.calculator');
   
   // State for disclaimer acceptance
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);

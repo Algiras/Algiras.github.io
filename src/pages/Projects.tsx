@@ -2,9 +2,11 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import '../styles/projects.css'
+import { useDocumentTitle } from '../utils/documentUtils'
 
 const Projects: React.FC = () => {
   const { t } = useTranslation()
+  useDocumentTitle('document.title.projects')
   
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
