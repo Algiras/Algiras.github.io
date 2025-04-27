@@ -300,5 +300,9 @@
   "home.footer.rights": "All Rights Reserved",
   "home.footer.github": "GitHub",
   "home.footer.linkedin": "LinkedIn",
-  "layout.footer.tools": "Personal CV & Tools"
+  "layout.footer.tools": "Personal CV & Tools",
+  "language.english": "English",
+  "language.german": "German",
+  "language.lithuanian": "Lithuanian",
+  "language.russian": "Russian"
 }

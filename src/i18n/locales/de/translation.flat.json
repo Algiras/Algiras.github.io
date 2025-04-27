@@ -280,5 +280,9 @@
   "home.footer.rights": "Alle Rechte vorbehalten",
   "home.footer.github": "GitHub",
   "home.footer.linkedin": "LinkedIn",
-  "layout.footer.tools": "Persönlicher Lebenslauf & Tools"
+  "layout.footer.tools": "Persönlicher Lebenslauf & Tools",
+  "language.english": "Englisch",
+  "language.german": "Deutsch",
+  "language.lithuanian": "Litauisch",
+  "language.russian": "Russisch"
 }

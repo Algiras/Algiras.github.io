@@ -5,6 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enTranslation from './locales/en/translation.flat.json';
 import ltTranslation from './locales/lt/translation.flat.json';
 import deTranslation from './locales/de/translation.flat.json';
+import ruTranslation from './locales/ru/translation.flat.json';
 
 i18n
   // detect user language
@@ -28,6 +29,9 @@ i18n
       },
       de: {
         translation: deTranslation
+      },
+      ru: {
+        translation: ruTranslation
       }
     },
     detection: {
@@ -57,6 +61,7 @@ console.log('Loaded translations:', {
   en: i18n.hasResourceBundle('en', 'translation'),
   lt: i18n.hasResourceBundle('lt', 'translation'),
   de: i18n.hasResourceBundle('de', 'translation'),
+  ru: i18n.hasResourceBundle('ru', 'translation'),
   currentLang: i18n.language,
   availableLanguages: i18n.languages
 });
