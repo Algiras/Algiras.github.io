@@ -1,9 +1,11 @@
 import React from 'react';
 import '../styles/cv.css';
 import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '../utils/documentUtils';
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
+  useDocumentTitle('document.title.home');
 
   return (
     <div className="cv-page max-w-4xl mx-auto bg-white p-6 md:p-12 rounded-xl shadow-xl my-8">

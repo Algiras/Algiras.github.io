@@ -284,5 +284,8 @@
   "language.english": "Englisch",
   "language.german": "Deutsch",
   "language.lithuanian": "Litauisch",
-  "language.russian": "Russisch"
+  "language.russian": "Russisch",
+  "document.title.home": "Algimantas CV",
+  "document.title.projects": "Projekte - Algimantas CV",
+  "document.title.calculator": "Steuerrechner - Algimantas CV"
 }

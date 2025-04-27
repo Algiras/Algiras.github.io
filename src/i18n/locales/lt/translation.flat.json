@@ -288,5 +288,8 @@
   "language.english": "Anglų",
   "language.german": "Vokiečių",
   "language.lithuanian": "Lietuvių",
-  "language.russian": "Rusų"
+  "language.russian": "Rusų",
+  "document.title.home": "Algimantas CV",
+  "document.title.projects": "Projektai - Algimantas CV",
+  "document.title.calculator": "Mokesčių skaičiuoklė - Algimantas CV"
 }
