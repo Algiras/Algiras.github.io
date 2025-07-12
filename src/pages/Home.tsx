@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 
 import { useDocumentTitle } from '../utils/documentUtils';
+import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
   useDocumentTitle('Algimantas Krasnauskas - Software Engineer');
@@ -467,6 +468,28 @@ const Home: React.FC = () => {
             </Text>
             <Group justify="center" gap="md">
               <Button
+                component={Link}
+                to="/finance"
+                size="lg"
+                variant="gradient"
+                gradient={{ from: 'blue', to: 'cyan' }}
+                rightSection={<ArrowRight size={18} />}
+                className="custom-button-hover"
+              >
+                Financial Tools
+              </Button>
+              <Button
+                component={Link}
+                to="/documents"
+                size="lg"
+                variant="gradient"
+                gradient={{ from: 'purple', to: 'pink' }}
+                rightSection={<ArrowRight size={18} />}
+                className="custom-button-hover"
+              >
+                Document Tools
+              </Button>
+              <Button
                 component="a"
                 href="https://github.com/Algiras"
                 target="_blank"
@@ -476,7 +499,7 @@ const Home: React.FC = () => {
                 rightSection={<ExternalLink size={18} />}
                 className="custom-button-hover"
               >
-                View Projects
+                View GitHub
               </Button>
             </Group>
           </Stack>
