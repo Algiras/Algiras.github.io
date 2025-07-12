@@ -1,37 +1,12 @@
 import React from 'react';
+import { TextInput, TextInputProps } from '@mantine/core';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+interface InputProps extends TextInputProps {
   helpText?: string;
-  error?: string;
 }
 
-const Input: React.FC<InputProps> = ({ 
-  label, 
-  helpText, 
-  error, 
-  className = '', 
-  id,
-  ...props 
-}) => {
-  const inputId = id || `input-${Math.random().toString(36).substring(2, 9)}`;
-  
-  return (
-    <div className="mb-4">
-      {label && (
-        <label htmlFor={inputId} className="form-label">
-          {label}
-        </label>
-      )}
-      <input
-        id={inputId}
-        className={`form-input ${error ? 'border-red-500' : ''} ${className}`}
-        {...props}
-      />
-      {helpText && <p className="text-xs text-gray-500 mt-1">{helpText}</p>}
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-    </div>
-  );
+const Input: React.FC<InputProps> = ({ helpText, error, ...props }) => {
+  return <TextInput error={error} description={helpText} {...props} />;
 };
 
 export default Input;

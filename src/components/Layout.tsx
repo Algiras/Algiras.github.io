@@ -1,57 +1,82 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import Navbar from './Navbar'
-import CookieConsent from './CookieConsent'
+import React from 'react';
+import { AppShell, Container, Text, Group, Anchor, Box } from '@mantine/core';
+import Navbar from './Navbar';
+import CookieConsent from './CookieConsent';
 
-const Layout: React.FC = () => {
-  const { t } = useTranslation()
-  const currentYear = new Date().getFullYear()
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-      <footer className="bg-gray-800 text-white text-center py-6 text-sm">
-        <p className="mb-2">
-          {t('home.footer.copyright', { year: currentYear })} | {t('home.footer.rights')}
-        </p>
-        <p className="flex items-center justify-center gap-2 flex-wrap">
-          <a 
-            href="https://github.com/Algiras" 
-            className="text-indigo-300 hover:underline hover:text-indigo-200 transition-colors" 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            {t('home.footer.github')}
-          </a>
-          <span className="text-gray-500">|</span>
-          <a 
-            href="https://www.linkedin.com/in/asimplek" 
-            className="text-indigo-300 hover:underline hover:text-indigo-200 transition-colors" 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            {t('home.footer.linkedin')}
-          </a>
-          <span className="text-gray-500">|</span>
-          <a 
-            href="https://algiras.github.io/" 
-            className="text-indigo-300 hover:underline hover:text-indigo-200 transition-colors"
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            algiras.github.io
-          </a>
-          <span className="text-gray-500">|</span>
-          <span>{t('layout.footer.tools')}</span>
-        </p>
-      </footer>
-      <CookieConsent />
-    </div>
-  )
+interface LayoutProps {
+  children: React.ReactNode;
 }
 
-export default Layout
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <AppShell
+      header={{ height: 60 }}
+      footer={{ height: 100 }}
+      padding="md"
+    >
+      <AppShell.Header>
+        <Navbar />
+      </AppShell.Header>
+
+      <AppShell.Main>
+        {children}
+      </AppShell.Main>
+
+      <AppShell.Footer>
+        <Container size="lg" h="100%">
+          <Group h="100%" justify="center" align="center">
+            <Box>
+              <Text size="sm" ta="center" mb="xs">
+                © {currentYear} Algimantas Krasnauskas | All rights reserved
+              </Text>
+              <Group justify="center" gap="xs">
+                <Anchor
+                  href="https://github.com/Algiras"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="sm"
+                >
+                  GitHub
+                </Anchor>
+                <Text size="sm" c="dimmed">
+                  |
+                </Text>
+                <Anchor
+                  href="https://www.linkedin.com/in/asimplek"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="sm"
+                >
+                  LinkedIn
+                </Anchor>
+                <Text size="sm" c="dimmed">
+                  |
+                </Text>
+                <Anchor
+                  href="https://algiras.github.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="sm"
+                >
+                  algiras.github.io
+                </Anchor>
+                <Text size="sm" c="dimmed">
+                  |
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Built with React & Mantine
+                </Text>
+              </Group>
+            </Box>
+          </Group>
+        </Container>
+      </AppShell.Footer>
+
+      <CookieConsent />
+    </AppShell>
+  );
+};
+
+export default Layout;

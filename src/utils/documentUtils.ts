@@ -1,15 +1,7 @@
 import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 
-export function useDocumentTitle(titleKey: string, defaultTitle = 'Algimantas CV') {
-  const { t } = useTranslation();
-  
+export const useDocumentTitle = (title: string) => {
   useEffect(() => {
-    const translatedTitle = t(titleKey) || defaultTitle;
-    document.title = translatedTitle;
-    
-    return () => {
-      document.title = defaultTitle;
-    };
-  }, [t, titleKey, defaultTitle]);
-}
+    document.title = title;
+  }, [title]);
+};

@@ -1,47 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import Button from './ui/Button';
+import { Group, Text, Button, Paper } from '@mantine/core';
 import { setAnalyticsConsent } from '../utils/analytics';
 
 // Key for tracking if the consent banner has been shown across the entire site
 const COOKIE_CONSENT_SHOWN_KEY = 'site_cookie_consent_shown';
 
 const CookieConsent: React.FC = () => {
-  const { t } = useTranslation();
   const [showConsent, setShowConsent] = useState(false);
-  
+
   useEffect(() => {
     // Check if user has already given consent
-    const hasConsentBannerBeenShown = localStorage.getItem(COOKIE_CONSENT_SHOWN_KEY);
+    const hasConsentBannerBeenShown = localStorage.getItem(
+      COOKIE_CONSENT_SHOWN_KEY
+    );
     if (!hasConsentBannerBeenShown) {
       setShowConsent(true);
     }
   }, []);
-  
+
   const handleAccept = () => {
     localStorage.setItem(COOKIE_CONSENT_SHOWN_KEY, 'true');
     // Always enable analytics when user accepts
     setAnalyticsConsent(true);
     setShowConsent(false);
   };
-  
+
   if (!showConsent) return null;
-  
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 shadow-lg z-50">
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="text-sm">
-          {t('cookieConsent.message', 'This website uses cookies to enhance your experience across all tools and projects. By continuing to use this site, you agree to our use of cookies.')}
-        </div>
-        <Button 
-          variant="primary" 
+    <Paper
+      shadow="lg"
+      p="md"
+      radius="md"
+      style={{
+        position: 'fixed',
+        bottom: 16,
+        left: 16,
+        right: 16,
+        zIndex: 1000,
+        maxWidth: 600,
+        margin: '0 auto',
+      }}
+    >
+      <Group justify="space-between" align="flex-start" gap="md">
+        <Text size="sm" style={{ flex: 1 }}>
+          This website uses cookies to enhance your experience across all tools
+          and projects. By continuing to use this site, you agree to our use of
+          cookies.
+        </Text>
+        <Button
+          variant="filled"
+          size="sm"
           onClick={handleAccept}
-          className="whitespace-nowrap"
+          style={{ flexShrink: 0 }}
         >
-          {t('cookieConsent.accept', 'Accept')}
+          Accept
         </Button>
-      </div>
-    </div>
+      </Group>
+    </Paper>
   );
 };
 

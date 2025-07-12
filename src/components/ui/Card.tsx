@@ -1,25 +1,52 @@
 import React from 'react';
+import {
+  Card as MantineCard,
+  CardProps as MantineCardProps,
+  Title,
+  Text,
+} from '@mantine/core';
 
-interface CardProps {
+interface CardProps extends MantineCardProps {
   title?: string;
   subtitle?: string;
   children: React.ReactNode;
-  className?: string;
 }
 
-const Card: React.FC<CardProps> = ({ title, subtitle, children, className = '' }) => {
+const Card: React.FC<CardProps> = ({ title, subtitle, children, ...props }) => {
   return (
-    <div className={`bg-white shadow-md rounded-lg overflow-hidden ${className}`}>
+    <MantineCard shadow="sm" padding="lg" radius="md" withBorder {...props}>
       {(title || subtitle) && (
-        <div className="p-4 border-b border-gray-200">
-          {title && <h3 className="text-lg font-semibold text-gray-800">{title}</h3>}
-          {subtitle && <p className="text-sm text-gray-600 mt-1">{subtitle}</p>}
-        </div>
+        <MantineCard.Section withBorder inheritPadding py="xs">
+          {title && <Title order={3}>{title}</Title>}
+          {subtitle && (
+            <Text size="sm" c="dimmed" mt={4}>
+              {subtitle}
+            </Text>
+          )}
+        </MantineCard.Section>
       )}
-      <div className="p-4">
+      <MantineCard.Section inheritPadding py="xs">
         {children}
-      </div>
-    </div>
+      </MantineCard.Section>
+    </MantineCard>
+  );
+};
+
+export default Card;
+
+      <MantineCard.Section inheritPadding py="xs">
+        {children}
+      </MantineCard.Section>
+    </MantineCard>
+  );
+};
+
+export default Card;
+
+      <MantineCard.Section inheritPadding py="xs">
+        {children}
+      </MantineCard.Section>
+    </MantineCard>
   );
 };
 
