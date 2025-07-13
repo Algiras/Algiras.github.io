@@ -9,18 +9,25 @@ import { Link, useLocation } from 'react-router-dom';
 
 // Custom hook to detect mobile screen size
 const useIsMobile = (breakpoint: number = 768) => {
-  const [isMobile, setIsMobile] = useState(false);
+  // Start with a more accurate initial state
+  const [isMobile, setIsMobile] = useState(() => {
+    // Check if window is available (client-side)
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= breakpoint;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth <= breakpoint);
     };
 
-    // Check on mount
+    // Check on mount (in case initial state was wrong)
     checkIsMobile();
 
-    // Add event listener
-    window.addEventListener('resize', checkIsMobile);
+    // Add event listener with passive option for better performance
+    window.addEventListener('resize', checkIsMobile, { passive: true });
 
     // Cleanup
     return () => window.removeEventListener('resize', checkIsMobile);
@@ -57,6 +64,13 @@ const Navbar: React.FC = () => {
     setMobileMenuOpened(false);
   };
 
+  // Close mobile menu when clicking outside or on route change
+  useEffect(() => {
+    if (mobileMenuOpened) {
+      setMobileMenuOpened(false);
+    }
+  }, [location.pathname]);
+
   return (
     <Container size="lg" h="100%">
       <Group h="100%" justify="space-between">
@@ -72,6 +86,7 @@ const Navbar: React.FC = () => {
               variant="subtle"
               size="lg"
               aria-label="Toggle color scheme"
+              style={{ touchAction: 'manipulation' }}
             >
               {colorScheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </ActionIcon>
@@ -81,6 +96,7 @@ const Navbar: React.FC = () => {
               variant="subtle"
               size="lg"
               aria-label="Open navigation menu"
+              style={{ touchAction: 'manipulation' }}
             >
               <Menu size={20} />
             </ActionIcon>
@@ -127,6 +143,9 @@ const Navbar: React.FC = () => {
             position="right"
             size="75%"
             overlayProps={{ opacity: 0.5, blur: 4 }}
+            trapFocus
+            closeOnClickOutside
+            closeOnEscape
           >
             <Stack gap="md">
               {navigationItems.map((item) => {
@@ -143,6 +162,10 @@ const Navbar: React.FC = () => {
                     onClick={handleMobileNavClick}
                     className="custom-button-hover"
                     justify="flex-start"
+                    style={{ 
+                      touchAction: 'manipulation',
+                      minHeight: '48px' // Ensure good touch target size
+                    }}
                   >
                     {item.label}
                   </Button>
