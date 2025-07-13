@@ -12,6 +12,8 @@ body {
   line-height: 1.6;
 }
 
+
+
 /* Custom animations */
 @keyframes float {
   0%, 100% { 
@@ -51,33 +53,33 @@ body {
 }
 
 @keyframes fadeInUp {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(30px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 @keyframes fadeInLeft {
-  from {
+  0% {
     opacity: 0;
     transform: translateX(-30px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateX(0);
   }
 }
 
 @keyframes fadeInRight {
-  from {
+  0% {
     opacity: 0;
     transform: translateX(30px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateX(0);
   }
@@ -90,21 +92,20 @@ body {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-/* Animation classes */
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
 
 .animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse 2s infinite;
 }
 
 .animate-gradient-text {
-  background: linear-gradient(45deg, #3b82f6, #06b6d4, #8b5cf6, #3b82f6);
+  background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #06b6d4, #10b981);
   background-size: 400% 400%;
   background-clip: text;
   -webkit-background-clip: text;
@@ -113,23 +114,23 @@ body {
 }
 
 .animate-skill-bounce {
-  animation: skillBounce 2s ease-in-out infinite;
+  animation: skillBounce 2s infinite;
 }
 
 .animate-card-glow {
   animation: cardGlow 3s ease-in-out infinite;
-  }
-  
+}
+
 .animate-fade-in-up {
-  animation: fadeInUp 0.8s ease-out;
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .animate-fade-in-left {
-  animation: fadeInLeft 0.8s ease-out;
+  animation: fadeInLeft 0.6s ease-out;
 }
 
 .animate-fade-in-right {
-  animation: fadeInRight 0.8s ease-out;
+  animation: fadeInRight 0.6s ease-out;
 }
 
 .animated-background {
@@ -145,25 +146,118 @@ body {
 }
 
 .shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
 
-/* Custom button hover effects */
 .custom-button-hover {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .custom-button-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive design helpers */
+/* Mobile-specific styles for Documents page */
 @media (max-width: 768px) {
   .animate-gradient-text {
     font-size: 2.5rem !important;
+  }
+  
+  /* Documents page mobile styles */
+  .mobile-stack {
+    gap: 1rem !important;
+  }
+  
+  .mobile-title {
+    font-size: 2rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .mobile-description {
+    font-size: 1rem !important;
+    padding: 0 0.5rem;
+    line-height: 1.5 !important;
+  }
+  
+  .mobile-grid {
+    gap: 1rem !important;
+  }
+  
+  .mobile-card {
+    padding: 1rem !important;
+  }
+  
+  .mobile-card-stack {
+    gap: 0.75rem !important;
+  }
+  
+  .mobile-card-header {
+    gap: 0.75rem !important;
+  }
+  
+  .mobile-icon {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+  
+  .mobile-icon-svg {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+  
+  .mobile-card-title {
+    font-size: 1.125rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  .mobile-card-description {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  .mobile-tags {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .mobile-badge {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  .mobile-features {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .mobile-features-title {
+    font-size: 0.875rem !important;
+  }
+  
+  .mobile-feature-item {
+    font-size: 0.75rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  .mobile-action-button {
+    font-size: 0.875rem !important;
+    height: 2.5rem !important;
+  }
+  
+  .mobile-button {
+    font-size: 0.875rem !important;
+    height: 2.25rem !important;
   }
 }
 
