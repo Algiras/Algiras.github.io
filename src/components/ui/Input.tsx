@@ -1,5 +1,5 @@
-import React from 'react';
 import { TextInput, TextInputProps } from '@mantine/core';
+import React from 'react';
 
 interface InputProps extends TextInputProps {
   helpText?: string;

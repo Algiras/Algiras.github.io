@@ -1,8 +1,8 @@
-import React from 'react';
 import {
-  Checkbox as MantineCheckbox,
-  CheckboxProps as MantineCheckboxProps,
+    Checkbox as MantineCheckbox,
+    CheckboxProps as MantineCheckboxProps
 } from '@mantine/core';
+import React from 'react';
 
 interface CheckboxProps extends MantineCheckboxProps {
   helpText?: string;

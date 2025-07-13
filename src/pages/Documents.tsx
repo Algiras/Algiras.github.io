@@ -1,18 +1,8 @@
-import React from 'react';
 import {
-  Container,
-  Title,
-  Text,
-  SimpleGrid,
-  Card,
-  Group,
-  Badge,
-  Button,
-  Stack,
-  ThemeIcon,
-  Box,
+    Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title
 } from '@mantine/core';
-import { FileText, Edit } from 'lucide-react';
+import { Edit, FileText } from 'lucide-react';
+import React from 'react';
 import MarkdownToPDF from '../components/documents/MarkdownToPDF';
 
 const Documents: React.FC = () => {

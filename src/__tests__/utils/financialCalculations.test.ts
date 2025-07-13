@@ -1,14 +1,7 @@
 import {
-  calculateLoanPayment,
-  calculateROI,
-  calculateInvestmentGrowth,
-  calculateMortgagePayment,
-  calculateRetirementSavings,
-  type LoanCalculationInput,
-  type ROICalculationInput,
-  type InvestmentCalculationInput,
-  type MortgageCalculationInput,
-  type RetirementCalculationInput
+    calculateInvestmentGrowth, calculateLoanPayment, calculateMortgagePayment,
+    calculateRetirementSavings, calculateROI, type InvestmentCalculationInput, type LoanCalculationInput, type MortgageCalculationInput,
+    type RetirementCalculationInput, type ROICalculationInput
 } from '../../utils/financialCalculations';
 
 describe('Financial Calculations', () => {

@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Title, Grid, NumberInput, Select, Button, Text, Tabs, Group, Badge, Stack, Slider } from '@mantine/core';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ComposedChart, Area, AreaChart } from 'recharts';
-import { useMantineColorScheme } from '@mantine/core';
-import { TrendingUp, Calculator, DollarSign, PiggyBank, Target } from 'lucide-react';
+import { Badge, Card, Grid, Group, NumberInput, Select, Slider, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
+import { Calculator, DollarSign, PiggyBank, Target, TrendingUp } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
+import { calculateInvestmentGrowth } from '../../utils/financialCalculations';
 
 interface InvestmentInput {
   initialAmount: number;
@@ -13,22 +14,6 @@ interface InvestmentInput {
   inflationRate: number;
   taxRate: number;
   targetAmount: number;
-}
-
-interface InvestmentResult {
-  futureValue: number;
-  totalContributions: number;
-  totalInterest: number;
-  realValue: number; // inflation-adjusted
-  afterTaxValue: number;
-  monthsToTarget: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    balance: number;
-    contributions: number;
-    interest: number;
-    realValue: number;
-  }>;
 }
 
 const InvestmentCalculator: React.FC = () => {
@@ -52,7 +37,7 @@ const InvestmentCalculator: React.FC = () => {
       monthlyContribution,
       annualInterestRate,
       investmentPeriod,
-      compoundingFrequency,
+      compoundingFrequency: _compoundingFrequency,
       inflationRate,
       taxRate,
       targetAmount
@@ -63,9 +48,7 @@ const InvestmentCalculator: React.FC = () => {
     }
 
     const monthlyRate = annualInterestRate / 100 / 12;
-    const totalMonths = investmentPeriod * 12;
-    const compoundingPerYear = compoundingFrequency === 'monthly' ? 12 : compoundingFrequency === 'quarterly' ? 4 : 1;
-    const adjustedRate = annualInterestRate / 100 / compoundingPerYear;
+    // const _compoundingPerYear = compoundingFrequency === 'monthly' ? 12 : compoundingFrequency === 'quarterly' ? 4 : 1;
 
     // Calculate future value with compound interest
     let futureValue = initialAmount;
@@ -73,16 +56,20 @@ const InvestmentCalculator: React.FC = () => {
     const yearlyBreakdown = [];
 
     for (let year = 1; year <= investmentPeriod; year++) {
-      const startBalance = futureValue;
-      const startContributions = totalContributions;
-
-      // Add monthly contributions and compound interest for this year
-      for (let month = 1; month <= 12; month++) {
-        futureValue = futureValue * (1 + monthlyRate) + monthlyContribution;
-        totalContributions += monthlyContribution;
-      }
-
-      const yearInterest = futureValue - startBalance - (monthlyContribution * 12);
+      // const _startBalance = futureValue;
+      // const _startContributions = totalContributions;
+      
+      futureValue = calculateInvestmentGrowth({
+        initialAmount: futureValue,
+        monthlyContribution,
+        annualInterestRate,
+        investmentPeriod: 1,
+        inflationRate,
+        taxRate: taxRate
+      }).futureValue;
+      
+      totalContributions += monthlyContribution * 12;
+      // const _yearInterest = futureValue - startBalance - (monthlyContribution * 12);
       const realValue = futureValue / Math.pow(1 + inflationRate / 100, year);
 
       yearlyBreakdown.push({
@@ -421,7 +408,7 @@ const InvestmentCalculator: React.FC = () => {
                           outerRadius={100}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                         >
                           {pieData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />

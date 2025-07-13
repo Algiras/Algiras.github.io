@@ -1,5 +1,5 @@
+import { useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-import { useEffect, useCallback } from 'react';
 
 // Base interface for calculator data
 interface BaseCalculatorData {

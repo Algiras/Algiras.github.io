@@ -1,8 +1,8 @@
-import React from 'react';
 import {
-  Button as MantineButton,
-  ButtonProps as MantineButtonProps,
+    Button as MantineButton,
+    ButtonProps as MantineButtonProps
 } from '@mantine/core';
+import React from 'react';
 
 interface ButtonProps extends MantineButtonProps {
   variant?:
@@ -37,32 +37,6 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   return (
-    <MantineButton
-      variant={getMantineVariant(variant)}
-      loading={isLoading}
-      leftSection={icon && !isLoading ? icon : undefined}
-      {...props}
-    >
-      {children}
-    </MantineButton>
-  );
-};
-
-export default Button;
-
-    <MantineButton
-      variant={getMantineVariant(variant)}
-      loading={isLoading}
-      leftSection={icon && !isLoading ? icon : undefined}
-      {...props}
-    >
-      {children}
-    </MantineButton>
-  );
-};
-
-export default Button;
-
     <MantineButton
       variant={getMantineVariant(variant)}
       loading={isLoading}

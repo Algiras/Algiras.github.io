@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Title, Grid, NumberInput, Select, Button, Text, Tabs, Group, Badge, Stack, Slider, Progress, Divider } from '@mantine/core';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, ComposedChart } from 'recharts';
-import { useMantineColorScheme } from '@mantine/core';
-import { Home, Calculator, DollarSign, TrendingUp, Calendar, Percent, PiggyBank } from 'lucide-react';
+import { Badge, Card, Divider, Grid, Group, NumberInput, Progress, Slider, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
+import { Calculator, DollarSign, Home, Percent, PiggyBank, TrendingUp } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Area, AreaChart, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface MortgageInput {
   homePrice: number;
@@ -20,7 +19,8 @@ interface MortgageInput {
   armAdjustmentPeriod: number;
 }
 
-interface MortgageResult {
+/*
+interface _MortgageResult {
   loanAmount: number;
   monthlyPayment: number;
   monthlyPrincipalInterest: number;
@@ -50,6 +50,7 @@ interface MortgageResult {
     maxAffordablePayment: number;
   };
 }
+*/
 
 const MortgageCalculator: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
@@ -291,7 +292,7 @@ const MortgageCalculator: React.FC = () => {
     
     // Extra payment recommendations
     if (inputs.extraPayment === 0) {
-      const extraPaymentSavings = results.totalInterest * 0.3; // Rough estimate
+      // const _extraPaymentSavings = results.totalInterest * 0.3; // Rough estimate
       recs.push({
         type: 'info',
         text: `Consider extra payments! Even $100/month could save you tens of thousands in interest.`
@@ -522,7 +523,7 @@ const MortgageCalculator: React.FC = () => {
               <Tabs.Tab value="overview" leftSection={<Calculator size={16} />}>
                 Overview
               </Tabs.Tab>
-              <Tabs.Tab value="breakdown" leftSection={<PieChart size={16} />}>
+              <Tabs.Tab value="breakdown" leftSection={<PieChart style={{ width: 16, height: 16 }} />}>
                 Payment Breakdown
               </Tabs.Tab>
               <Tabs.Tab value="amortization" leftSection={<TrendingUp size={16} />}>

@@ -43,7 +43,7 @@ export interface InvestmentCalculationInput {
   annualInterestRate: number;
   investmentPeriod: number;
   inflationRate: number;
-  taxRate: number;
+  taxRate?: number;
 }
 
 export interface InvestmentCalculationResult {
@@ -86,7 +86,7 @@ export interface RetirementCalculationInput {
   inflationRate: number;
   withdrawalRate: number;
   lifeExpectancy: number;
-  taxRate: number;
+  taxRate?: number;
 }
 
 export interface RetirementCalculationResult {
@@ -183,7 +183,7 @@ export const calculateROI = (input: ROICalculationInput): ROICalculationResult =
  * Calculate investment growth with compound interest
  */
 export const calculateInvestmentGrowth = (input: InvestmentCalculationInput): InvestmentCalculationResult => {
-  const { initialAmount, monthlyContribution, annualInterestRate, investmentPeriod, inflationRate, taxRate } = input;
+  const { initialAmount, monthlyContribution, annualInterestRate, investmentPeriod } = input;
   
   if (initialAmount < 0 || monthlyContribution < 0 || annualInterestRate < 0 || investmentPeriod <= 0) {
     throw new Error('Invalid input parameters');
@@ -202,8 +202,8 @@ export const calculateInvestmentGrowth = (input: InvestmentCalculationInput): In
   }
 
   const totalInterest = futureValue - totalContributions;
-  const realValue = futureValue / Math.pow(1 + inflationRate / 100, investmentPeriod);
-  const afterTaxValue = futureValue - (totalInterest * taxRate / 100);
+  const realValue = futureValue / Math.pow(1 + (input.inflationRate || 0) / 100, investmentPeriod);
+  const afterTaxValue = futureValue - (totalInterest * (input.taxRate || 0) / 100);
 
   return {
     futureValue: Math.round(futureValue),
@@ -266,10 +266,8 @@ export const calculateRetirementSavings = (input: RetirementCalculationInput): R
     monthlyContribution, 
     employerMatch, 
     annualReturn, 
-    inflationRate, 
     withdrawalRate, 
-    lifeExpectancy, 
-    taxRate 
+    lifeExpectancy
   } = input;
   
   if (currentAge < 0 || retirementAge <= currentAge || annualReturn < 0 || monthlyContribution < 0) {

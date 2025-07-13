@@ -1,10 +1,7 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Card, Title, Grid, Textarea, Button, Text, Select, Group, Badge, Stack, Switch, NumberInput, Divider } from '@mantine/core';
-import { useMantineColorScheme, useMantineTheme } from '@mantine/core';
-import { Download, Eye, FileText, Settings, Palette, Save, RotateCcw } from 'lucide-react';
+import { Badge, Button, Card, Divider, Grid, Group, NumberInput, Select, Stack, Switch, Text, Textarea, Title, useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import { Download, Eye, FileText, Palette, RotateCcw, Save } from 'lucide-react';
 import { marked } from 'marked';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMarkdownDocumentPersistence } from '../../hooks/useCalculatorPersistence';
 
 interface DocumentTemplate {
@@ -105,10 +102,10 @@ function greet(name) {
     footerText: persistedData?.settings?.footerText || '',
          pageSize: persistedData?.settings?.pageSize || 'a4',
     pageMargins: {
-      top: persistedData?.settings?.marginTop || 20,
-      right: persistedData?.settings?.marginRight || 20,
-      bottom: persistedData?.settings?.marginBottom || 20,
-      left: persistedData?.settings?.marginLeft || 20
+      top: persistedData?.settings?.marginTop || 25,
+      right: persistedData?.settings?.marginRight || 25,
+      bottom: persistedData?.settings?.marginBottom || 25,
+      left: persistedData?.settings?.marginLeft || 25
     }
   }));
 
@@ -138,6 +135,12 @@ function greet(name) {
     return () => clearTimeout(timeoutId);
   }, [markdown, selectedTemplate, customSettings, saveData]);
 
+  // Document templates with industry-standard margins
+  // 25mm (0.98 inches) margins follow professional document standards:
+  // - Microsoft Word default: 1 inch (25.4mm) 
+  // - Academic papers: 1 inch all around
+  // - Business documents: 1 inch all around
+  // - Chicago Manual of Style: 1 inch margins recommended
   const templates: DocumentTemplate[] = [
     {
       id: 'professional',
@@ -147,7 +150,7 @@ function greet(name) {
         fontFamily: 'Arial, sans-serif',
         fontSize: 12,
         lineHeight: 1.6,
-        margins: { top: 20, right: 20, bottom: 20, left: 20 },
+        margins: { top: 25, right: 25, bottom: 25, left: 25 },
         colors: {
           primary: '#2563eb',
           secondary: '#64748b',
@@ -181,7 +184,7 @@ function greet(name) {
         fontFamily: 'Helvetica, Arial, sans-serif',
         fontSize: 13,
         lineHeight: 1.5,
-        margins: { top: 15, right: 15, bottom: 15, left: 15 },
+        margins: { top: 25, right: 25, bottom: 25, left: 25 },
         colors: {
           primary: '#7c3aed',
           secondary: '#a78bfa',
@@ -198,7 +201,7 @@ function greet(name) {
         fontFamily: 'system-ui, sans-serif',
         fontSize: 12,
         lineHeight: 1.4,
-        margins: { top: 30, right: 30, bottom: 30, left: 30 },
+        margins: { top: 25, right: 25, bottom: 25, left: 25 },
         colors: {
           primary: '#000000',
           secondary: '#666666',
@@ -222,135 +225,345 @@ function greet(name) {
     try {
       const result = marked(trimmedMarkdown || '');
       return typeof result === 'string' ? result : '<p>Error parsing markdown</p>';
-    } catch (error) {
+    } catch (_error) {
       return '<p style="color: #ef4444;">Error parsing markdown. Please check your syntax.</p>';
     }
   }, [trimmedMarkdown]);
 
-  const generatePDF = async () => {
+  const generatePDF = () => {
     // Check for empty content
     if (isContentEmpty) {
       alert('Cannot generate PDF: No content to export. Please add some markdown content first.');
       return;
     }
 
-    if (!previewRef.current) {
-      alert('Cannot generate PDF: Preview not available. Please try again.');
-      return;
-    }
-
     try {
-      // Page size configurations
-      const pageConfigs = {
-        a4: { width: 210, height: 297 },
-        letter: { width: 216, height: 279 }
-      };
-      
-      const pageConfig = pageConfigs[customSettings.pageSize];
-      const margins = customSettings.pageMargins;
-      
-      // Calculate content area
-      const contentWidth = pageConfig.width - margins.left - margins.right;
-      const contentHeight = pageConfig.height - margins.top - margins.bottom;
-      
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: currentTemplate.styles.colors.background,
-        width: previewRef.current.scrollWidth,
-        height: previewRef.current.scrollHeight
-      });
-
-      // Check if canvas is valid
-      if (canvas.width === 0 || canvas.height === 0) {
-        alert('Cannot generate PDF: Invalid content dimensions. Please check your content.');
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Pop-up blocked! Please allow pop-ups for this site to generate PDFs.');
         return;
       }
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', customSettings.pageSize);
+      // Page size configurations for CSS
+      const pageSize = customSettings.pageSize === 'a4' ? 'A4' : 'Letter';
+      const margins = customSettings.pageMargins;
       
-      // Calculate scaling to fit content width
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Calculate how many pages we need
-      const pagesNeeded = Math.ceil(imgHeight / contentHeight);
-      
-      // Add pages with proper margins and page breaks
-      for (let page = 0; page < pagesNeeded; page++) {
-        if (page > 0) {
-          pdf.addPage();
-        }
-        
-        // Calculate the portion of the image for this page
-        const sourceY = page * contentHeight * (canvas.width / imgWidth);
-        const sourceHeight = Math.min(contentHeight * (canvas.width / imgWidth), canvas.height - sourceY);
-        
-        // Create a temporary canvas for this page portion
-        const pageCanvas = document.createElement('canvas');
-        const pageCtx = pageCanvas.getContext('2d');
-        
-        if (pageCtx) {
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = sourceHeight;
-          
-          // Draw the portion of the original canvas
-          pageCtx.drawImage(
-            canvas,
-            0, sourceY, canvas.width, sourceHeight,
-            0, 0, canvas.width, sourceHeight
-          );
-          
-          const pageImgData = pageCanvas.toDataURL('image/png');
-          const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
-          
-          // Add image with margins
-          pdf.addImage(
-            pageImgData,
-            'PNG',
-            margins.left,
-            margins.top,
-            imgWidth,
-            pageImgHeight
-          );
-        }
-        
-        // Add headers if enabled
-        if (customSettings.includeHeader && customSettings.headerText) {
-          pdf.setFontSize(10);
-          pdf.setTextColor(128, 128, 128);
-          pdf.text(customSettings.headerText, margins.left, margins.top - 5);
-        }
-        
-        // Add footers if enabled
-        if (customSettings.includeFooter && customSettings.footerText) {
-          pdf.setFontSize(10);
-          pdf.setTextColor(128, 128, 128);
-          pdf.text(customSettings.footerText, margins.left, pageConfig.height - margins.bottom + 15);
-        }
-      }
+      // Prepare safe font family for CSS with comprehensive fallbacks
+      const cleanFontFamily = currentTemplate.styles.fontFamily.replace(/"/g, '');
+      const safeFontFamily = currentTemplate.styles.fontFamily.includes(',') 
+        ? currentTemplate.styles.fontFamily 
+        : `"${cleanFontFamily}", "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif`;
 
-      // Add page numbers if enabled
-      if (customSettings.includePageNumbers) {
-        const pageCount = pdf.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-          pdf.setPage(i);
-          pdf.setFontSize(10);
-          pdf.setTextColor(128, 128, 128);
+      // Create the HTML content with embedded styles
+      const printHTML = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Document</title>
+          <style>
+            @page {
+              size: ${pageSize};
+              margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+            }
+            
+            @media print {
+              * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              
+              body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+              }
+              
+              .no-print {
+                display: none !important;
+              }
+            }
+            
+            /* CSS Reset for print */
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+            }
+            
+            /* Base styles */
+            html {
+              font-family: ${safeFontFamily};
+              font-size: ${customSettings.fontSize}px;
+              line-height: ${customSettings.lineHeight};
+              color: #000000;
+            }
+            
+            body {
+              font-family: inherit;
+              font-size: inherit;
+              line-height: inherit;
+              color: #000000 !important;
+              background: white !important;
+              margin: 0;
+              padding: 0;
+              min-height: 100vh;
+            }
+            
+            .content {
+              max-width: 100%;
+              margin: 0;
+              padding: 0;
+              font-family: inherit;
+              color: inherit;
+            }
+            
+            .content * {
+              font-family: inherit;
+            }
+            
+            /* Headers */
+            h1, .content h1 {
+              font-family: inherit !important;
+              color: #000000 !important;
+              font-size: 2em !important;
+              margin-bottom: 0.5em !important;
+              border-bottom: 2px solid #333333 !important;
+              padding-bottom: 0.3em !important;
+              font-weight: bold !important;
+              page-break-after: avoid !important;
+              margin-top: 0 !important;
+            }
+            
+            h2, .content h2 {
+              font-family: inherit !important;
+              color: #000000 !important;
+              font-size: 1.5em !important;
+              margin-top: 1.5em !important;
+              margin-bottom: 0.5em !important;
+              font-weight: bold !important;
+              page-break-after: avoid !important;
+            }
+            
+            h3, .content h3 {
+              font-family: inherit !important;
+              color: #333333 !important;
+              font-size: 1.2em !important;
+              margin-top: 1em !important;
+              margin-bottom: 0.5em !important;
+              font-weight: bold !important;
+              page-break-after: avoid !important;
+            }
+            
+            h4, h5, h6, .content h4, .content h5, .content h6 {
+              font-family: inherit !important;
+              color: #333333 !important;
+              font-weight: bold !important;
+              margin-top: 0.8em !important;
+              margin-bottom: 0.4em !important;
+              page-break-after: avoid !important;
+            }
+            
+            /* Text formatting */
+            p, .content p {
+              font-family: inherit !important;
+              color: #000000 !important;
+              margin-bottom: 1em !important;
+              orphans: 3 !important;
+              widows: 3 !important;
+              line-height: inherit !important;
+            }
+            
+            strong, .content strong, b, .content b {
+              color: #000000 !important;
+              font-weight: bold !important;
+              font-family: inherit !important;
+            }
+            
+            em, .content em, i, .content i {
+              font-style: italic !important;
+              font-family: inherit !important;
+              color: inherit !important;
+            }
+            
+            /* Links */
+            a, .content a {
+              color: #000000 !important;
+              text-decoration: underline !important;
+              font-family: inherit !important;
+            }
+            
+            /* Code */
+            code, .content code {
+              background-color: #f5f5f5 !important;
+              color: #333333 !important;
+              padding: 0.2em 0.4em !important;
+              border-radius: 3px !important;
+              font-family: 'Courier New', 'Monaco', monospace !important;
+              font-size: 0.9em !important;
+            }
+            
+            pre, .content pre {
+              background-color: #f8f9fa !important;
+              color: #333333 !important;
+              padding: 1em !important;
+              border-radius: 4px !important;
+              border-left: 4px solid #666666 !important;
+              overflow-x: auto !important;
+              margin: 1em 0 !important;
+              page-break-inside: avoid !important;
+              font-family: 'Courier New', 'Monaco', monospace !important;
+            }
+            
+            pre code, .content pre code {
+              background: none !important;
+              padding: 0 !important;
+              font-family: inherit !important;
+            }
+            
+            /* Blockquotes */
+            blockquote, .content blockquote {
+              border-left: 4px solid #666666 !important;
+              padding-left: 1em !important;
+              margin: 1em 0 !important;
+              color: #333333 !important;
+              font-style: italic !important;
+              page-break-inside: avoid !important;
+              font-family: inherit !important;
+            }
+            
+            /* Lists */
+            ul, ol, .content ul, .content ol {
+              padding-left: 1.5em !important;
+              margin: 1em 0 !important;
+              font-family: inherit !important;
+              color: #000000 !important;
+            }
+            
+            li, .content li {
+              margin-bottom: 0.3em !important;
+              font-family: inherit !important;
+              color: #000000 !important;
+              line-height: inherit !important;
+            }
+            
+            /* Tables */
+            table, .content table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              margin: 1em 0 !important;
+              page-break-inside: avoid !important;
+              font-family: inherit !important;
+            }
+            
+            th, .content th {
+              border: 1px solid #333333 !important;
+              padding: 0.5em !important;
+              text-align: left !important;
+              background-color: #000000 !important;
+              color: white !important;
+              font-weight: bold !important;
+              font-family: inherit !important;
+            }
+            
+            td, .content td {
+              border: 1px solid #333333 !important;
+              padding: 0.5em !important;
+              text-align: left !important;
+              font-family: inherit !important;
+              color: #000000 !important;
+            }
+            
+            /* Horizontal rules */
+            hr, .content hr {
+              border: none !important;
+              height: 2px !important;
+              background-color: #666666 !important;
+              margin: 2em 0 !important;
+            }
+            
+            /* Page breaks */
+            .page-break {
+              page-break-before: always;
+            }
+            
+            /* Header and footer */
+            .header {
+              position: running(header);
+              font-size: 10px;
+              color: #666666;
+              border-bottom: 1px solid #e5e7eb;
+              padding-bottom: 5px;
+              margin-bottom: 10px;
+            }
+            
+            .footer {
+              position: running(footer);
+              font-size: 10px;
+              color: #666666;
+              border-top: 1px solid #e5e7eb;
+              padding-top: 5px;
+              margin-top: 10px;
+            }
+            
+            @page {
+              @top-center {
+                content: element(header);
+              }
+              @bottom-center {
+                content: element(footer);
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${customSettings.includeHeader && customSettings.headerText ? `
+            <div class="header">${customSettings.headerText}</div>
+          ` : ''}
           
-          // Position page numbers at bottom center
-          const pageNumberY = pageConfig.height - margins.bottom + 15;
-          pdf.text(`Page ${i} of ${pageCount}`, pageConfig.width / 2, pageNumberY, { align: 'center' });
-        }
-      }
+          <div class="content">
+            ${htmlContent}
+          </div>
+          
+          ${customSettings.includeFooter && customSettings.footerText ? `
+            <div class="footer">${customSettings.footerText}</div>
+          ` : ''}
+          
+          <script>
+            window.onload = function() {
+              // Add debug indicator
+              console.log('Print window loaded with font:', getComputedStyle(document.body).fontFamily);
+              
+              // Small delay to ensure everything is loaded
+              setTimeout(function() {
+                window.print();
+                // Close the window after printing (user can cancel if needed)
+                window.onafterprint = function() {
+                  window.close();
+                };
+                // Fallback: close after 2 seconds if print dialog was cancelled
+                setTimeout(function() {
+                  if (!window.closed) {
+                    window.close();
+                  }
+                }, 2000);
+              }, 500);
+            };
+          </script>
+        </body>
+        </html>
+      `;
 
-      // Save the PDF
-      pdf.save('document.pdf');
+      // Write the HTML to the new window
+      printWindow.document.write(printHTML);
+      printWindow.document.close();
+      
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Error generating PDF: ' + (error instanceof Error ? error.message : 'Unknown error occurred'));
+      console.error('Error generating print page:', error);
+      alert('Error generating print page: ' + (error instanceof Error ? error.message : 'Unknown error occurred'));
     }
   };
 
@@ -456,9 +669,9 @@ function greet(name) {
                     variant="filled"
                     color="blue"
                     disabled={isContentEmpty}
-                    title={isContentEmpty ? 'Add some content to export PDF' : 'Export document as PDF'}
+                    title={isContentEmpty ? 'Add some content to print/save as PDF' : 'Open print dialog to save as PDF'}
                   >
-                    Export PDF
+                    Print/Save PDF
                   </Button>
                 </Group>
               </Group>

@@ -1,14 +1,10 @@
-import React from 'react';
 import {
-  Container,
-  Group,
-  Title,
-  ActionIcon,
-  useMantineColorScheme,
-  Button,
-  Box,
+    ActionIcon, Button, Container,
+    Group,
+    Title, useMantineColorScheme
 } from '@mantine/core';
-import { Sun, Moon, Home, Calculator, FileText } from 'lucide-react';
+import { Calculator, FileText, Home, Moon, Sun } from 'lucide-react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar: React.FC = () => {

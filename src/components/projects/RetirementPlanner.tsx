@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Title, Grid, NumberInput, Select, Button, Text, Tabs, Group, Badge, Stack, Slider, Progress, Divider, Switch } from '@mantine/core';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, ComposedChart } from 'recharts';
-import { useMantineColorScheme } from '@mantine/core';
-import { TrendingUp, Calculator, DollarSign, Calendar, Target, PiggyBank, Users, Clock } from 'lucide-react';
+import { Badge, Card, Divider, Grid, Group, NumberInput, Slider, Stack, Switch, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
+import { Calculator, Calendar, Clock, DollarSign, PiggyBank, Target, TrendingUp, Users } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface RetirementInput {
   currentAge: number;
@@ -24,7 +23,8 @@ interface RetirementInput {
   retirementTaxRate: number;
 }
 
-interface RetirementResult {
+/*
+interface _RetirementResult {
   yearsToRetirement: number;
   totalSavingsAtRetirement: number;
   totalContributions: number;
@@ -50,6 +50,7 @@ interface RetirementResult {
     aggressive: number;
   };
 }
+*/
 
 const RetirementPlanner: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
@@ -89,8 +90,8 @@ const RetirementPlanner: React.FC = () => {
       withdrawalRate,
       lifeExpectancy,
       rothContribution,
-      taxRate,
-      retirementTaxRate
+      taxRate: _taxRate,
+      retirementTaxRate: _retirementTaxRate
     } = inputs;
 
     if (currentAge >= retirementAge || retirementAge >= lifeExpectancy) {
@@ -100,7 +101,7 @@ const RetirementPlanner: React.FC = () => {
     const yearsToRetirement = retirementAge - currentAge;
     const retirementDuration = lifeExpectancy - retirementAge;
     const monthlyReturn = annualReturn / 100 / 12;
-    const monthlyInflation = inflationRate / 100 / 12;
+    // const _monthlyInflation = inflationRate / 100 / 12;
 
     // Calculate retirement savings growth
     let balance = currentSavings;
@@ -152,7 +153,7 @@ const RetirementPlanner: React.FC = () => {
     let surplusYears = 0;
 
     for (let year = 0; year < retirementDuration; year++) {
-      const startBalance = retirementBalance;
+      // const startBalance = retirementBalance;
       const annualWithdrawal = Math.min(annualIncomeNeeded, retirementBalance * (withdrawalRate / 100));
       
       // Apply growth and withdrawals

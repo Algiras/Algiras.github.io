@@ -1,40 +1,16 @@
-import React from 'react';
 import {
-  Container,
-  Title,
-  Text,
-  Group,
-  Stack,
-  Anchor,
-  Card,
-  SimpleGrid,
-  Button,
-  Badge,
-  Box,
-  Divider,
-  ThemeIcon,
-  Flex,
-  Avatar,
-  ActionIcon,
-  Tooltip,
+    ActionIcon, Badge,
+    Box, Button, Card, Container, Divider, Flex, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, Tooltip
 } from '@mantine/core';
 import {
-  Linkedin,
-  Github,
-  Mail,
-  MapPin,
-  Code,
-  Bot,
-  Zap,
-  Users,
-  Target,
-  ArrowRight,
-  Download,
-  ExternalLink,
+    ArrowRight, Bot, Code, Download,
+    ExternalLink, Github, Linkedin, Mail,
+    MapPin, Target, Users, Zap
 } from 'lucide-react';
+import React from 'react';
 
-import { useDocumentTitle } from '../utils/documentUtils';
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '../utils/documentUtils';
 
 const Home: React.FC = () => {
   useDocumentTitle('Algimantas Krasnauskas - Software Engineer');
@@ -268,7 +244,7 @@ const Home: React.FC = () => {
           </Box>
 
           <Group justify="center" gap="sm">
-            {skills.map((skill, index) => (
+            {skills.map((skill) => (
               <Badge
                 key={skill}
                 size="lg"

@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Title, Grid, NumberInput, Select, Button, Text, Tabs, Group, Badge, Stack } from '@mantine/core';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { useMantineColorScheme } from '@mantine/core';
-import { TrendingUp, Calculator, DollarSign, Percent } from 'lucide-react';
+import { Badge, Card, Grid, Group, NumberInput, Select, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
+import { Calculator, DollarSign, Percent, TrendingUp } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface ROIInput {
   initialInvestment: number;
@@ -13,7 +12,8 @@ interface ROIInput {
   calculationType: 'simple' | 'annualized' | 'compound';
 }
 
-interface ROIResult {
+/*
+interface _ROIResult {
   simpleROI: number;
   annualizedROI: number;
   totalReturn: number;
@@ -22,6 +22,7 @@ interface ROIResult {
   breakEvenPoint: number;
   riskAdjustedReturn: number;
 }
+*/
 
 const ROICalculator: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
@@ -70,7 +71,7 @@ const ROICalculator: React.FC = () => {
   const chartData = useMemo(() => {
     if (!results) return [];
     
-    const { totalInvested, totalReturn, netProfit } = results;
+    const { totalReturn, netProfit } = results;
     return [
       { name: 'Initial Investment', value: inputs.initialInvestment, color: '#8884d8' },
       { name: 'Additional Investments', value: inputs.additionalInvestments, color: '#82ca9d' },
@@ -259,7 +260,7 @@ const ROICalculator: React.FC = () => {
               <Tabs.Tab value="overview" leftSection={<Calculator size={16} />}>
                 Overview
               </Tabs.Tab>
-              <Tabs.Tab value="breakdown" leftSection={<BarChart size={16} />}>
+              <Tabs.Tab value="breakdown" leftSection={<BarChart style={{ width: 16, height: 16 }} />}>
                 Breakdown
               </Tabs.Tab>
               <Tabs.Tab value="timeline" leftSection={<TrendingUp size={16} />}>
@@ -304,7 +305,7 @@ const ROICalculator: React.FC = () => {
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                         >
                           {chartData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />

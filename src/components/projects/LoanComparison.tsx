@@ -1,43 +1,15 @@
-import React, { useState, useMemo } from 'react';
 import {
-  Container,
-  Title,
-  Text,
-  SimpleGrid,
-  Card,
-  Group,
-  Button,
-  Stack,
-  NumberInput,
-  Select,
-  Divider,
-  Badge,
-  Box,
-  Alert,
-  Tabs,
-  Grid,
-  ActionIcon,
-  Tooltip,
+    ActionIcon, Alert, Badge,
+    Box, Card, Container, Group, NumberInput,
+    Select, SimpleGrid, Stack, Tabs, Text, Title, useMantineColorScheme
 } from '@mantine/core';
+import { AlertCircle, ArrowLeft, CheckCircle, DollarSign } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  Area,
-  AreaChart,
+    Area,
+    AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis,
+    YAxis
 } from 'recharts';
-import { ArrowLeft, Calculator, TrendingUp, DollarSign, AlertCircle, CheckCircle } from 'lucide-react';
-import { useMantineColorScheme } from '@mantine/core';
 
 interface LoanData {
   principal: number;

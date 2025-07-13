@@ -1,17 +1,17 @@
+import * as Sentry from '@sentry/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
+import { APP_VERSION, SENTRY_DSN } from './constants/config';
 import './index.css';
-import * as Sentry from '@sentry/react';
 import { initializeAnalytics } from './utils/analytics';
-import { SENTRY_DSN, APP_VERSION } from './constants/config';
 
 // Mantine CSS imports
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 
 // Mantine imports
-import { MantineProvider, ColorSchemeScript } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { theme } from './theme';
 

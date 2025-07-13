@@ -1,10 +1,10 @@
-import React from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import Finance from './pages/Finance';
-import Documents from './pages/Documents';
+// React import removed - not needed in this file
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import Layout from './components/Layout';
+import Documents from './pages/Documents';
+import Finance from './pages/Finance';
+import Home from './pages/Home';
 
 function App() {
   return (

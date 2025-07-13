@@ -12,7 +12,7 @@
  */
 
 import ReactGA from 'react-ga4';
-import { GA_MEASUREMENT_ID, ENABLE_ANALYTICS } from '../constants/config';
+import { ENABLE_ANALYTICS, GA_MEASUREMENT_ID } from '../constants/config';
 
 // Constants for analytics consent
 export const ANALYTICS_CONSENT_KEY = 'site-analytics-consent';

@@ -6,14 +6,14 @@ import { sentryVitePlugin } from '@sentry/vite-plugin'
 export default defineConfig({
   plugins: [
     react(),
-    // Add Sentry plugin for source maps
-    sentryVitePlugin({
-      org: "your-sentry-org", // Replace with your Sentry organization
-      project: "algiras-github-io", // Replace with your Sentry project name
-      // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
-      // and should be stored in environment variables
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-    }),
+    // Add Sentry plugin for source maps only if properly configured
+    ...(process.env.SENTRY_AUTH_TOKEN ? [
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG || "your-sentry-org",
+        project: process.env.SENTRY_PROJECT || "algiras-github-io",
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+      })
+    ] : []),
   ],
   // Enable source map generation in production
   build: {

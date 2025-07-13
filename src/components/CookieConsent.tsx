@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Group, Text, Button, Paper } from '@mantine/core';
+import { Button, Group, Paper, Text } from '@mantine/core';
+import React, { useEffect, useState } from 'react';
 import { setAnalyticsConsent } from '../utils/analytics';
 
 // Key for tracking if the consent banner has been shown across the entire site

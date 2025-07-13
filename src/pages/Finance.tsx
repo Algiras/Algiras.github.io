@@ -1,23 +1,13 @@
-import React from 'react';
 import {
-  Container,
-  Title,
-  Text,
-  SimpleGrid,
-  Card,
-  Group,
-  Badge,
-  Button,
-  Stack,
-  ThemeIcon,
-  Box,
+    Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title
 } from '@mantine/core';
-import { Calculator, TrendingUp, BarChart3, PiggyBank, Target, Home, Clock } from 'lucide-react';
-import LoanComparison from '../components/projects/LoanComparison';
-import ROICalculator from '../components/projects/ROICalculator';
+import { Calculator, Clock, Home, PiggyBank, Target, TrendingUp } from 'lucide-react';
+import React from 'react';
 import InvestmentCalculator from '../components/projects/InvestmentCalculator';
+import LoanComparison from '../components/projects/LoanComparison';
 import MortgageCalculator from '../components/projects/MortgageCalculator';
 import RetirementPlanner from '../components/projects/RetirementPlanner';
+import ROICalculator from '../components/projects/ROICalculator';
 
 const Finance: React.FC = () => {
   const [activeProject, setActiveProject] = React.useState<string | null>(null);

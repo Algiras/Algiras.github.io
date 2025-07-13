@@ -1,7 +1,7 @@
+import { Anchor, AppShell, Box, Container, Group, Text } from '@mantine/core';
 import React from 'react';
-import { AppShell, Container, Text, Group, Anchor, Box } from '@mantine/core';
-import Navbar from './Navbar';
 import CookieConsent from './CookieConsent';
+import Navbar from './Navbar';
 
 interface LayoutProps {
   children: React.ReactNode;
