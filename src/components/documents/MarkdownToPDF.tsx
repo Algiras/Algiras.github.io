@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Card, Title, Grid, Textarea, Button, Text, Select, Group, Badge, Stack, Switch, NumberInput, Divider } from '@mantine/core';
-import { useMantineColorScheme } from '@mantine/core';
-import { Download, Eye, FileText, Settings, Palette } from 'lucide-react';
+import { useMantineColorScheme, useMantineTheme } from '@mantine/core';
+import { Download, Eye, FileText, Settings, Palette, Save, RotateCcw } from 'lucide-react';
 import { marked } from 'marked';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { useMarkdownDocumentPersistence } from '../../hooks/useCalculatorPersistence';
 
 interface DocumentTemplate {
   id: string;
@@ -31,10 +32,19 @@ interface DocumentTemplate {
 
 const MarkdownToPDF: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
+  const theme = useMantineTheme();
   const isDark = colorScheme === 'dark';
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const [markdown, setMarkdown] = useState(`# Document Title
+  // Use persistence hook
+  const { data: persistedData, saveData, clearAllData, getLastUpdated } = useMarkdownDocumentPersistence();
+
+  // Initialize with persisted data or default sample content
+  const [markdown, setMarkdown] = useState(() => {
+    if (persistedData?.content) {
+      return persistedData.content;
+    }
+    return `# Document Title
 
 ## Introduction
 
@@ -81,25 +91,52 @@ function greet(name) {
 ---
 
 **Thank you for using our markdown-to-PDF converter!**
-`);
-
-  const [selectedTemplate, setSelectedTemplate] = useState('professional');
-  const [customSettings, setCustomSettings] = useState({
-    fontSize: 12,
-    lineHeight: 1.6,
-    includePageNumbers: true,
-    includeHeader: false,
-    headerText: '',
-    includeFooter: false,
-    footerText: '',
-    pageSize: 'a4' as 'a4' | 'letter',
-    pageMargins: {
-      top: 20,
-      right: 20,
-      bottom: 20,
-      left: 20
-    }
+`;
   });
+
+  const [selectedTemplate, setSelectedTemplate] = useState(() => persistedData?.template || 'professional');
+  const [customSettings, setCustomSettings] = useState(() => ({
+    fontSize: persistedData?.settings?.fontSize || 12,
+    lineHeight: persistedData?.settings?.lineHeight || 1.6,
+    includePageNumbers: persistedData?.settings?.includePageNumbers ?? true,
+    includeHeader: persistedData?.settings?.includeHeader || false,
+    headerText: persistedData?.settings?.headerText || '',
+    includeFooter: persistedData?.settings?.includeFooter || false,
+    footerText: persistedData?.settings?.footerText || '',
+         pageSize: persistedData?.settings?.pageSize || 'a4',
+    pageMargins: {
+      top: persistedData?.settings?.marginTop || 20,
+      right: persistedData?.settings?.marginRight || 20,
+      bottom: persistedData?.settings?.marginBottom || 20,
+      left: persistedData?.settings?.marginLeft || 20
+    }
+  }));
+
+  // Auto-save data when it changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      saveData({
+        content: markdown,
+        template: selectedTemplate,
+        settings: {
+          fontSize: customSettings.fontSize,
+          lineHeight: customSettings.lineHeight,
+          includePageNumbers: customSettings.includePageNumbers,
+          includeHeader: customSettings.includeHeader,
+          includeFooter: customSettings.includeFooter,
+          headerText: customSettings.headerText,
+          footerText: customSettings.footerText,
+          pageSize: customSettings.pageSize,
+          marginTop: customSettings.pageMargins.top,
+          marginRight: customSettings.pageMargins.right,
+          marginBottom: customSettings.pageMargins.bottom,
+          marginLeft: customSettings.pageMargins.left,
+        }
+      });
+    }, 1000); // Debounce saves by 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [markdown, selectedTemplate, customSettings, saveData]);
 
   const templates: DocumentTemplate[] = [
     {
@@ -327,13 +364,14 @@ function greet(name) {
     fontSize: `${customSettings.fontSize}px`,
     lineHeight: customSettings.lineHeight,
     color: currentTemplate.styles.colors.text,
-    backgroundColor: currentTemplate.styles.colors.background,
+    backgroundColor: currentTemplate.styles.colors.background, // Always white for document
     padding: `${customSettings.pageMargins.top}mm ${customSettings.pageMargins.right}mm ${customSettings.pageMargins.bottom}mm ${customSettings.pageMargins.left}mm`,
     minHeight: '800px',
     maxWidth: pageWidths[customSettings.pageSize],
     margin: '0 auto',
-    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-    borderRadius: '4px'
+    boxShadow: isDark ? '0 0 10px rgba(0,0,0,0.3)' : '0 0 10px rgba(0,0,0,0.1)',
+    borderRadius: '4px',
+    border: `1px solid ${isDark ? theme.colors.dark[4] : theme.colors.gray[3]}`
   };
 
   return (
@@ -347,19 +385,50 @@ function greet(name) {
           <Badge variant="light" color="blue">Browser-based</Badge>
         </Group>
 
-        <Grid>
+        {/* Instructions for ChatGPT */}
+        <Card 
+          shadow="xs" 
+          padding="md" 
+          radius="md" 
+          withBorder 
+          mb="lg" 
+          style={{ 
+            backgroundColor: isDark ? theme.colors.dark[7] : theme.colors.gray[0]
+          }}
+        >
+          <Stack gap="sm">
+            <Group gap="xs">
+              <Text size="sm" fw={600} c={theme.primaryColor}>💡 Pro Tip: Generate content with ChatGPT</Text>
+            </Group>
+            <Text size="sm" c="dimmed">
+              Copy this prompt to ChatGPT to generate markdown-ready documents:
+            </Text>
+            <Card 
+              shadow="xs" 
+              padding="sm" 
+              radius="sm" 
+              style={{ 
+                backgroundColor: isDark ? theme.colors.dark[6] : theme.white,
+                border: `1px solid ${isDark ? theme.colors.dark[4] : theme.colors.gray[3]}`
+              }}
+            >
+              <Text size="xs" style={{ fontFamily: theme.fontFamilyMonospace }}>
+                "Please create a [document type] in markdown format. Use proper markdown syntax including # for headings, ** for bold, * for italic, - for bullet points, numbered lists, code blocks with ```, tables with | separators, and {'>'} for blockquotes. Format it so I can copy and paste directly into a markdown editor."
+              </Text>
+            </Card>
+            <Text size="xs" c="dimmed">
+              Replace [document type] with: report, resume, proposal, article, documentation, etc.
+            </Text>
+          </Stack>
+        </Card>
+
+        {/* Main Editor and Preview Grid */}
+        <Grid align="stretch">
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Stack gap="md">
+            <Stack gap="md" h="100%">
               <Group justify="space-between">
                 <Text size="lg" fw={600}>Editor</Text>
                 <Group gap="xs">
-                  <Select
-                    value={selectedTemplate}
-                    onChange={(value) => setSelectedTemplate(value || 'professional')}
-                    data={templates.map(t => ({ value: t.id, label: t.name }))}
-                    leftSection={<Palette size={16} />}
-                    size="sm"
-                  />
                   <Button
                     onClick={() => setMarkdown('')}
                     size="sm"
@@ -369,6 +438,16 @@ function greet(name) {
                     title="Clear all content"
                   >
                     Clear All
+                  </Button>
+                  <Button
+                    onClick={clearAllData}
+                    size="sm"
+                    variant="light"
+                    color="gray"
+                    leftSection={<RotateCcw size={16} />}
+                    title="Reset to defaults and clear saved data"
+                  >
+                    Reset
                   </Button>
                   <Button
                     onClick={generatePDF}
@@ -383,136 +462,6 @@ function greet(name) {
                   </Button>
                 </Group>
               </Group>
-
-              <Divider label="Settings" labelPosition="center" />
-
-              <Group grow>
-                <NumberInput
-                  label="Font Size"
-                  value={customSettings.fontSize}
-                  onChange={(value) => setCustomSettings(prev => ({ ...prev, fontSize: Number(value) || 12 }))}
-                  min={8}
-                  max={24}
-                  step={1}
-                />
-                <NumberInput
-                  label="Line Height"
-                  value={customSettings.lineHeight}
-                  onChange={(value) => setCustomSettings(prev => ({ ...prev, lineHeight: Number(value) || 1.6 }))}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  decimalScale={1}
-                />
-              </Group>
-
-              <Group grow>
-                <Select
-                  label="Page Size"
-                  value={customSettings.pageSize}
-                  onChange={(value) => setCustomSettings(prev => ({ ...prev, pageSize: (value as 'a4' | 'letter') || 'a4' }))}
-                  data={[
-                    { value: 'a4', label: 'A4 (210 × 297 mm)' },
-                    { value: 'letter', label: 'Letter (8.5 × 11 in)' }
-                  ]}
-                />
-                <NumberInput
-                  label="Top Margin (mm)"
-                  value={customSettings.pageMargins.top}
-                  onChange={(value) => setCustomSettings(prev => ({ 
-                    ...prev, 
-                    pageMargins: { ...prev.pageMargins, top: Number(value) || 20 }
-                  }))}
-                  min={5}
-                  max={50}
-                  step={1}
-                />
-              </Group>
-
-              <Group grow>
-                <NumberInput
-                  label="Left Margin (mm)"
-                  value={customSettings.pageMargins.left}
-                  onChange={(value) => setCustomSettings(prev => ({ 
-                    ...prev, 
-                    pageMargins: { ...prev.pageMargins, left: Number(value) || 20 }
-                  }))}
-                  min={5}
-                  max={50}
-                  step={1}
-                />
-                <NumberInput
-                  label="Right Margin (mm)"
-                  value={customSettings.pageMargins.right}
-                  onChange={(value) => setCustomSettings(prev => ({ 
-                    ...prev, 
-                    pageMargins: { ...prev.pageMargins, right: Number(value) || 20 }
-                  }))}
-                  min={5}
-                  max={50}
-                  step={1}
-                />
-                <NumberInput
-                  label="Bottom Margin (mm)"
-                  value={customSettings.pageMargins.bottom}
-                  onChange={(value) => setCustomSettings(prev => ({ 
-                    ...prev, 
-                    pageMargins: { ...prev.pageMargins, bottom: Number(value) || 20 }
-                  }))}
-                  min={5}
-                  max={50}
-                  step={1}
-                />
-              </Group>
-
-              <Group grow>
-                <Switch
-                  label="Include Page Numbers"
-                  checked={customSettings.includePageNumbers}
-                  onChange={(event) => setCustomSettings(prev => ({ ...prev, includePageNumbers: event.currentTarget.checked }))}
-                />
-                <div></div>
-              </Group>
-
-              <Switch
-                label="Include Header"
-                checked={customSettings.includeHeader}
-                onChange={(event) => setCustomSettings(prev => ({ ...prev, includeHeader: event.currentTarget.checked }))}
-              />
-
-              <Textarea
-                label="Header Text"
-                value={customSettings.headerText}
-                onChange={(event) => setCustomSettings(prev => ({ ...prev, headerText: event.currentTarget.value }))}
-                placeholder="Enter header text..."
-                rows={2}
-                disabled={!customSettings.includeHeader}
-                style={{ 
-                  opacity: customSettings.includeHeader ? 1 : 0.5,
-                  transition: 'opacity 0.2s ease'
-                }}
-              />
-
-              <Switch
-                label="Include Footer"
-                checked={customSettings.includeFooter}
-                onChange={(event) => setCustomSettings(prev => ({ ...prev, includeFooter: event.currentTarget.checked }))}
-              />
-
-              <Textarea
-                label="Footer Text"
-                value={customSettings.footerText}
-                onChange={(event) => setCustomSettings(prev => ({ ...prev, footerText: event.currentTarget.value }))}
-                placeholder="Enter footer text..."
-                rows={2}
-                disabled={!customSettings.includeFooter}
-                style={{ 
-                  opacity: customSettings.includeFooter ? 1 : 0.5,
-                  transition: 'opacity 0.2s ease'
-                }}
-              />
-
-              <Divider label="Markdown Editor" labelPosition="center" />
 
               <Textarea
                 value={markdown}
@@ -532,29 +481,20 @@ This is a **bold** and *italic* text example.
 ```javascript
 console.log('Hello, world!');
 ```"
-                minRows={80}
-                maxRows={80}
                 styles={{
                   input: {
                     fontFamily: 'Monaco, Menlo, monospace',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    height: '800px',
+                    resize: 'vertical'
                   }
                 }}
               />
-
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed">
-                  <strong>Template:</strong> {currentTemplate.name} - {currentTemplate.description}
-                </Text>
-                <Text size="sm" c="dimmed">
-                  {trimmedMarkdown.length} characters • {trimmedMarkdown.split(/\s+/).filter(word => word.length > 0).length} words
-                </Text>
-              </Group>
             </Stack>
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Stack gap="md">
+            <Stack gap="md" h="100%">
               <Group justify="space-between">
                 <Text size="lg" fw={600}>Preview</Text>
                 <Badge 
@@ -568,7 +508,11 @@ console.log('Hello, world!');
 
               <div
                 ref={previewRef}
-                style={previewStyles}
+                style={{
+                  ...previewStyles,
+                  height: '800px',
+                  overflow: 'auto'
+                }}
                 className="preview-content"
               >
                 {/* Header Preview */}
@@ -635,6 +579,171 @@ console.log('Hello, world!');
             </Stack>
           </Grid.Col>
         </Grid>
+
+        {/* Annotations Section */}
+        <Stack gap="sm" mt="md">
+          <Group justify="space-between">
+            <Text size="sm" c="dimmed">
+              <strong>Template:</strong> {currentTemplate.name} - {currentTemplate.description}
+            </Text>
+            <Text size="sm" c="dimmed">
+              {trimmedMarkdown.length} characters • {trimmedMarkdown.split(/\s+/).filter(word => word.length > 0).length} words
+            </Text>
+          </Group>
+          
+          {getLastUpdated() && (
+            <Text size="xs" c="dimmed" ta="center">
+              <Save size={12} style={{ display: 'inline', marginRight: '4px' }} />
+              Auto-saved {getLastUpdated()?.toLocaleString()}
+            </Text>
+          )}
+        </Stack>
+      </Card>
+
+      {/* Settings Section Below */}
+      <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Stack gap="md">
+          <Group justify="space-between">
+            <Text size="lg" fw={600}>Document Settings</Text>
+            <Select
+              value={selectedTemplate}
+              onChange={(value) => setSelectedTemplate(value || 'professional')}
+              data={templates.map(t => ({ value: t.id, label: t.name }))}
+              leftSection={<Palette size={16} />}
+              size="sm"
+              placeholder="Select template"
+            />
+          </Group>
+
+          <Divider />
+
+          <Group grow>
+            <NumberInput
+              label="Font Size"
+              value={customSettings.fontSize}
+              onChange={(value) => setCustomSettings(prev => ({ ...prev, fontSize: Number(value) || 12 }))}
+              min={8}
+              max={24}
+              step={1}
+            />
+            <NumberInput
+              label="Line Height"
+              value={customSettings.lineHeight}
+              onChange={(value) => setCustomSettings(prev => ({ ...prev, lineHeight: Number(value) || 1.6 }))}
+              min={1}
+              max={3}
+              step={0.1}
+              decimalScale={1}
+            />
+          </Group>
+
+          <Group grow>
+            <Select
+              label="Page Size"
+              value={customSettings.pageSize}
+              onChange={(value) => setCustomSettings(prev => ({ ...prev, pageSize: (value as 'a4' | 'letter') || 'a4' }))}
+              data={[
+                { value: 'a4', label: 'A4 (210 × 297 mm)' },
+                { value: 'letter', label: 'Letter (8.5 × 11 in)' }
+              ]}
+            />
+            <NumberInput
+              label="Top Margin (mm)"
+              value={customSettings.pageMargins.top}
+              onChange={(value) => setCustomSettings(prev => ({ 
+                ...prev, 
+                pageMargins: { ...prev.pageMargins, top: Number(value) || 20 }
+              }))}
+              min={5}
+              max={50}
+              step={1}
+            />
+          </Group>
+
+          <Group grow>
+            <NumberInput
+              label="Left Margin (mm)"
+              value={customSettings.pageMargins.left}
+              onChange={(value) => setCustomSettings(prev => ({ 
+                ...prev, 
+                pageMargins: { ...prev.pageMargins, left: Number(value) || 20 }
+              }))}
+              min={5}
+              max={50}
+              step={1}
+            />
+            <NumberInput
+              label="Right Margin (mm)"
+              value={customSettings.pageMargins.right}
+              onChange={(value) => setCustomSettings(prev => ({ 
+                ...prev, 
+                pageMargins: { ...prev.pageMargins, right: Number(value) || 20 }
+              }))}
+              min={5}
+              max={50}
+              step={1}
+            />
+            <NumberInput
+              label="Bottom Margin (mm)"
+              value={customSettings.pageMargins.bottom}
+              onChange={(value) => setCustomSettings(prev => ({ 
+                ...prev, 
+                pageMargins: { ...prev.pageMargins, bottom: Number(value) || 20 }
+              }))}
+              min={5}
+              max={50}
+              step={1}
+            />
+          </Group>
+
+          <Group grow>
+            <Switch
+              label="Include Page Numbers"
+              checked={customSettings.includePageNumbers}
+              onChange={(event) => setCustomSettings(prev => ({ ...prev, includePageNumbers: event.currentTarget.checked }))}
+            />
+            <div></div>
+          </Group>
+
+          <Switch
+            label="Include Header"
+            checked={customSettings.includeHeader}
+            onChange={(event) => setCustomSettings(prev => ({ ...prev, includeHeader: event.currentTarget.checked }))}
+          />
+
+          <Textarea
+            label="Header Text"
+            value={customSettings.headerText}
+            onChange={(event) => setCustomSettings(prev => ({ ...prev, headerText: event.currentTarget.value }))}
+            placeholder="Enter header text..."
+            rows={2}
+            disabled={!customSettings.includeHeader}
+            style={{ 
+              height: '100%',
+              opacity: customSettings.includeHeader ? 1 : 0.5,
+              transition: 'opacity 0.2s ease'
+            }}
+          />
+
+          <Switch
+            label="Include Footer"
+            checked={customSettings.includeFooter}
+            onChange={(event) => setCustomSettings(prev => ({ ...prev, includeFooter: event.currentTarget.checked }))}
+          />
+
+          <Textarea
+            label="Footer Text"
+            value={customSettings.footerText}
+            onChange={(event) => setCustomSettings(prev => ({ ...prev, footerText: event.currentTarget.value }))}
+            placeholder="Enter footer text..."
+            rows={2}
+            disabled={!customSettings.includeFooter}
+            style={{ 
+              opacity: customSettings.includeFooter ? 1 : 0.5,
+              transition: 'opacity 0.2s ease'
+            }}
+          />
+        </Stack>
       </Card>
 
       <style>
@@ -660,13 +769,15 @@ console.log('Hello, world!');
           }
           .preview-content code {
             background-color: #f5f5f5;
+            color: #333;
             padding: 0.2em 0.4em;
             border-radius: 3px;
-            font-family: Monaco, Menlo, monospace;
+            font-family: ${theme.fontFamilyMonospace};
             font-size: 0.9em;
           }
           .preview-content pre {
             background-color: #f8f9fa;
+            color: #333;
             padding: 1em;
             border-radius: 4px;
             overflow-x: auto;

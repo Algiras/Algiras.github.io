@@ -118,8 +118,8 @@ body {
 
 .animate-card-glow {
   animation: cardGlow 3s ease-in-out infinite;
-}
-
+  }
+  
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out;
 }

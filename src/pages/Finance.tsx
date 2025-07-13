@@ -12,7 +12,7 @@ import {
   ThemeIcon,
   Box,
 } from '@mantine/core';
-import { Calculator, TrendingUp, BarChart3, DollarSign, PiggyBank, Target, Home, Clock } from 'lucide-react';
+import { Calculator, TrendingUp, BarChart3, PiggyBank, Target, Home, Clock } from 'lucide-react';
 import LoanComparison from '../components/projects/LoanComparison';
 import ROICalculator from '../components/projects/ROICalculator';
 import InvestmentCalculator from '../components/projects/InvestmentCalculator';
@@ -236,55 +236,7 @@ const Finance: React.FC = () => {
           })}
         </SimpleGrid>
 
-        {/* Coming Soon Section */}
-        <Box ta="center" mt="xl">
-          <Title order={2} size="h3" mb="md">
-            Coming Soon
-          </Title>
-          <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
-            <Card padding="lg" radius="md" withBorder style={{ opacity: 0.7 }}>
-              <Stack gap="md" ta="center">
-                <ThemeIcon size="lg" radius="md" variant="light" color="green">
-                  <DollarSign size={20} />
-                </ThemeIcon>
-                <Title order={4} size="h5">
-                  Budget Planner
-                </Title>
-                <Text size="sm" c="dimmed">
-                  Interactive budget planning with expense tracking
-                </Text>
-              </Stack>
-            </Card>
 
-            <Card padding="lg" radius="md" withBorder style={{ opacity: 0.7 }}>
-              <Stack gap="md" ta="center">
-                <ThemeIcon size="lg" radius="md" variant="light" color="purple">
-                  <BarChart3 size={20} />
-                </ThemeIcon>
-                <Title order={4} size="h5">
-                  Portfolio Tracker
-                </Title>
-                <Text size="sm" c="dimmed">
-                  Track and analyze your investment portfolio performance
-                </Text>
-              </Stack>
-            </Card>
-
-            <Card padding="lg" radius="md" withBorder style={{ opacity: 0.7 }}>
-              <Stack gap="md" ta="center">
-                <ThemeIcon size="lg" radius="md" variant="light" color="indigo">
-                  <BarChart3 size={20} />
-                </ThemeIcon>
-                <Title order={4} size="h5">
-                  Tax Calculator
-                </Title>
-                <Text size="sm" c="dimmed">
-                  Calculate income taxes and optimize tax strategies
-                </Text>
-              </Stack>
-            </Card>
-          </SimpleGrid>
-        </Box>
       </Stack>
     </Container>
   );
