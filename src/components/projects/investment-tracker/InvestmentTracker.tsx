@@ -6,7 +6,7 @@ import { useLocalStorage } from '@mantine/hooks';
 import {
   ArrowUpRight, ArrowDownRight, 
   PieChart, BarChart3, Shield, DollarSign,
-  Plus, Edit, Eye, Trash2
+  Plus, Edit, Eye, Trash2, Download
 } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import InvestmentForm from './InvestmentForm';
@@ -84,6 +84,27 @@ const InvestmentTracker: React.FC = () => {
 
   const handleDeleteInvestment = (id: string) => {
     setInvestments(prev => prev.filter(inv => inv.id !== id));
+  };
+
+  const handleLoadDemo = () => {
+    const demoData = generateSampleInvestments();
+    setInvestments(demoData);
+    notifications.show({
+      title: 'Demo data loaded',
+      message: `Loaded ${demoData.length} sample investments to help you get started`,
+      color: 'green'
+    });
+  };
+
+  const handleClearAll = () => {
+    if (window.confirm('Are you sure you want to clear all investments? This action cannot be undone.')) {
+      setInvestments([]);
+      notifications.show({
+        title: 'All investments cleared',
+        message: 'Your investment data has been cleared',
+        color: 'orange'
+      });
+    }
   };
 
   const handleCloseForm = () => {
@@ -240,6 +261,8 @@ const InvestmentTracker: React.FC = () => {
               onDeleteInvestment={handleDeleteInvestment}
               onExportInvestments={handleExportInvestments}
               onImportInvestments={handleImportInvestments}
+              onLoadDemo={handleLoadDemo}
+              onClearAll={handleClearAll}
             />
           </Tabs.Panel>
 
@@ -284,6 +307,8 @@ const DashboardView: React.FC<{
   onNavigateToAnalytics?: () => void;
   onExportInvestments?: () => void;
   onImportInvestments?: (data: any) => void;
+  onLoadDemo: () => void;
+  onClearAll: () => void;
 }> = ({ 
   portfolio, 
   investments,
@@ -293,7 +318,9 @@ const DashboardView: React.FC<{
   onDeleteInvestment,
   onNavigateToAnalytics,
   onExportInvestments,
-  onImportInvestments
+  onImportInvestments,
+  onLoadDemo,
+  onClearAll
 }) => {
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1', '#d084d0', '#ffb347', '#87ceeb'];
   const [timeframe, setTimeframe] = React.useState<'1M' | '3M' | '1Y' | 'ALL'>('1Y');
@@ -363,6 +390,15 @@ const DashboardView: React.FC<{
           {onImportInvestments && (
             <Button size="xs" variant="light" onClick={() => fileRef.current?.click()}>Import JSON</Button>
           )}
+          <Button 
+            size="xs" 
+            variant="light" 
+            color="red"
+            leftSection={<Trash2 size={14} />}
+            onClick={onClearAll}
+          >
+            Clear All
+          </Button>
           {onNavigateToAnalytics && (
             <Button size="xs" variant="gradient" gradient={{ from: 'corporate', to: 'accent' }} onClick={onNavigateToAnalytics}>
               Open Analytics
@@ -687,9 +723,34 @@ const DashboardView: React.FC<{
         
         {investments.length === 0 ? (
           <Group justify="center" p="xl">
-            <Stack align="center" gap="sm">
-              <Text c="dimmed">No investments yet</Text>
-              <Text size="sm" c="dimmed">Add your first investment to get started</Text>
+            <Stack align="center" gap="md">
+              <ThemeIcon size="xl" variant="light" color="gray">
+                <PieChart size={24} />
+              </ThemeIcon>
+              <Stack align="center" gap="xs">
+                <Text c="dimmed" fw={500}>No investments yet</Text>
+                <Text size="sm" c="dimmed" ta="center">
+                  Add your first investment to get started, or load demo data to explore the features
+                </Text>
+              </Stack>
+              <Group gap="sm">
+                <Button 
+                  variant="gradient" 
+                  gradient={{ from: 'corporate', to: 'accent' }}
+                  leftSection={<Plus size={16} />}
+                  onClick={onAddInvestment}
+                >
+                  Add Investment
+                </Button>
+                <Button 
+                  variant="light" 
+                  color="blue"
+                  leftSection={<Download size={16} />}
+                  onClick={onLoadDemo}
+                >
+                  Load Demo
+                </Button>
+              </Group>
             </Stack>
           </Group>
         ) : (
