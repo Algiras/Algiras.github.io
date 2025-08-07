@@ -1,6 +1,7 @@
 import { Badge, Card, Grid, Group, NumberInput, Select, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
 import { Calculator, DollarSign, Percent, TrendingUp } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface ROIInput {
@@ -134,7 +135,7 @@ const ROICalculator: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <>
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Group justify="space-between" mb="md">
           <Title order={2} className="flex items-center gap-2">
@@ -423,7 +424,7 @@ const ROICalculator: React.FC = () => {
           </Tabs>
         </Card>
       )}
-    </div>
+    </>
   );
 };
 

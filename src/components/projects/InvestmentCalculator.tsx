@@ -1,6 +1,7 @@
 import { Badge, Card, Grid, Group, NumberInput, Select, Slider, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
 import { Calculator, DollarSign, PiggyBank, Target, TrendingUp } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+
 import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { calculateInvestmentGrowth } from '../../utils/financialCalculations';
@@ -211,7 +212,7 @@ const InvestmentCalculator: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <>
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Group justify="space-between" mb="md">
           <Title order={2} className="flex items-center gap-2">
@@ -500,7 +501,7 @@ const InvestmentCalculator: React.FC = () => {
           </Tabs>
         </Card>
       )}
-    </div>
+    </>
   );
 };
 

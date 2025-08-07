@@ -3,14 +3,13 @@ import {
 } from '@mantine/core';
 import { Edit, FileText } from 'lucide-react';
 import React from 'react';
-import MarkdownToPDF from '../components/documents/MarkdownToPDF';
+import { Link } from 'react-router-dom';
 
 const Documents: React.FC = () => {
-  const [activeDocument, setActiveDocument] = React.useState<string | null>(null);
-
   const documentTools = [
     {
       id: 'markdown-to-pdf',
+      path: '/documents/markdown-to-pdf',
       title: 'Markdown to PDF',
       description: 'Convert markdown text to beautifully formatted PDF documents with live preview',
       icon: FileText,
@@ -25,22 +24,6 @@ const Documents: React.FC = () => {
       ],
     },
   ];
-
-  if (activeDocument === 'markdown-to-pdf') {
-    return (
-      <Container size="xl" py={{ base: 'md', sm: 'lg', md: 'xl' }}>
-        <Button 
-          onClick={() => setActiveDocument(null)} 
-          mb="md" 
-          variant="light"
-          className="mobile-button"
-        >
-          ← Back to Documents
-        </Button>
-        <MarkdownToPDF />
-      </Container>
-    );
-  }
 
   return (
     <Container size="xl" py={{ base: 'md', sm: 'lg', md: 'xl' }}>
@@ -150,7 +133,8 @@ const Documents: React.FC = () => {
                   </Stack>
 
                   <Button
-                    onClick={() => setActiveDocument(tool.id)}
+                    component={Link}
+                    to={tool.path}
                     variant="light"
                     color={tool.color}
                     fullWidth

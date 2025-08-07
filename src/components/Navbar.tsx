@@ -38,9 +38,19 @@ const useIsMobile = (breakpoint: number = 768) => {
 
 const Navbar: React.FC = () => {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  // Persist color scheme toggle
+  useEffect(() => {
+    try {
+      localStorage.setItem('color-scheme', colorScheme === 'dark' ? 'dark' : 'light');
+    } catch {
+      // Silently fail if localStorage is not available
+    }
+  }, [colorScheme]);
   const location = useLocation();
   const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
   const isMobile = useIsMobile(768);
+  
+
 
   const navigationItems = [
     {
@@ -64,19 +74,46 @@ const Navbar: React.FC = () => {
     setMobileMenuOpened(false);
   };
 
-  // Close mobile menu when clicking outside or on route change
+  // Prevent scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpened) {
-      setMobileMenuOpened(false);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpened]);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpened(false);
   }, [location.pathname]);
 
   return (
     <Container size="lg" h="100%">
       <Group h="100%" justify="space-between">
-        <Title order={3}>
-          Algimantas K.
-        </Title>
+        <Link 
+          to="/"
+          style={{ 
+            textDecoration: 'none', 
+            color: 'inherit',
+            transition: 'opacity 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '0.7';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '1';
+          }}
+        >
+          <Title order={3}>
+            Algimantas K.
+          </Title>
+        </Link>
 
         {isMobile ? (
           // Mobile Navigation
@@ -92,13 +129,37 @@ const Navbar: React.FC = () => {
             </ActionIcon>
             
             <ActionIcon
-              onClick={() => setMobileMenuOpened(true)}
-              variant="subtle"
-              size="lg"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setMobileMenuOpened(true);
+              }}
+              variant="light"
+              size="xl"
               aria-label="Open navigation menu"
-              style={{ touchAction: 'manipulation' }}
+              styles={{
+                root: {
+                  border: '1px solid var(--mantine-color-default-border)',
+                  '&:hover': {
+                    backgroundColor: 'var(--mantine-color-default-hover)',
+                    transform: 'scale(1.05)'
+                  },
+                  '&:active': {
+                    transform: 'scale(0.95)',
+                    backgroundColor: 'var(--mantine-color-default-hover)'
+                  }
+                }
+              }}
+              style={{ 
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                minWidth: '48px',
+                minHeight: '48px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
             >
-              <Menu size={20} />
+              <Menu size={22} />
             </ActionIcon>
           </Group>
         ) : (
@@ -134,18 +195,38 @@ const Navbar: React.FC = () => {
           </Group>
         )}
 
-        {/* Mobile Drawer - only render on mobile */}
-        {isMobile && (
-          <Drawer
-            opened={mobileMenuOpened}
+        {/* Mobile Drawer - always render but only open on mobile */}
+        <Drawer
+            opened={mobileMenuOpened && isMobile}
             onClose={() => setMobileMenuOpened(false)}
             title="Navigation"
             position="right"
-            size="75%"
-            overlayProps={{ opacity: 0.5, blur: 4 }}
+            size="80%"
+            overlayProps={{ 
+              opacity: 0.6, 
+              blur: 4,
+              onClick: () => setMobileMenuOpened(false)
+            }}
             trapFocus
             closeOnClickOutside
             closeOnEscape
+            transitionProps={{
+              transition: 'slide-left',
+              duration: 200,
+              timingFunction: 'ease'
+            }}
+            styles={{
+              content: {
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column'
+              },
+              body: {
+                flex: 1,
+                padding: '1rem',
+                paddingTop: '0.5rem'
+              }
+            }}
           >
             <Stack gap="md">
               {navigationItems.map((item) => {
@@ -155,16 +236,30 @@ const Navbar: React.FC = () => {
                     key={item.path}
                     component={Link}
                     to={item.path}
-                    variant={location.pathname === item.path ? 'light' : 'subtle'}
-                    leftSection={<IconComponent size={18} />}
-                    size="md"
+                    variant={location.pathname === item.path ? 'filled' : 'light'}
+                    leftSection={<IconComponent size={20} />}
+                    size="lg"
                     fullWidth
                     onClick={handleMobileNavClick}
-                    className="custom-button-hover"
                     justify="flex-start"
+                    styles={{
+                      root: {
+                        height: '56px',
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        borderRadius: '12px',
+                        transition: 'all 0.2s ease',
+                        border: location.pathname === item.path ? 'none' : '1px solid var(--mantine-color-default-border)',
+                      },
+                      inner: {
+                        justifyContent: 'flex-start',
+                        gap: '12px'
+                      }
+                    }}
                     style={{ 
                       touchAction: 'manipulation',
-                      minHeight: '48px' // Ensure good touch target size
+                      WebkitTapHighlightColor: 'transparent',
+                      userSelect: 'none'
                     }}
                   >
                     {item.label}
@@ -173,7 +268,6 @@ const Navbar: React.FC = () => {
               })}
             </Stack>
           </Drawer>
-        )}
       </Group>
     </Container>
   );

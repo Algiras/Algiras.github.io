@@ -1,20 +1,15 @@
 import {
     Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title
 } from '@mantine/core';
-import { Calculator, Clock, Home, PiggyBank, Target, TrendingUp } from 'lucide-react';
+import { Calculator, Clock, Home, PiggyBank, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import React from 'react';
-import InvestmentCalculator from '../components/projects/InvestmentCalculator';
-import LoanComparison from '../components/projects/LoanComparison';
-import MortgageCalculator from '../components/projects/MortgageCalculator';
-import RetirementPlanner from '../components/projects/RetirementPlanner';
-import ROICalculator from '../components/projects/ROICalculator';
+import { Link } from 'react-router-dom';
 
 const Finance: React.FC = () => {
-  const [activeProject, setActiveProject] = React.useState<string | null>(null);
-
   const projects = [
     {
       id: 'loan-comparison',
+      path: '/finance/loan-comparison',
       title: 'Loan Comparison Tool',
       description: 'Compare different loan structures with interactive visualizations and smart recommendations',
       icon: Calculator,
@@ -30,6 +25,7 @@ const Finance: React.FC = () => {
     },
     {
       id: 'roi-calculator',
+      path: '/finance/roi-calculator',
       title: 'ROI Calculator',
       description: 'Calculate return on investment with multiple scenarios and detailed analysis',
       icon: Target,
@@ -45,6 +41,7 @@ const Finance: React.FC = () => {
     },
     {
       id: 'investment-calculator',
+      path: '/finance/investment-calculator',
       title: 'Investment Calculator',
       description: 'Plan your investments with compound interest and scenario analysis',
       icon: PiggyBank,
@@ -60,6 +57,7 @@ const Finance: React.FC = () => {
     },
     {
       id: 'mortgage-calculator',
+      path: '/finance/mortgage-calculator',
       title: 'Mortgage Calculator',
       description: 'Calculate mortgage payments, analyze affordability, and visualize amortization schedules',
       icon: Home,
@@ -75,6 +73,7 @@ const Finance: React.FC = () => {
     },
     {
       id: 'retirement-planner',
+      path: '/finance/retirement-planner',
       title: 'Retirement Planner',
       description: 'Plan your retirement savings, withdrawal strategies, and analyze different scenarios',
       icon: Clock,
@@ -88,55 +87,23 @@ const Finance: React.FC = () => {
         'Scenario comparisons',
       ],
     },
+    {
+      id: 'investment-tracker',
+      path: '/finance/investment-tracker',
+      title: 'Investment Portfolio Tracker',
+      description: 'Comprehensive investment tracking with advanced analytics, portfolio insights, and performance monitoring',
+      icon: BarChart3,
+      color: 'indigo',
+      tags: ['Portfolio', 'Analytics', 'Tracking'],
+      features: [
+        'Multi-platform investment tracking',
+        'Advanced portfolio analytics',
+        'Performance visualization',
+        'Risk and diversification scoring',
+        'Investment lessons & strategy',
+      ],
+    },
   ];
-
-  if (activeProject === 'loan-comparison') {
-    return <LoanComparison onBack={() => setActiveProject(null)} />;
-  }
-
-  if (activeProject === 'roi-calculator') {
-    return (
-      <Container size="xl" py="xl">
-        <Button onClick={() => setActiveProject(null)} mb="md" variant="light">
-          ← Back to Finance
-        </Button>
-        <ROICalculator />
-      </Container>
-    );
-  }
-
-  if (activeProject === 'investment-calculator') {
-    return (
-      <Container size="xl" py="xl">
-        <Button onClick={() => setActiveProject(null)} mb="md" variant="light">
-          ← Back to Finance
-        </Button>
-        <InvestmentCalculator />
-      </Container>
-    );
-  }
-
-  if (activeProject === 'mortgage-calculator') {
-    return (
-      <Container size="xl" py="xl">
-        <Button onClick={() => setActiveProject(null)} mb="md" variant="light">
-          ← Back to Finance
-        </Button>
-        <MortgageCalculator />
-      </Container>
-    );
-  }
-
-  if (activeProject === 'retirement-planner') {
-    return (
-      <Container size="xl" py="xl">
-        <Button onClick={() => setActiveProject(null)} mb="md" variant="light">
-          ← Back to Finance
-        </Button>
-        <RetirementPlanner />
-      </Container>
-    );
-  }
 
   return (
     <Container size="xl" py="xl">
@@ -211,7 +178,8 @@ const Finance: React.FC = () => {
                   </Stack>
 
                   <Button
-                    onClick={() => setActiveProject(project.id)}
+                    component={Link}
+                    to={project.path}
                     variant="light"
                     color={project.color}
                     fullWidth

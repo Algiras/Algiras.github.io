@@ -1,6 +1,7 @@
 import { Badge, Card, Divider, Grid, Group, NumberInput, Slider, Stack, Switch, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
 import { Calculator, Calendar, Clock, DollarSign, PiggyBank, Target, TrendingUp, Users } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+
 import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface RetirementInput {
@@ -311,7 +312,7 @@ const RetirementPlanner: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <>
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Group justify="space-between" mb="md">
           <Title order={2} className="flex items-center gap-2">
@@ -685,7 +686,7 @@ const RetirementPlanner: React.FC = () => {
           </Tabs>
         </Card>
       )}
-    </div>
+    </>
   );
 };
 

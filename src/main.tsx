@@ -12,6 +12,7 @@ import '@mantine/notifications/styles.css';
 
 // Mantine imports
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { useLocalStorage, useColorScheme } from '@mantine/hooks';
 import { Notifications } from '@mantine/notifications';
 import { theme } from './theme';
 
@@ -28,12 +29,18 @@ Sentry.init({
 // Initialize Google Analytics if user has given consent
 initializeAnalytics();
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ColorSchemeScript defaultColorScheme="dark" />
-    <MantineProvider theme={theme} defaultColorScheme="dark">
-      <Notifications position="top-right" zIndex={1000} limit={5} />
-      <App />
-    </MantineProvider>
-  </React.StrictMode>
-);
+const Root = () => {
+  const systemScheme = useColorScheme();
+  const [scheme] = useLocalStorage<'light' | 'dark'>({ key: 'color-scheme', defaultValue: systemScheme === 'dark' ? 'dark' : 'light' });
+  return (
+    <React.StrictMode>
+      <ColorSchemeScript defaultColorScheme={scheme} />
+      <MantineProvider theme={theme} defaultColorScheme={scheme}>
+        <Notifications position="top-right" zIndex={1000} limit={5} />
+        <App />
+      </MantineProvider>
+    </React.StrictMode>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<Root />);

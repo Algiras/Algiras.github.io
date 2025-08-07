@@ -1,10 +1,11 @@
 import {
-    ActionIcon, Alert, Badge,
+    Alert, Badge,
     Box, Card, Container, Group, NumberInput,
     Select, SimpleGrid, Stack, Tabs, Text, Title, useMantineColorScheme
 } from '@mantine/core';
-import { AlertCircle, ArrowLeft, CheckCircle, DollarSign } from 'lucide-react';
+import { AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+import BackToFinanceButton from '../BackToFinanceButton';
 import {
     Area,
     AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis,
@@ -35,11 +36,7 @@ interface LoanCalculation {
   }>;
 }
 
-interface LoanComparisonProps {
-  onBack: () => void;
-}
-
-const LoanComparison: React.FC<LoanComparisonProps> = ({ onBack }) => {
+const LoanComparison: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -220,15 +217,8 @@ const LoanComparison: React.FC<LoanComparisonProps> = ({ onBack }) => {
     <Container size="xl" py="xl">
       <Stack gap="xl">
         {/* Header */}
+        <BackToFinanceButton mb="0" />
         <Group gap="md">
-          <ActionIcon
-            onClick={onBack}
-            variant="subtle"
-            size="lg"
-            className="custom-button-hover"
-          >
-            <ArrowLeft size={20} />
-          </ActionIcon>
           <Box>
             <Title order={1} size="h1">
               Loan Comparison Tool
