@@ -68,8 +68,12 @@ const Home: React.FC = () => {
                     variant="outline"
                     size="lg"
                     leftSection={<Download size={18} />}
-                    component="a"
-                    href="#contact"
+                    onClick={() => {
+                      const contactSection = document.getElementById('contact');
+                      if (contactSection) {
+                        contactSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
                     className="custom-button-hover"
                   >
                     Contact Me
@@ -109,7 +113,7 @@ const Home: React.FC = () => {
                 <Tooltip label="Email Me">
                   <ActionIcon
                     component="a"
-                    href="mailto:algimantas.krasnauskas@example.com"
+                    href="mailto:algiras.dev@gmail.com"
                     size="lg"
                     variant="subtle"
                     color="red"
@@ -399,7 +403,7 @@ const Home: React.FC = () => {
               </Text>
               <Button
                 component="a"
-                href="mailto:algimantas.krasnauskas@example.com"
+                href="mailto:algiras.dev@gmail.com"
                 variant="light"
                 size="sm"
                 fullWidth
