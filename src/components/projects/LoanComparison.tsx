@@ -5,7 +5,6 @@ import {
 } from '@mantine/core';
 import { AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import BackToFinanceButton from '../BackToFinanceButton';
 import {
     Area,
     AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis,
@@ -217,7 +216,6 @@ const LoanComparison: React.FC = () => {
     <Container size="xl" py="xl">
       <Stack gap="xl">
         {/* Header */}
-        <BackToFinanceButton mb="0" />
         <Group gap="md">
           <Box>
             <Title order={1} size="h1">
