@@ -327,3 +327,251 @@ export const generateSampleInvestments = (): Investment[] => {
     },
   ];
 };
+
+/**
+ * Advanced Statistical Analysis Functions
+ */
+
+// Calculate portfolio volatility (standard deviation of returns)
+export const calculateVolatility = (performanceData: PerformancePoint[]): number => {
+  if (performanceData.length < 2) return 0;
+  
+  const returns = performanceData.map((point, index) => {
+    if (index === 0) return 0;
+    const prevValue = performanceData[index - 1].totalValue;
+    return prevValue > 0 ? (point.totalValue - prevValue) / prevValue : 0;
+  }).slice(1); // Remove first element (always 0)
+  
+  if (returns.length === 0) return 0;
+  
+  const meanReturn = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
+  const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - meanReturn, 2), 0) / returns.length;
+  
+  return Math.sqrt(variance) * Math.sqrt(12); // Annualized volatility
+};
+
+// Calculate Sharpe Ratio (risk-adjusted return)
+export const calculateSharpeRatio = (
+  portfolioReturn: number, 
+  volatility: number, 
+  riskFreeRate: number = 0.02 // 2% default risk-free rate
+): number => {
+  if (volatility === 0) return 0;
+  return (portfolioReturn / 100 - riskFreeRate) / volatility;
+};
+
+// Calculate maximum drawdown
+export const calculateMaxDrawdown = (performanceData: PerformancePoint[]): { maxDrawdown: number; duration: number } => {
+  if (performanceData.length < 2) return { maxDrawdown: 0, duration: 0 };
+  
+  let peak = performanceData[0].totalValue;
+  let maxDrawdown = 0;
+  let drawdownDuration = 0;
+  let currentDrawdownDuration = 0;
+  let inDrawdown = false;
+  
+  performanceData.forEach(point => {
+    if (point.totalValue > peak) {
+      peak = point.totalValue;
+      if (inDrawdown) {
+        drawdownDuration = Math.max(drawdownDuration, currentDrawdownDuration);
+        currentDrawdownDuration = 0;
+        inDrawdown = false;
+      }
+    } else {
+      const drawdown = (peak - point.totalValue) / peak;
+      maxDrawdown = Math.max(maxDrawdown, drawdown);
+      currentDrawdownDuration++;
+      inDrawdown = true;
+    }
+  });
+  
+  if (inDrawdown) {
+    drawdownDuration = Math.max(drawdownDuration, currentDrawdownDuration);
+  }
+  
+  return { maxDrawdown: maxDrawdown * 100, duration: drawdownDuration };
+};
+
+// Calculate Value at Risk (VaR) using historical simulation
+export const calculateVaR = (performanceData: PerformancePoint[], confidenceLevel: number = 0.05): number => {
+  if (performanceData.length < 2) return 0;
+  
+  const returns = performanceData.map((point, index) => {
+    if (index === 0) return 0;
+    const prevValue = performanceData[index - 1].totalValue;
+    return prevValue > 0 ? (point.totalValue - prevValue) / prevValue : 0;
+  }).slice(1);
+  
+  if (returns.length === 0) return 0;
+  
+  const sortedReturns = returns.sort((a, b) => a - b);
+  const index = Math.floor(confidenceLevel * sortedReturns.length);
+  
+  return Math.abs(sortedReturns[index] * 100); // Return as positive percentage
+};
+
+// Calculate portfolio correlation with market (using a simple proxy)
+export const calculatePortfolioCorrelation = (performanceData: PerformancePoint[]): number => {
+  if (performanceData.length < 2) return 0;
+  
+  // Simulate market returns (in real app, this would be actual market data)
+  const marketReturns = performanceData.map((_, index) => {
+    return Math.sin(index * 0.1) * 0.02 + 0.005; // Simulated market pattern
+  });
+  
+  const portfolioReturns = performanceData.map((point, index) => {
+    if (index === 0) return 0;
+    const prevValue = performanceData[index - 1].totalValue;
+    return prevValue > 0 ? (point.totalValue - prevValue) / prevValue : 0;
+  }).slice(1);
+  
+  if (portfolioReturns.length === 0) return 0;
+  
+  const n = Math.min(portfolioReturns.length, marketReturns.length);
+  const portfolioSlice = portfolioReturns.slice(0, n);
+  const marketSlice = marketReturns.slice(0, n);
+  
+  const portfolioMean = portfolioSlice.reduce((sum, ret) => sum + ret, 0) / n;
+  const marketMean = marketSlice.reduce((sum, ret) => sum + ret, 0) / n;
+  
+  let numerator = 0;
+  let portfolioSumSquares = 0;
+  let marketSumSquares = 0;
+  
+  for (let i = 0; i < n; i++) {
+    const portfolioDiff = portfolioSlice[i] - portfolioMean;
+    const marketDiff = marketSlice[i] - marketMean;
+    
+    numerator += portfolioDiff * marketDiff;
+    portfolioSumSquares += portfolioDiff * portfolioDiff;
+    marketSumSquares += marketDiff * marketDiff;
+  }
+  
+  const denominator = Math.sqrt(portfolioSumSquares * marketSumSquares);
+  return denominator === 0 ? 0 : numerator / denominator;
+};
+
+// Calculate portfolio beta (systematic risk)
+export const calculateBeta = (performanceData: PerformancePoint[]): number => {
+  if (performanceData.length < 2) return 1;
+  
+  const correlation = calculatePortfolioCorrelation(performanceData);
+  const portfolioVolatility = calculateVolatility(performanceData);
+  const marketVolatility = 0.15; // Assumed market volatility (15%)
+  
+  return correlation * (portfolioVolatility / marketVolatility);
+};
+
+// Calculate information ratio (active return vs tracking error)
+export const calculateInformationRatio = (performanceData: PerformancePoint[], benchmarkReturn: number = 0.08): number => {
+  if (performanceData.length < 2) return 0;
+  
+  const returns = performanceData.map((point, index) => {
+    if (index === 0) return 0;
+    const prevValue = performanceData[index - 1].totalValue;
+    return prevValue > 0 ? (point.totalValue - prevValue) / prevValue : 0;
+  }).slice(1);
+  
+  if (returns.length === 0) return 0;
+  
+  const portfolioReturn = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
+  const activeReturn = portfolioReturn - benchmarkReturn / 12; // Monthly benchmark
+  
+  const trackingError = Math.sqrt(
+    returns.reduce((sum, ret) => sum + Math.pow(ret - benchmarkReturn / 12, 2), 0) / returns.length
+  );
+  
+  return trackingError === 0 ? 0 : activeReturn / trackingError;
+};
+
+// Calculate portfolio concentration (Herfindahl-Hirschman Index)
+export const calculateConcentration = (investments: Investment[]): number => {
+  const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+  
+  if (totalValue === 0) return 0;
+  
+  const weights = investments.map(inv => inv.currentValue / totalValue);
+  const hhi = weights.reduce((sum, weight) => sum + weight * weight, 0);
+  
+  return hhi;
+};
+
+// Calculate diversification ratio
+export const calculateDiversificationRatio = (investments: Investment[]): number => {
+  const concentration = calculateConcentration(investments);
+  const numberOfInvestments = investments.length;
+  
+  if (numberOfInvestments === 0) return 0;
+  
+  // Perfect diversification would have HHI = 1/n
+  const perfectDiversification = 1 / numberOfInvestments;
+  
+  // Diversification ratio: how close we are to perfect diversification
+  return concentration === 0 ? 1 : perfectDiversification / concentration;
+};
+
+// Calculate portfolio statistics summary
+export interface PortfolioStatistics {
+  volatility: number;
+  sharpeRatio: number;
+  maxDrawdown: { maxDrawdown: number; duration: number };
+  valueAtRisk: number;
+  beta: number;
+  correlation: number;
+  informationRatio: number;
+  concentration: number;
+  diversificationRatio: number;
+  totalReturn: number;
+  annualizedReturn: number;
+  winRate: number;
+  averageWin: number;
+  averageLoss: number;
+  profitFactor: number;
+}
+
+export const calculatePortfolioStatistics = (
+  investments: Investment[], 
+  performanceData: PerformancePoint[]
+): PortfolioStatistics => {
+  const portfolio = calculatePortfolioSummary(investments);
+  const volatility = calculateVolatility(performanceData);
+  
+  // Calculate win/loss statistics
+  const returns = performanceData.map((point, index) => {
+    if (index === 0) return 0;
+    const prevValue = performanceData[index - 1].totalValue;
+    return prevValue > 0 ? (point.totalValue - prevValue) / prevValue : 0;
+  }).slice(1);
+  
+  const wins = returns.filter(ret => ret > 0);
+  const losses = returns.filter(ret => ret < 0);
+  
+  const winRate = returns.length > 0 ? (wins.length / returns.length) * 100 : 0;
+  const averageWin = wins.length > 0 ? wins.reduce((sum, win) => sum + win, 0) / wins.length * 100 : 0;
+  const averageLoss = losses.length > 0 ? Math.abs(losses.reduce((sum, loss) => sum + loss, 0) / losses.length) * 100 : 0;
+  const profitFactor = averageLoss > 0 ? (averageWin * wins.length) / (averageLoss * losses.length) : 0;
+  
+  // Annualized return calculation
+  const monthsOfData = performanceData.length;
+  const annualizedReturn = monthsOfData > 0 ? 
+    (Math.pow(1 + portfolio.returnPercentage / 100, 12 / monthsOfData) - 1) * 100 : 0;
+  
+  return {
+    volatility,
+    sharpeRatio: calculateSharpeRatio(portfolio.returnPercentage, volatility),
+    maxDrawdown: calculateMaxDrawdown(performanceData),
+    valueAtRisk: calculateVaR(performanceData),
+    beta: calculateBeta(performanceData),
+    correlation: calculatePortfolioCorrelation(performanceData),
+    informationRatio: calculateInformationRatio(performanceData),
+    concentration: calculateConcentration(investments),
+    diversificationRatio: calculateDiversificationRatio(investments),
+    totalReturn: portfolio.returnPercentage,
+    annualizedReturn,
+    winRate,
+    averageWin,
+    averageLoss,
+    profitFactor
+  };
+};

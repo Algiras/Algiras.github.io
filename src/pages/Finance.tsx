@@ -120,7 +120,7 @@ const Finance: React.FC = () => {
         </Box>
 
         {/* Projects Grid */}
-        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="xl">
+        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="xl" className="finance-tools-grid">
           {projects.map((project) => {
             const IconComponent = project.icon;
             return (
@@ -129,44 +129,45 @@ const Finance: React.FC = () => {
                 padding="xl"
                 radius="md"
                 withBorder
-                className="animate-card-glow"
-                style={{ height: '100%' }}
+                className="animate-card-glow finance-tool-card"
               >
-                <Stack gap="md" h="100%">
-                  <Group gap="md">
+                <Stack gap="md" className="finance-tool-stack">
+                  <Group gap="md" className="finance-tool-header">
                     <ThemeIcon
                       size="xl"
                       radius="md"
                       variant="light"
                       color={project.color}
+                      className="finance-tool-icon"
                     >
                       <IconComponent size={24} />
                     </ThemeIcon>
                     <Box style={{ flex: 1 }}>
-                      <Title order={3} size="h4">
+                      <Title order={3} size="h4" className="finance-tool-title">
                         {project.title}
                       </Title>
                     </Box>
                   </Group>
 
-                  <Text size="sm" c="dimmed" style={{ flex: 1 }}>
+                  <Text size="sm" c="dimmed" className="finance-tool-description">
                     {project.description}
                   </Text>
 
-                  <Group gap="xs" mb="md">
+                  <Group gap="xs" mb="md" className="finance-tool-tags">
                     {project.tags.map((tag) => (
                       <Badge
                         key={tag}
                         size="sm"
                         variant="light"
                         color={project.color}
+                        className="finance-tool-tag"
                       >
                         {tag}
                       </Badge>
                     ))}
                   </Group>
 
-                  <Stack gap="xs" mb="md">
+                  <Stack gap="xs" mb="md" className="finance-tool-features">
                     <Text size="sm" fw={500}>
                       Key Features:
                     </Text>

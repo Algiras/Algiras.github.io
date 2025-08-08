@@ -374,4 +374,241 @@ html {
   input, select, textarea {
     font-size: 16px !important;
   }
+  
+  /* Fix mobile card layout issues */
+  .mantine-Card-root {
+    min-height: auto !important;
+    height: auto !important;
+  }
+  
+  .mantine-Stack-root {
+    min-height: auto !important;
+    height: auto !important;
+  }
+  
+  /* Improve mobile spacing */
+  .mantine-SimpleGrid-root {
+    gap: 1rem !important;
+  }
+  
+  /* Better mobile text sizing */
+  .mantine-Title-root {
+    line-height: 1.3 !important;
+  }
+  
+  /* Ensure cards don't get squeezed */
+  .mantine-Card-root .mantine-Stack-root {
+    flex-shrink: 0;
+  }
+  
+  /* Finance tools mobile improvements */
+  .finance-tools-grid {
+    gap: 1rem !important;
+  }
+  
+  .finance-tool-card {
+    padding: 1rem !important;
+    min-height: auto !important;
+  }
+  
+  .finance-tool-stack {
+    gap: 0.75rem !important;
+  }
+  
+  .finance-tool-header {
+    gap: 0.75rem !important;
+  }
+  
+  .finance-tool-icon {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+  
+  .finance-tool-title {
+    font-size: 1.1rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  .finance-tool-description {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  .finance-tool-tags {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .finance-tool-tag {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  .finance-tool-features {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  /* Documents tools mobile improvements */
+  .documents-tools-grid {
+    gap: 1rem !important;
+  }
+  
+  .documents-tool-card {
+    padding: 1rem !important;
+    min-height: auto !important;
+  }
+  
+  .documents-tool-stack {
+    gap: 0.75rem !important;
+  }
+}
+
+/* MathJax Styles */
+.mathjax-container {
+  font-family: 'MJXZERO', 'MJXTEX', serif;
+  line-height: 1.2;
+}
+
+/* MathJax display equations */
+.mathjax-container mjx-container[display="true"] {
+  margin: 1em 0;
+  text-align: center;
+}
+
+/* MathJax inline equations */
+.mathjax-container mjx-container[display="false"] {
+  display: inline-block;
+  margin: 0 2px;
+}
+
+/* Dark mode MathJax adjustments */
+[data-mantine-color-scheme="dark"] .mathjax-container {
+  color: var(--mantine-color-gray-1);
+}
+
+[data-mantine-color-scheme="dark"] .mathjax-container svg {
+  background: transparent !important;
+  color: var(--mantine-color-gray-1);
+}
+
+/* MathJax SVG elements in dark mode */
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg {
+  color: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg g {
+  fill: var(--mantine-color-gray-1) !important;
+  stroke: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg text {
+  fill: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg path {
+  fill: var(--mantine-color-gray-1) !important;
+  stroke: var(--mantine-color-gray-1) !important;
+}
+
+/* Light mode explicit styling */
+[data-mantine-color-scheme="light"] .mathjax-container {
+  color: var(--mantine-color-gray-9);
+}
+
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg g {
+  fill: var(--mantine-color-gray-9) !important;
+  stroke: var(--mantine-color-gray-9) !important;
+}
+
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg text {
+  fill: var(--mantine-color-gray-9) !important;
+}
+
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg path {
+  fill: var(--mantine-color-gray-9) !important;
+  stroke: var(--mantine-color-gray-9) !important;
+}
+
+/* Additional MathJax element targeting for comprehensive theme support */
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg rect,
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg line,
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg polygon,
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg circle,
+[data-mantine-color-scheme="dark"] .mathjax-container mjx-container svg ellipse {
+  fill: var(--mantine-color-gray-1) !important;
+  stroke: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg rect,
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg line,
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg polygon,
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg circle,
+[data-mantine-color-scheme="light"] .mathjax-container mjx-container svg ellipse {
+  fill: var(--mantine-color-gray-9) !important;
+  stroke: var(--mantine-color-gray-9) !important;
+}
+
+/* Force MathJax SVG elements to inherit theme colors */
+[data-mantine-color-scheme="dark"] .mathjax-container * {
+  color: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme="light"] .mathjax-container * {
+  color: var(--mantine-color-gray-9) !important;
+}
+
+/* Ensure MathJax renders properly in cards */
+.mathjax-container svg {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+/* Loading state for MathJax */
+.mathjax-container[data-loading="true"] {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+/* MathJax error handling */
+.mathjax-container .MathJax_Error {
+  color: #d73a49;
+  font-size: 12px;
+}
+
+/* Additional theme-aware chart styling */
+[data-mantine-color-scheme="dark"] .recharts-wrapper {
+  color: var(--mantine-color-gray-3);
+}
+
+[data-mantine-color-scheme="light"] .recharts-wrapper {
+  color: var(--mantine-color-gray-7);
+}
+
+/* Ensure chart text is properly themed */
+[data-mantine-color-scheme="dark"] .recharts-text {
+  fill: var(--mantine-color-gray-3) !important;
+}
+
+[data-mantine-color-scheme="light"] .recharts-text {
+  fill: var(--mantine-color-gray-7) !important;
+}
+
+/* Theme-aware chart grid lines */
+[data-mantine-color-scheme="dark"] .recharts-cartesian-grid line {
+  stroke: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-mantine-color-scheme="light"] .recharts-cartesian-grid line {
+  stroke: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Theme-aware axis lines */
+[data-mantine-color-scheme="dark"] .recharts-xAxis line,
+[data-mantine-color-scheme="dark"] .recharts-yAxis line {
+  stroke: rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-mantine-color-scheme="light"] .recharts-xAxis line,
+[data-mantine-color-scheme="light"] .recharts-yAxis line {
+  stroke: rgba(0, 0, 0, 0.6) !important;
 }

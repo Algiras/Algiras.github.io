@@ -6,11 +6,13 @@ import { useLocalStorage } from '@mantine/hooks';
 import {
   ArrowUpRight, ArrowDownRight, 
   PieChart, BarChart3, Shield, DollarSign,
-  Plus, Edit, Eye, Trash2, Download
+  Plus, Edit, Eye, Trash2, Download,
+  TrendingUp, Activity, Target, AlertTriangle
 } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import InvestmentForm from './InvestmentForm';
 import ConfigPanel from './ConfigPanel';
+import StatisticalExplanations from './StatisticalExplanations';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
          ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts';
@@ -21,13 +23,16 @@ import {
   Investment, 
   PortfolioSummary, 
   InvestmentType,
-  INVESTMENT_CATEGORIES
+  INVESTMENT_CATEGORIES,
+  PerformancePoint
 } from './types';
 import { 
   calculatePortfolioSummary, 
   formatCurrency, 
   formatPercentage,
-  generateSampleInvestments
+  generateSampleInvestments,
+  calculatePortfolioStatistics,
+  PortfolioStatistics
 } from './calculations';
 
 const InvestmentTracker: React.FC = () => {
@@ -45,6 +50,7 @@ const InvestmentTracker: React.FC = () => {
   const [platforms, setPlatforms] = useLocalStorage<Platform[]>({ key: 'config-platforms', defaultValue: PLATFORMS });
 
   const portfolio = useMemo(() => calculatePortfolioSummary(investments), [investments]);
+  const portfolioStats = useMemo(() => calculatePortfolioStatistics(investments, portfolio.monthlyPerformance), [investments, portfolio.monthlyPerformance]);
 
   const handleAddInvestment = () => {
     setSelectedInvestment(null);
@@ -242,11 +248,13 @@ const InvestmentTracker: React.FC = () => {
             <Tabs.Tab value="dashboard" leftSection={<BarChart3 size={16} />}>
               Dashboard
             </Tabs.Tab>
+            <Tabs.Tab value="analytics" leftSection={<Activity size={16} />}>
+              Analytics
+            </Tabs.Tab>
             <Tabs.Tab value="config" leftSection={<Shield size={16} />}>
               Configuration
             </Tabs.Tab>
             {/* Investments tab removed - now integrated into Dashboard */}
-            {/* Analytics tab removed per request */}
             {/* Lessons removed per request */}
           </Tabs.List>
 
@@ -266,9 +274,16 @@ const InvestmentTracker: React.FC = () => {
             />
           </Tabs.Panel>
 
-          {/* Investments tab removed - now integrated into Dashboard */}
+          {/* Analytics Tab */}
+          <Tabs.Panel value="analytics">
+            <AnalyticsView 
+              portfolioStats={portfolioStats}
+              investments={investments}
+              performanceData={portfolio.monthlyPerformance}
+            />
+          </Tabs.Panel>
 
-          {/* Analytics panel removed */}
+          {/* Investments tab removed - now integrated into Dashboard */}
 
           {/* Lessons tab removed */}
 
@@ -293,6 +308,286 @@ const InvestmentTracker: React.FC = () => {
         />
       </Stack>
     </Container>
+  );
+};
+
+// Analytics View Component
+const AnalyticsView: React.FC<{
+  portfolioStats: PortfolioStatistics;
+  investments: Investment[];
+  performanceData: PerformancePoint[];
+}> = ({ portfolioStats, investments, performanceData }) => {
+
+  const getRiskLevel = (value: number, thresholds: { low: number; medium: number }) => {
+    if (value <= thresholds.low) return { level: 'Low', color: 'green' };
+    if (value <= thresholds.medium) return { level: 'Medium', color: 'yellow' };
+    return { level: 'High', color: 'red' };
+  };
+
+  const getPerformanceRating = (sharpeRatio: number) => {
+    if (sharpeRatio >= 1.5) return { rating: 'Excellent', color: 'green' };
+    if (sharpeRatio >= 1.0) return { rating: 'Good', color: 'blue' };
+    if (sharpeRatio >= 0.5) return { rating: 'Fair', color: 'yellow' };
+    return { rating: 'Poor', color: 'red' };
+  };
+
+  const volatilityRisk = getRiskLevel(portfolioStats.volatility * 100, { low: 15, medium: 25 });
+  const drawdownRisk = getRiskLevel(portfolioStats.maxDrawdown.maxDrawdown, { low: 10, medium: 20 });
+  const concentrationRisk = getRiskLevel(portfolioStats.concentration * 100, { low: 20, medium: 40 });
+  const performanceRating = getPerformanceRating(portfolioStats.sharpeRatio);
+
+  return (
+    <Stack gap="xl" mt="md">
+      <Group justify="space-between">
+        <Title order={2} size="h2">Portfolio Analytics</Title>
+        <Badge size="lg" variant="light" color="blue">
+          {investments.length} Investments Analyzed
+        </Badge>
+      </Group>
+
+      {/* Risk Metrics */}
+      <Card withBorder p="md">
+        <Title order={3} size="h4" mb="md" c="blue">Risk Assessment</Title>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Volatility Risk</Text>
+                <Text size="lg" fw={700}>{(portfolioStats.volatility * 100).toFixed(1)}%</Text>
+                <Badge size="sm" color={volatilityRisk.color} variant="light">
+                  {volatilityRisk.level}
+                </Badge>
+              </div>
+              <ThemeIcon color={volatilityRisk.color} variant="light" size="md">
+                <Activity size={16} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Max Drawdown</Text>
+                <Text size="lg" fw={700}>{portfolioStats.maxDrawdown.maxDrawdown.toFixed(1)}%</Text>
+                <Badge size="sm" color={drawdownRisk.color} variant="light">
+                  {drawdownRisk.level}
+                </Badge>
+              </div>
+              <ThemeIcon color={drawdownRisk.color} variant="light" size="md">
+                <AlertTriangle size={16} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Value at Risk (95%)</Text>
+                <Text size="lg" fw={700}>{portfolioStats.valueAtRisk.toFixed(1)}%</Text>
+                <Text size="xs" c="dimmed">Potential monthly loss</Text>
+              </div>
+              <ThemeIcon color="orange" variant="light" size="md">
+                <Shield size={16} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Portfolio Beta</Text>
+                <Text size="lg" fw={700}>{portfolioStats.beta.toFixed(2)}</Text>
+                <Text size="xs" c="dimmed">vs Market</Text>
+              </div>
+              <ThemeIcon color="purple" variant="light" size="md">
+                <TrendingUp size={16} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+        </SimpleGrid>
+      </Card>
+
+      {/* Performance Metrics */}
+      <Card withBorder p="md">
+        <Title order={3} size="h4" mb="md" c="green">Performance Analysis</Title>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Sharpe Ratio</Text>
+                <Text size="lg" fw={700}>{portfolioStats.sharpeRatio.toFixed(2)}</Text>
+                <Badge size="sm" color={performanceRating.color} variant="light">
+                  {performanceRating.rating}
+                </Badge>
+              </div>
+              <ThemeIcon color={performanceRating.color} variant="light" size="md">
+                <Target size={16} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Annualized Return</Text>
+                <Text size="lg" fw={700} c={portfolioStats.annualizedReturn >= 0 ? 'green' : 'red'}>
+                  {portfolioStats.annualizedReturn.toFixed(1)}%
+                </Text>
+                <Text size="xs" c="dimmed">Per year</Text>
+              </div>
+              <ThemeIcon color={portfolioStats.annualizedReturn >= 0 ? 'green' : 'red'} variant="light" size="md">
+                {portfolioStats.annualizedReturn >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+              </ThemeIcon>
+            </Group>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Win Rate</Text>
+                <Text size="lg" fw={700}>{portfolioStats.winRate.toFixed(1)}%</Text>
+                <Text size="xs" c="dimmed">Profitable periods</Text>
+              </div>
+              <ThemeIcon color="blue" variant="light" size="md">
+                <Target size={16} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Information Ratio</Text>
+                <Text size="lg" fw={700}>{portfolioStats.informationRatio.toFixed(2)}</Text>
+                <Text size="xs" c="dimmed">vs Benchmark</Text>
+              </div>
+              <ThemeIcon color="indigo" variant="light" size="md">
+                <BarChart3 size={16} />
+              </ThemeIcon>
+            </Group>
+          </Card>
+        </SimpleGrid>
+      </Card>
+
+      {/* Diversification Metrics */}
+      <Card withBorder p="md">
+        <Title order={3} size="h4" mb="md" c="purple">Diversification Analysis</Title>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Concentration Risk</Text>
+                <Text size="lg" fw={700}>{(portfolioStats.concentration * 100).toFixed(1)}%</Text>
+                <Badge size="sm" color={concentrationRisk.color} variant="light">
+                  {concentrationRisk.level}
+                </Badge>
+              </div>
+              <ThemeIcon color={concentrationRisk.color} variant="light" size="md">
+                <PieChart size={16} />
+              </ThemeIcon>
+            </Group>
+            <Text size="xs" c="dimmed" mt="xs">
+              Lower is better (perfect = {(100 / investments.length).toFixed(1)}%)
+            </Text>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Diversification Ratio</Text>
+                <Text size="lg" fw={700}>{portfolioStats.diversificationRatio.toFixed(2)}</Text>
+                <Text size="xs" c="dimmed">Efficiency score</Text>
+              </div>
+              <ThemeIcon color="teal" variant="light" size="md">
+                <Shield size={16} />
+              </ThemeIcon>
+            </Group>
+            <Text size="xs" c="dimmed" mt="xs">
+              Higher is better (perfect = 1.00)
+            </Text>
+          </Card>
+
+          <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
+            <Group justify="space-between" align="flex-start">
+              <div>
+                <Text size="xs" c="dimmed" fw={500}>Market Correlation</Text>
+                <Text size="lg" fw={700}>{portfolioStats.correlation.toFixed(2)}</Text>
+                <Text size="xs" c="dimmed">vs Market proxy</Text>
+              </div>
+              <ThemeIcon color="cyan" variant="light" size="md">
+                <Activity size={16} />
+              </ThemeIcon>
+            </Group>
+            <Text size="xs" c="dimmed" mt="xs">
+              -1.0 to 1.0 range
+            </Text>
+          </Card>
+        </SimpleGrid>
+      </Card>
+
+      {/* Advanced Metrics */}
+      <Card withBorder p="md">
+        <Title order={3} size="h4" mb="md" c="orange">Advanced Statistics</Title>
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+          <Stack gap="md">
+            <div>
+              <Group justify="space-between" mb="xs">
+                <Text fw={500}>Average Win</Text>
+                <Text c="green" fw={700}>{portfolioStats.averageWin.toFixed(2)}%</Text>
+              </Group>
+              <Group justify="space-between" mb="xs">
+                <Text fw={500}>Average Loss</Text>
+                <Text c="red" fw={700}>{portfolioStats.averageLoss.toFixed(2)}%</Text>
+              </Group>
+              <Group justify="space-between" mb="xs">
+                <Text fw={500}>Profit Factor</Text>
+                <Text fw={700}>{portfolioStats.profitFactor.toFixed(2)}</Text>
+              </Group>
+            </div>
+          </Stack>
+          
+          <Stack gap="md">
+            <div>
+              <Group justify="space-between" mb="xs">
+                <Text fw={500}>Max Drawdown Duration</Text>
+                <Text fw={700}>{portfolioStats.maxDrawdown.duration} months</Text>
+              </Group>
+              <Group justify="space-between" mb="xs">
+                <Text fw={500}>Total Investments</Text>
+                <Text fw={700}>{investments.length}</Text>
+              </Group>
+              <Group justify="space-between" mb="xs">
+                <Text fw={500}>Data Points</Text>
+                <Text fw={700}>{performanceData.length} months</Text>
+              </Group>
+            </div>
+          </Stack>
+        </SimpleGrid>
+      </Card>
+
+      {/* Risk-Return Interpretation */}
+      <Card withBorder p="md" bg="var(--mantine-color-default-hover)">
+        <Title order={4} size="h5" mb="sm">📊 Portfolio Interpretation</Title>
+        <Stack gap="xs">
+          <Text size="sm">
+            <strong>Risk Profile:</strong> Your portfolio shows {volatilityRisk.level.toLowerCase()} volatility 
+            ({(portfolioStats.volatility * 100).toFixed(1)}% annualized) with {drawdownRisk.level.toLowerCase()} drawdown risk.
+          </Text>
+          <Text size="sm">
+            <strong>Performance:</strong> {performanceRating.rating} risk-adjusted returns with a Sharpe ratio of {portfolioStats.sharpeRatio.toFixed(2)}.
+          </Text>
+          <Text size="sm">
+            <strong>Diversification:</strong> {concentrationRisk.level} concentration risk. 
+            Consider {concentrationRisk.level === 'High' ? 'diversifying further' : 'maintaining current diversification'}.
+          </Text>
+        </Stack>
+      </Card>
+
+      {/* Mathematical Explanations */}
+      <StatisticalExplanations 
+        portfolioStats={portfolioStats}
+      />
+    </Stack>
   );
 };
 

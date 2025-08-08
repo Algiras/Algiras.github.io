@@ -54,7 +54,7 @@ const Documents: React.FC = () => {
         <SimpleGrid 
           cols={{ base: 1, md: 2, lg: 3 }} 
           spacing="xl"
-          className="mobile-grid"
+          className="mobile-grid documents-tools-grid"
         >
           {documentTools.map((tool) => {
             const IconComponent = tool.icon;
@@ -64,10 +64,9 @@ const Documents: React.FC = () => {
                 padding="xl"
                 radius="md"
                 withBorder
-                className="animate-card-glow mobile-card"
-                style={{ height: '100%' }}
+                className="animate-card-glow mobile-card documents-tool-card"
               >
-                <Stack gap="md" h="100%" className="mobile-card-stack">
+                <Stack gap="md" className="mobile-card-stack documents-tool-stack">
                   <Group gap="md" className="mobile-card-header">
                     <ThemeIcon
                       size="xl"
