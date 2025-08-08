@@ -14,7 +14,7 @@ const FinanceToolWrapper: React.FC<FinanceToolWrapperProps> = ({
   useContainer = true
 }) => {
   const content = (
-    <Stack gap="xl" mt={showBackButton ? "md" : 0}>
+    <Stack gap="xl" mt={showBackButton ? "md" : 0} className="mobile-stack">
       {showBackButton && <BackToFinanceButton />}
       {children}
     </Stack>
@@ -22,7 +22,7 @@ const FinanceToolWrapper: React.FC<FinanceToolWrapperProps> = ({
 
   if (useContainer) {
     return (
-      <Container size="xl" py="xl">
+      <Container size="xl" py={{ base: 'md', sm: 'lg', md: 'xl' }}>
         {content}
       </Container>
     );

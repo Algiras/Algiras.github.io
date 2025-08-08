@@ -170,7 +170,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
         <Stack gap="md">
           {/* Investment Type and Platform */}
           <Grid>
-            <Grid.Col span={6}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <Select
                 label="Investment Type"
                 placeholder="Select type"
@@ -186,7 +186,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 }}
               />
             </Grid.Col>
-            <Grid.Col span={6}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <Select
                 label="Platform"
                 placeholder="Select platform"
@@ -238,7 +238,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
 
           {/* Financial Details */}
           <Grid>
-            <Grid.Col span={6}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Purchase Date"
                 type="date"
@@ -250,7 +250,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 onChange={(event) => form.setFieldValue('purchaseDate', new Date(event.currentTarget.value))}
               />
             </Grid.Col>
-            <Grid.Col span={6}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <Select
                 label="Currency"
                 data={[
@@ -267,7 +267,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
           </Grid>
 
           <Grid>
-            <Grid.Col span={4}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <NumberInput
                 label="Purchase Price"
                 placeholder="0.00"
@@ -278,7 +278,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 {...form.getInputProps('purchasePrice')}
               />
             </Grid.Col>
-            <Grid.Col span={4}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <NumberInput
                 label="Quantity"
                 placeholder="1"
@@ -289,7 +289,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 {...form.getInputProps('quantity')}
               />
             </Grid.Col>
-            <Grid.Col span={4}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <NumberInput
                 label="Current Value"
                 placeholder="0.00"
@@ -304,7 +304,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
 
           {/* Additional Financial Details */}
           <Grid>
-            <Grid.Col span={4}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <NumberInput
                 label="Fees"
                 placeholder="0.00"
@@ -315,7 +315,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 {...form.getInputProps('fees')}
               />
             </Grid.Col>
-            <Grid.Col span={4}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <NumberInput
                 label="Dividends"
                 placeholder="0.00"
@@ -326,7 +326,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 {...form.getInputProps('dividends')}
               />
             </Grid.Col>
-            <Grid.Col span={4}>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
               <NumberInput
                 label="Expected Return %"
                 placeholder="10"
@@ -376,7 +376,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
 
           {/* Status and Tags */}
           <Grid>
-            <Grid.Col span={6}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <Select
                 label="Status"
                 data={[
@@ -389,7 +389,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 {...form.getInputProps('status')}
               />
             </Grid.Col>
-            <Grid.Col span={6}>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
               <TextInput
                 label="Tags"
                 placeholder="e.g., high-risk, long-term, dividend"

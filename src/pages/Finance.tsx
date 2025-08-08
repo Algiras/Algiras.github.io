@@ -106,14 +106,25 @@ const Finance: React.FC = () => {
   ];
 
   return (
-    <Container size="xl" py="xl">
-      <Stack gap="xl">
+    <Container size="xl" py={{ base: 'md', sm: 'lg', md: 'xl' }}>
+      <Stack gap="xl" className="mobile-stack">
         {/* Header */}
         <Box ta="center">
-          <Title order={1} size="h1" mb="md">
+          <Title 
+            order={1} 
+            size="h1" 
+            mb="md"
+            className="mobile-title"
+          >
             Financial Tools
           </Title>
-          <Text size="lg" c="dimmed" maw={600} mx="auto">
+          <Text 
+            size="lg" 
+            c="dimmed" 
+            maw={600} 
+            mx="auto"
+            className="mobile-description"
+          >
             Comprehensive financial calculators designed to help with real-world money decisions.
             Each tool combines powerful calculations with beautiful visualizations.
           </Text>
