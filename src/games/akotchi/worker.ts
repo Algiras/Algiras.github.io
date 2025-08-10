@@ -20,24 +20,26 @@ type IncomingMessage =
   | { type: 'STATE'; snapshot: PetSnapshot };
 
 type OutgoingMessage =
-  | { type: 'REQUEST'; petId: string; request: 'FEED' | 'SLEEP' | 'HEAL'; reason: string; at: number };
+  | { type: 'REQUEST'; petId: string; request: 'FEED' | 'SLEEP' | 'HEAL'; reason: string; at: number }
+  | { type: 'SUGGEST_MESSAGE'; petId: string; reason: string; at: number };
 
 const CHECK_INTERVAL_MS = 60 * 1000; // evaluate once per minute
 const RATE_LIMIT_MS = 15 * 60 * 1000; // at most one message per need every 15 minutes
 
 let latest: PetSnapshot | null = null;
-let lastSent: Record<'FEED' | 'SLEEP' | 'HEAL', number> = {
+type RequestType = 'FEED' | 'SLEEP' | 'HEAL';
+let lastSent: Record<RequestType, number> = {
   FEED: 0,
   SLEEP: 0,
   HEAL: 0,
 };
 
-function maybeSend(request: OutgoingMessage['request'], reason: string) {
+function maybeSend(request: RequestType, reason: string) {
   if (!latest || latest.isDead) return;
   const now = Date.now();
   if (now - lastSent[request] < RATE_LIMIT_MS) return;
   lastSent[request] = now;
-  postMessage({ type: 'REQUEST', petId: latest.petId, request, reason, at: now } satisfies OutgoingMessage);
+  postMessage({ type: 'REQUEST', petId: latest.petId, request, reason, at: now } as OutgoingMessage);
 }
 
 setInterval(() => {
@@ -45,12 +47,15 @@ setInterval(() => {
   // Simple thresholds; main thread owns precise decay & state
   if (latest.hunger < 25) {
     maybeSend('FEED', 'Hunger is low');
+    postMessage({ type: 'SUGGEST_MESSAGE', petId: latest.petId, reason: 'hungry', at: Date.now() } as OutgoingMessage);
   }
   if (latest.energy < 20) {
     maybeSend('SLEEP', 'Energy is low');
+    postMessage({ type: 'SUGGEST_MESSAGE', petId: latest.petId, reason: 'tired', at: Date.now() } as OutgoingMessage);
   }
   if (latest.health < 35) {
     maybeSend('HEAL', 'Health is low');
+    postMessage({ type: 'SUGGEST_MESSAGE', petId: latest.petId, reason: 'sick', at: Date.now() } as OutgoingMessage);
   }
 }, CHECK_INTERVAL_MS);
 

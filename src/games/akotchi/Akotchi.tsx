@@ -137,9 +137,29 @@ const Akotchi: React.FC = () => {
   const [muted, setMuted] = useState<boolean>(() => {
     try { return localStorage.getItem('akotchi_sfx_muted_v1') === '1'; } catch { return false; }
   });
+  const [ttsEnabled, setTtsEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem('akotchi_tts_enabled_v1') === '1'; } catch { return false; }
+  });
+  const [userInteracted, setUserInteracted] = useState<boolean>(false);
   useEffect(() => {
     Howler.mute(muted);
   }, [muted]);
+
+  // Tiny in-web LLM to generate pet messages (runs on-device)
+  const [llmReady, setLlmReady] = useState(false);
+  const llmRef = useRef<any | null>(null);
+  const ensureLlm = useCallback(async () => {
+    if (llmRef.current || llmReady) return true;
+    try {
+      const webllm = await import('@mlc-ai/web-llm');
+      const engine = await webllm.CreateMLCEngine('Qwen2-0.5B-Instruct-q4f16_1-MLC');
+      llmRef.current = engine;
+      setLlmReady(true);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [llmReady]);
 
   // Lazy init SFX after user gesture to comply with autoplay policies
   const sfxRef = useRef<{ feed?: Howl; play?: Howl; sleep?: Howl; clean?: Howl; heal?: Howl; scold?: Howl } | null>(null);
@@ -154,6 +174,20 @@ const Akotchi: React.FC = () => {
       scold: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.35 })
     };
   }, []);
+
+  // Web Speech Synthesis (built-in browser TTS)
+  const canTts = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  const speak = useCallback((text: string) => {
+    if (!canTts || !ttsEnabled || !text || !userInteracted) return;
+    try {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 1.0;
+      utter.pitch = 1.1;
+      utter.volume = 0.9;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    } catch { /* ignore */ }
+  }, [ttsEnabled, canTts, userInteracted]);
 
   const deriveAnimFromStats = useCallback((s: AkotchiState): AnimationState => {
     if (s.sick || s.health < 35) return 'Sick';
@@ -192,7 +226,7 @@ const Akotchi: React.FC = () => {
       workerRef.current = w;
       w.postMessage({ type: 'INIT', petId: state.id, name: state.name });
       w.onmessage = (e: MessageEvent) => {
-        const data = e.data as { type: 'REQUEST'; petId: string; request: string; reason: string; at: number } | any;
+        const data = e.data as { type: 'REQUEST' | 'SUGGEST_MESSAGE'; petId: string; request?: string; reason?: string; at: number } | any;
         if (data?.type === 'REQUEST') {
           // Surface as Notification if enabled, also subtle UI toast via alert as fallback
           if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
@@ -205,7 +239,11 @@ const Akotchi: React.FC = () => {
               withCloseButton: true,
               autoClose: 4000,
             });
+            speak(`${state.name} needs ${String(data.request || '').toLowerCase()}: ${data.reason}`);
           }
+        } else if (data?.type === 'SUGGEST_MESSAGE') {
+          // Ask the on-device LLM to compose something friendly
+          requestPetMessage();
         }
       };
     } catch {
@@ -295,6 +333,7 @@ const Akotchi: React.FC = () => {
     setAnimState('Idle');
     setAnimUntil(0);
     createPet(name);
+    setUserInteracted(true);
   }, [createPet]);
 
   const feed = useCallback(() => {
@@ -303,6 +342,7 @@ const Akotchi: React.FC = () => {
     // Machine guards handle availability; component just sends
     setTempAnim('Eating', 8000);
     send({ type: 'FEED' });
+    setUserInteracted(true);
   }, [send, setTempAnim, ensureSfx]);
 
   const play = useCallback(() => {
@@ -310,6 +350,7 @@ const Akotchi: React.FC = () => {
     sfxRef.current?.play?.play();
     setTempAnim('Playing', 10000);
     send({ type: 'PLAY' });
+    setUserInteracted(true);
   }, [send, setTempAnim, ensureSfx]);
 
   const sleep = useCallback(() => {
@@ -317,6 +358,7 @@ const Akotchi: React.FC = () => {
     sfxRef.current?.sleep?.play();
     setTempAnim('Sleeping', 12000);
     send({ type: 'SLEEP' });
+    setUserInteracted(true);
   }, [send, setTempAnim, ensureSfx]);
 
   const clean = useCallback(() => {
@@ -324,6 +366,7 @@ const Akotchi: React.FC = () => {
     sfxRef.current?.clean?.play();
     setTempAnim('Happy', 5000);
     send({ type: 'CLEAN' });
+    setUserInteracted(true);
   }, [send, setTempAnim, ensureSfx]);
 
   const heal = useCallback(() => {
@@ -331,6 +374,7 @@ const Akotchi: React.FC = () => {
     sfxRef.current?.heal?.play();
     setTempAnim('Happy', 8000);
     send({ type: 'HEAL' });
+    setUserInteracted(true);
   }, [send, setTempAnim, ensureSfx]);
 
   const scold = useCallback(() => {
@@ -338,7 +382,37 @@ const Akotchi: React.FC = () => {
     sfxRef.current?.scold?.play();
     setTempAnim('Sad', 5000);
     send({ type: 'SCOLD' });
+    setUserInteracted(true);
   }, [send, setTempAnim, ensureSfx]);
+
+  // Ask LLM to compose a short message occasionally via worker requests or low needs
+  const requestPetMessage = useCallback(async () => {
+    const ok = await ensureLlm();
+    if (!ok || !llmRef.current) return;
+    const s = state;
+    const system = `You are ${s.name}, a wholesome retro virtual pet (personality: ${s.personality}). Style: playful, caring, concise. Constraints: exactly one sentence under 18 words. Never be manipulative; encourage healthy care and breaks.`;
+    const user = `Current stats — hunger ${Math.round(s.hunger)}, energy ${Math.round(s.energy)}, happiness ${Math.round(s.happiness)}, health ${Math.round(s.health)}. Compose a friendly message to your human about what you need.`;
+    try {
+      const reply = await llmRef.current.chat.completions.create({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ] as any,
+      });
+      const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
+      if (text) {
+        notifications.show({ color: 'blue', title: `${s.name} says`, message: text, autoClose: 6000 });
+        speak(text);
+      }
+    } catch {
+      // ignore
+    }
+  }, [ensureLlm, state, speak]);
+
+  const talk = useCallback(() => {
+    setUserInteracted(true);
+    requestPetMessage();
+  }, [requestPetMessage]);
 
   // Optional: Auto-act on worker requests when idle and allowed
   const [autoCare, setAutoCare] = useState<boolean>(false);
@@ -509,6 +583,20 @@ const Akotchi: React.FC = () => {
                 />
               </Group>
               <Group justify="space-between" align="center">
+                <Text size="sm" c="dimmed">Voice (TTS)</Text>
+                <Switch
+                  size="sm"
+                  checked={ttsEnabled}
+                  onChange={(e) => {
+                    const next = e.currentTarget.checked;
+                    setTtsEnabled(next);
+                    try { localStorage.setItem('akotchi_tts_enabled_v1', next ? '1' : '0'); } catch { /* ignore */ }
+                  }}
+                  disabled={!canTts}
+                  label={canTts ? (ttsEnabled ? 'On' : 'Off') : 'Unavailable'}
+                />
+              </Group>
+              <Group justify="space-between" align="center">
                 <Text size="sm" c="dimmed">Auto care</Text>
                 <Switch
                   size="sm"
@@ -542,6 +630,9 @@ const Akotchi: React.FC = () => {
                 </Button>
                 <Button onClick={scold} variant="outline" color="red" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.scold || 0)}>
                   Scold {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)))})` : ''}
+                </Button>
+                <Button onClick={talk} variant="subtle" fullWidth={isMobile}>
+                  Talk
                 </Button>
               </Group>
               <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
