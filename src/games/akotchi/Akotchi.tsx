@@ -4,13 +4,11 @@ import { useMediaQuery } from '@mantine/hooks';
 import { useMachine } from '@xstate/react';
 import { petMachine } from './machine';
 import { useDocumentTitle } from '../../utils/documentUtils';
-import { ActionKey, AkotchiState, AnimationState } from './types';
-import { createNewAkotchi, updateByElapsed, clamp, PETS_KEY, SELECTED_KEY, STORAGE_KEY } from './state';
+import { AkotchiState, AnimationState } from './types';
+import { createNewAkotchi, updateByElapsed, PETS_KEY, SELECTED_KEY, STORAGE_KEY } from './state';
 // use draw from render module
 import { drawAkotchi as renderDrawAkotchi } from './render';
 import { msRemaining, formatSeconds } from './utils';
-
-// constants imported above
 
 type PetsStore = { pets: AkotchiState[]; selectedId: string };
 
@@ -106,24 +104,7 @@ function useAkotchiState() {
   return { state: selectedPet, setState, applyElapsedTick, store, createPet, selectPet, renamePet } as const;
 }
 
-// Action timing configuration (ms)
-const ACTION_COOLDOWN_MS: Record<ActionKey, number> = {
-  feed: 60_000,
-  play: 90_000,
-  sleep: 120_000,
-  clean: 45_000,
-  heal: 180_000,
-  scold: 60_000,
-};
-
-const ACTION_BUSY_MS: Record<ActionKey, number> = {
-  feed: 8_000,
-  play: 10_000,
-  sleep: 12_000,
-  clean: 5_000,
-  heal: 8_000,
-  scold: 5_000,
-};
+// Action timing config moved to machine actions; component only triggers events
 
 // time helpers moved to utils.ts
 
@@ -163,114 +144,15 @@ const Akotchi: React.FC = () => {
 
   // XState machine to track action states
   const [fsm, send] = useMachine(petMachine, {
-    input: {},
-    // Inline gate checks before sending; types for guards in xstate v5 via options aren't declared in our setup,
-    // so we keep logic in component and let machine handle timing/labels.
+    input: {
+      getPet: () => state,
+      setPet: (updater: (prev: AkotchiState) => AkotchiState) => setState(updater),
+    },
   });
 
-  // Derived guard helpers
-  const guards = {
-      canFeed: () => {
-        const now = Date.now();
-        return !state.isDead && (!state.busyUntil || state.busyUntil <= now) && (!state.cooldowns?.feed || state.cooldowns.feed <= now);
-      },
-      canPlay: () => {
-        const now = Date.now();
-        return !state.isDead && (!state.busyUntil || state.busyUntil <= now) && (!state.cooldowns?.play || state.cooldowns.play <= now);
-      },
-      canSleep: () => {
-        const now = Date.now();
-        return !state.isDead && (!state.busyUntil || state.busyUntil <= now) && (!state.cooldowns?.sleep || state.cooldowns.sleep <= now);
-      },
-      canClean: () => {
-        const now = Date.now();
-        return !state.isDead && (!state.busyUntil || state.busyUntil <= now) && (!state.cooldowns?.clean || state.cooldowns.clean <= now);
-      },
-      canHeal: () => {
-        const now = Date.now();
-        return !state.isDead && (!state.busyUntil || state.busyUntil <= now) && (!state.cooldowns?.heal || state.cooldowns.heal <= now);
-      },
-      canScold: () => {
-        const now = Date.now();
-        return !state.isDead && (!state.busyUntil || state.busyUntil <= now) && (!state.cooldowns?.scold || state.cooldowns.scold <= now);
-      },
-  } as const;
+  // Guards are now enforced inside the machine; component does not pre-check
 
-  const machineActions = {
-      applyFeed: () => {
-        const now = Date.now();
-        setState((prev) => ({
-          ...prev,
-          hunger: clamp(prev.hunger + 18),
-          energy: clamp(prev.energy - 4),
-          happiness: clamp(prev.happiness + 2),
-          lastUpdated: now,
-          busyUntil: now + ACTION_BUSY_MS.feed,
-          cooldowns: { ...(prev.cooldowns || {}), feed: now + ACTION_COOLDOWN_MS.feed },
-          petState: 'Feeding',
-        }));
-      },
-      applyPlay: () => {
-        const now = Date.now();
-        setState((prev) => ({
-          ...prev,
-          happiness: clamp(prev.happiness + 16),
-          energy: clamp(prev.energy - 8),
-          hunger: clamp(prev.hunger - 6),
-          lastUpdated: now,
-          busyUntil: now + ACTION_BUSY_MS.play,
-          cooldowns: { ...(prev.cooldowns || {}), play: now + ACTION_COOLDOWN_MS.play },
-          petState: 'Playing',
-        }));
-      },
-      applySleep: () => {
-        const now = Date.now();
-        setState((prev) => ({
-          ...prev,
-          energy: clamp(prev.energy + 20),
-          hunger: clamp(prev.hunger - 6),
-          lastUpdated: now,
-          busyUntil: now + ACTION_BUSY_MS.sleep,
-          cooldowns: { ...(prev.cooldowns || {}), sleep: now + ACTION_COOLDOWN_MS.sleep },
-          petState: 'Sleeping',
-        }));
-      },
-      applyClean: () => {
-        const now = Date.now();
-        setState((prev) => ({
-          ...prev,
-          happiness: clamp(prev.happiness + 4),
-          lastUpdated: now,
-          busyUntil: now + ACTION_BUSY_MS.clean,
-          cooldowns: { ...(prev.cooldowns || {}), clean: now + ACTION_COOLDOWN_MS.clean },
-          petState: 'Cleaning',
-        }));
-      },
-      applyHeal: () => {
-        const now = Date.now();
-        setState((prev) => ({
-          ...prev,
-          health: clamp(prev.health + 18),
-          sick: prev.health + 18 > 45 ? false : prev.sick,
-          lastUpdated: now,
-          busyUntil: now + ACTION_BUSY_MS.heal,
-          cooldowns: { ...(prev.cooldowns || {}), heal: now + ACTION_COOLDOWN_MS.heal },
-          petState: 'Healing',
-        }));
-      },
-      applyScold: () => {
-        const now = Date.now();
-        setState((prev) => ({
-          ...prev,
-          health: clamp(prev.health - 12),
-          happiness: clamp(prev.happiness - 10),
-          lastUpdated: now,
-          busyUntil: now + ACTION_BUSY_MS.scold,
-          cooldowns: { ...(prev.cooldowns || {}), scold: now + ACTION_COOLDOWN_MS.scold },
-          petState: 'Scolded',
-        }));
-      },
-  };
+  // Updates now happen inside machine actions; component only sends events and sets temp anim
 
   // Simple 8-12 FPS loop
   useEffect(() => {
@@ -332,46 +214,35 @@ const Akotchi: React.FC = () => {
   }, [createPet]);
 
   const feed = useCallback(() => {
-    if (!guards.canFeed()) return;
-    machineActions.applyFeed();
-    setTempAnim('Eating', ACTION_BUSY_MS.feed);
+    // Machine guards handle availability; component just sends
+    setTempAnim('Eating', 8000);
     send({ type: 'FEED' });
-  }, [guards, machineActions, setTempAnim, send]);
+  }, [send, setTempAnim]);
 
   const play = useCallback(() => {
-    if (!guards.canPlay()) return;
-    machineActions.applyPlay();
-    setTempAnim('Playing', ACTION_BUSY_MS.play);
+    setTempAnim('Playing', 10000);
     send({ type: 'PLAY' });
-  }, [guards, machineActions, setTempAnim, send]);
+  }, [send, setTempAnim]);
 
   const sleep = useCallback(() => {
-    if (!guards.canSleep()) return;
-    machineActions.applySleep();
-    setTempAnim('Sleeping', ACTION_BUSY_MS.sleep);
+    setTempAnim('Sleeping', 12000);
     send({ type: 'SLEEP' });
-  }, [guards, machineActions, setTempAnim, send]);
+  }, [send, setTempAnim]);
 
   const clean = useCallback(() => {
-    if (!guards.canClean()) return;
-    machineActions.applyClean();
-    setTempAnim('Happy', ACTION_BUSY_MS.clean);
+    setTempAnim('Happy', 5000);
     send({ type: 'CLEAN' });
-  }, [guards, machineActions, setTempAnim, send]);
+  }, [send, setTempAnim]);
 
   const heal = useCallback(() => {
-    if (!guards.canHeal()) return;
-    machineActions.applyHeal();
-    setTempAnim('Happy', ACTION_BUSY_MS.heal);
+    setTempAnim('Happy', 8000);
     send({ type: 'HEAL' });
-  }, [guards, machineActions, setTempAnim, send]);
+  }, [send, setTempAnim]);
 
   const scold = useCallback(() => {
-    if (!guards.canScold()) return;
-    machineActions.applyScold();
-    setTempAnim('Sad', ACTION_BUSY_MS.scold);
+    setTempAnim('Sad', 5000);
     send({ type: 'SCOLD' });
-  }, [guards, machineActions, setTempAnim, send]);
+  }, [send, setTempAnim]);
 
   // Notifications: hungry reminders
   const canNotify = typeof window !== 'undefined' && 'Notification' in window;
