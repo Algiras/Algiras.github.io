@@ -15,6 +15,9 @@ import ROICalculator from './components/projects/ROICalculator';
 import FinanceToolWrapper from './components/FinanceToolWrapper';
 import MarkdownToPDF from './components/documents/MarkdownToPDF';
 import DocumentToolWrapper from './components/DocumentToolWrapper';
+import Games from './pages/Games';
+import GameToolWrapper from './components/GameToolWrapper';
+import Akotchi from './games/akotchi/Akotchi';
 
 
 function App() {
@@ -47,6 +50,10 @@ function App() {
             <Route path="/documents" element={<Documents />} />
             <Route path="/documents/markdown-to-pdf" element={
               <DocumentToolWrapper><MarkdownToPDF /></DocumentToolWrapper>
+            } />
+            <Route path="/games" element={<Games />} />
+            <Route path="/games/akotchi" element={
+              <GameToolWrapper><Akotchi /></GameToolWrapper>
             } />
           </Routes>
         </Layout>
