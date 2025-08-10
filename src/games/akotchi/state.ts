@@ -1,4 +1,4 @@
-import { AkotchiState, Personality } from './types';
+import { AkotchiState, Personality, GrowthStage } from './types';
 
 export const STORAGE_KEY = 'akotchi_state_v1'; // legacy
 export const PETS_KEY = 'akotchi_pets_v1';
@@ -44,6 +44,7 @@ export function createNewAkotchi(name?: string): AkotchiState {
     petState: 'Idle',
     lastInteractionAt: now,
     recentActions: [],
+    stage: 'Baby',
   };
 }
 
@@ -121,6 +122,19 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
     };
   }
 
+  const nextAge = state.ageHours + hours;
+
+  // Growth stage thresholds (tweakable)
+  const stage: GrowthStage = nextAge < 24
+    ? 'Baby'
+    : nextAge < 72
+      ? 'Child'
+      : nextAge < 168
+        ? 'Teen'
+        : nextAge < 360
+          ? 'Adult'
+          : 'Elder';
+
   return {
     ...state,
     hunger,
@@ -128,9 +142,10 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
     energy,
     health,
     sick,
-    ageHours: state.ageHours + hours,
+    ageHours: nextAge,
     lastUpdated: state.lastUpdated + elapsedMs,
     petState: state.petState && state.petState !== 'Dead' ? state.petState : 'Idle',
+    stage,
   };
 }
 

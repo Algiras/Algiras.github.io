@@ -15,6 +15,7 @@ import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { useLocalStorage, useColorScheme } from '@mantine/hooks';
 import { Notifications } from '@mantine/notifications';
 import { theme } from './theme';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Initialize Sentry for error tracking
 Sentry.init({
@@ -36,8 +37,10 @@ const Root = () => {
     <React.StrictMode>
       <ColorSchemeScript defaultColorScheme={scheme} />
       <MantineProvider theme={theme} defaultColorScheme={scheme}>
-        <Notifications position="top-right" zIndex={1000} limit={5} />
-        <App />
+        <ThemeProvider>
+          <Notifications position="top-right" zIndex={1000} limit={5} />
+          <App />
+        </ThemeProvider>
       </MantineProvider>
     </React.StrictMode>
   );

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Card, Container, Group, Progress, Stack, Text, Title, Switch, Select } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useMediaQuery } from '@mantine/hooks';
 import { useMachine } from '@xstate/react';
 import { petMachine } from './machine';
@@ -8,7 +9,9 @@ import { AkotchiState, AnimationState } from './types';
 import { createNewAkotchi, updateByElapsed, PETS_KEY, SELECTED_KEY, STORAGE_KEY } from './state';
 // use draw from render module
 import { drawAkotchi as renderDrawAkotchi } from './render';
+import { useTheme } from '../../context/ThemeContext';
 import { msRemaining, formatSeconds } from './utils';
+import { Howl, Howler } from 'howler';
 
 type PetsStore = { pets: AkotchiState[]; selectedId: string };
 
@@ -131,6 +134,26 @@ const Akotchi: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('akotchi_notify_enabled_v1') === '1'; } catch { return false; }
   });
+  const [muted, setMuted] = useState<boolean>(() => {
+    try { return localStorage.getItem('akotchi_sfx_muted_v1') === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    Howler.mute(muted);
+  }, [muted]);
+
+  // Lazy init SFX after user gesture to comply with autoplay policies
+  const sfxRef = useRef<{ feed?: Howl; play?: Howl; sleep?: Howl; clean?: Howl; heal?: Howl; scold?: Howl } | null>(null);
+  const ensureSfx = useCallback(() => {
+    if (sfxRef.current) return;
+    sfxRef.current = {
+      feed: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.3 }),
+      play: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.3 }),
+      sleep: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.25 }),
+      clean: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.2 }),
+      heal: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.3 }),
+      scold: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.35 })
+    };
+  }, []);
 
   const deriveAnimFromStats = useCallback((s: AkotchiState): AnimationState => {
     if (s.sick || s.health < 35) return 'Sick';
@@ -141,6 +164,8 @@ const Akotchi: React.FC = () => {
     return 'Idle';
   }, []);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const { theme } = useTheme();
+  const workerRef = useRef<Worker | null>(null);
 
   // XState machine to track action states
   const [fsm, send] = useMachine(petMachine, {
@@ -149,6 +174,65 @@ const Akotchi: React.FC = () => {
       setPet: (updater: (prev: AkotchiState) => AkotchiState) => setState(updater),
     },
   });
+
+  // 1s tick for the machine to apply decay centrally
+  useEffect(() => {
+    const id = setInterval(() => {
+      send({ type: 'TICK' } as any);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [send]);
+
+  // Spawn background worker
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (workerRef.current) return;
+    try {
+      const w = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+      workerRef.current = w;
+      w.postMessage({ type: 'INIT', petId: state.id, name: state.name });
+      w.onmessage = (e: MessageEvent) => {
+        const data = e.data as { type: 'REQUEST'; petId: string; request: string; reason: string; at: number } | any;
+        if (data?.type === 'REQUEST') {
+          // Surface as Notification if enabled, also subtle UI toast via alert as fallback
+          if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+            try { new Notification(`${state.name} requests ${data.request.toLowerCase()}!`, { body: data.reason }); } catch { /* ignore */ }
+          } else {
+            notifications.show({
+              color: 'yellow',
+              title: `${state.name} needs ${data.request.toLowerCase()}`,
+              message: data.reason,
+              withCloseButton: true,
+              autoClose: 4000,
+            });
+          }
+        }
+      };
+    } catch {
+      // ignore
+    }
+    return () => {
+      try { workerRef.current?.terminate(); } catch { /* ignore */ }
+      workerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Periodically send state snapshots to worker (throttled by render loop cadence)
+  useEffect(() => {
+    const w = workerRef.current;
+    if (!w) return;
+    const snapshot = {
+      petId: state.id,
+      name: state.name,
+      hunger: state.hunger,
+      energy: state.energy,
+      health: state.health,
+      isDead: state.isDead,
+      lastUpdated: state.lastUpdated,
+    };
+    try { w.postMessage({ type: 'STATE', snapshot }); } catch { /* ignore */ }
+  }, [state.id, state.name, state.hunger, state.energy, state.health, state.isDead, state.lastUpdated]);
 
   // Guards are now enforced inside the machine; component does not pre-check
 
@@ -188,11 +272,11 @@ const Akotchi: React.FC = () => {
       }
       // Spawn particles based on pet machine state occasionally (handled in render module)
       if (animUntil <= now && animState !== effectiveAnim) setAnimState(effectiveAnim);
-      renderDrawAkotchi(ctx, canvas.width, canvas.height, state, now, effectiveAnim);
+      renderDrawAkotchi(ctx, canvas.width, canvas.height, state, now, effectiveAnim, theme);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [applyElapsedTick, state, animState, animUntil, deriveAnimFromStats, fsm.value]);
+  }, [applyElapsedTick, state, animState, animUntil, deriveAnimFromStats, fsm.value, theme]);
 
   // Sync machine to death when needed
   useEffect(() => {
@@ -214,35 +298,80 @@ const Akotchi: React.FC = () => {
   }, [createPet]);
 
   const feed = useCallback(() => {
+    ensureSfx();
+    sfxRef.current?.feed?.play();
     // Machine guards handle availability; component just sends
     setTempAnim('Eating', 8000);
     send({ type: 'FEED' });
-  }, [send, setTempAnim]);
+  }, [send, setTempAnim, ensureSfx]);
 
   const play = useCallback(() => {
+    ensureSfx();
+    sfxRef.current?.play?.play();
     setTempAnim('Playing', 10000);
     send({ type: 'PLAY' });
-  }, [send, setTempAnim]);
+  }, [send, setTempAnim, ensureSfx]);
 
   const sleep = useCallback(() => {
+    ensureSfx();
+    sfxRef.current?.sleep?.play();
     setTempAnim('Sleeping', 12000);
     send({ type: 'SLEEP' });
-  }, [send, setTempAnim]);
+  }, [send, setTempAnim, ensureSfx]);
 
   const clean = useCallback(() => {
+    ensureSfx();
+    sfxRef.current?.clean?.play();
     setTempAnim('Happy', 5000);
     send({ type: 'CLEAN' });
-  }, [send, setTempAnim]);
+  }, [send, setTempAnim, ensureSfx]);
 
   const heal = useCallback(() => {
+    ensureSfx();
+    sfxRef.current?.heal?.play();
     setTempAnim('Happy', 8000);
     send({ type: 'HEAL' });
-  }, [send, setTempAnim]);
+  }, [send, setTempAnim, ensureSfx]);
 
   const scold = useCallback(() => {
+    ensureSfx();
+    sfxRef.current?.scold?.play();
     setTempAnim('Sad', 5000);
     send({ type: 'SCOLD' });
-  }, [send, setTempAnim]);
+  }, [send, setTempAnim, ensureSfx]);
+
+  // Optional: Auto-act on worker requests when idle and allowed
+  const [autoCare, setAutoCare] = useState<boolean>(false);
+  useEffect(() => {
+    const w = workerRef.current;
+    if (!w) return;
+    const handler = (e: MessageEvent) => {
+      const data = e.data as { type: 'REQUEST'; petId: string; request: 'FEED' | 'SLEEP' | 'HEAL'; reason: string; at: number } | any;
+      if (data?.type !== 'REQUEST') return;
+      if (!autoCare) return;
+      const now = Date.now();
+      const busy = state.busyUntil && state.busyUntil > now;
+      if (state.isDead || busy) return;
+      const cd = state.cooldowns || {};
+      switch (data.request) {
+        case 'FEED':
+          if (!cd.feed || cd.feed <= now) send({ type: 'FEED' });
+          break;
+        case 'SLEEP':
+          if (!cd.sleep || cd.sleep <= now) send({ type: 'SLEEP' });
+          break;
+        case 'HEAL':
+          if (!cd.heal || cd.heal <= now) send({ type: 'HEAL' });
+          break;
+        default:
+          break;
+      }
+    };
+    w.addEventListener('message', handler);
+    return () => {
+      try { w.removeEventListener('message', handler); } catch { /* ignore */ }
+    };
+  }, [autoCare, state.busyUntil, state.isDead, state.cooldowns, send]);
 
   // Notifications: hungry reminders
   const canNotify = typeof window !== 'undefined' && 'Notification' in window;
@@ -271,6 +400,23 @@ const Akotchi: React.FC = () => {
     }
   }, [notificationsEnabled, canNotify, state.hunger]);
 
+  // Toast on stage-up
+  useEffect(() => {
+    if (!state.lastStageUpAt || !state.lastStageUpStage) return;
+    const now = Date.now();
+    // Only show once within a few seconds of update
+    if (now - state.lastStageUpAt < 5000) {
+      notifications.show({
+        color: 'teal',
+        title: `${state.name} advanced to ${state.lastStageUpStage}!`,
+        message: 'A new cosmetic has been unlocked.',
+        autoClose: 5000,
+      });
+      ensureSfx();
+      sfxRef.current?.play?.play();
+    }
+  }, [state.lastStageUpAt, state.lastStageUpStage, state.name, ensureSfx]);
+
   const hoursStr = useMemo(() => `${Math.floor(state.ageHours)}h ${Math.floor((state.ageHours % 1) * 60)}m`, [state.ageHours]);
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -280,7 +426,7 @@ const Akotchi: React.FC = () => {
         <Group justify="space-between" align="center" wrap={isMobile ? 'wrap' : 'nowrap'}>
           <Stack gap={2}>
             <Title order={isMobile ? 3 : 2}>{state.name}</Title>
-            <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">Your unique pet — Personality: {state.personality}</Text>
+              <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">Your unique pet — Personality: {state.personality} • Stage: {state.stage || 'Baby'}</Text>
           </Stack>
           <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">Age: {hoursStr}</Text>
         </Group>
@@ -300,7 +446,7 @@ const Akotchi: React.FC = () => {
               width: isMobile ? '100%' : 320,
               height: isMobile ? 'auto' : 240,
               border: '3px solid var(--mantine-color-default-border)',
-              background: 'var(--mantine-color-dark-8)',
+              background: theme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
               imageRendering: 'pixelated' as any,
             }}>
               <canvas ref={canvasRef} width={320} height={240} style={{ width: '100%', height: '100%' }} />
@@ -347,6 +493,28 @@ const Akotchi: React.FC = () => {
                   }}
                   disabled={!canNotify}
                   label={canNotify ? (notificationsEnabled ? 'On' : 'Off') : 'Unavailable'}
+                />
+              </Group>
+              <Group justify="space-between" align="center">
+                <Text size="sm" c="dimmed">SFX</Text>
+                <Switch
+                  size="sm"
+                  checked={!muted}
+                  onChange={(e) => {
+                    const next = !e.currentTarget.checked ? true : false;
+                    setMuted(next);
+                    try { localStorage.setItem('akotchi_sfx_muted_v1', next ? '1' : '0'); } catch { /* ignore */ }
+                  }}
+                  label={!muted ? 'On' : 'Off'}
+                />
+              </Group>
+              <Group justify="space-between" align="center">
+                <Text size="sm" c="dimmed">Auto care</Text>
+                <Switch
+                  size="sm"
+                  checked={autoCare}
+                  onChange={(e) => setAutoCare(e.currentTarget.checked)}
+                  label={autoCare ? 'On' : 'Off'}
                 />
               </Group>
               <Group wrap="wrap" gap={isMobile ? 'sm' : 'md'}>

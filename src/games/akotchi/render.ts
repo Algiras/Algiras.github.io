@@ -21,17 +21,20 @@ export function drawAkotchi(
   h: number,
   s: AkotchiState,
   t: number,
-  anim: AnimationState
+  anim: AnimationState,
+  theme: 'light' | 'dark' = 'light'
 ) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, w, h);
 
   // Background grid
-  ctx.fillStyle = '#111';
+  const isDark = theme === 'dark';
+  ctx.fillStyle = isDark ? '#111' : '#fcfcfc';
   ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = 'rgba(255,255,255,0.03)';
-  for (let y = 0; y < h; y += 8) {
-    for (let x = 0; x < w; x += 8) {
+  const gridStep = isDark ? 8 : 10;
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
+  for (let y = 0; y < h; y += gridStep) {
+    for (let x = 0; x < w; x += gridStep) {
       ctx.fillRect(x, y, 1, 1);
     }
   }
@@ -57,11 +60,14 @@ export function drawAkotchi(
     bob = Math.floor(Math.sin(t / 800) * 1);
   }
   ctx.translate(swayX, bob);
-  ctx.fillStyle = `hsl(${s.dna.bodyHue}, 70%, 55%)`;
+  // Subtle drop shadow (softer on light theme)
   const cx = Math.floor(w / 2);
   const cy = Math.floor(h / 2);
   const bw = 48;
   const bh = 40;
+  ctx.fillStyle = isDark ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.06)';
+  ctx.fillRect(cx - bw / 2 + 6, cy + bh / 2 - 2, bw - 12, 3);
+  ctx.fillStyle = `hsl(${s.dna.bodyHue}, 70%, 55%)`;
   ctx.fillRect(cx - bw / 2, cy - bh / 2, bw, bh);
   // Rounded corners using cutouts
   ctx.clearRect(cx - bw / 2, cy - bh / 2, 4, 4);
@@ -100,7 +106,7 @@ export function drawAkotchi(
 
   // Eyes (blink)
   const blink = anim !== 'Sleeping' && Math.abs(Math.sin(t / 1500)) < 0.1;
-  ctx.fillStyle = '#111';
+  ctx.fillStyle = isDark ? '#111' : '#222';
   const eyeY = cy - 4;
   if (blink) {
     ctx.fillRect(cx - 10, eyeY, 8, 1);
@@ -122,7 +128,7 @@ export function drawAkotchi(
       ctx.fillRect(cx - 12, eyeY - 2, 6, 6);
       ctx.fillStyle = '#fff';
       ctx.fillRect(cx - 10, eyeY, 2, 2);
-      ctx.fillStyle = '#111';
+      ctx.fillStyle = isDark ? '#111' : '#222';
       ctx.fillRect(cx + 6, eyeY - 2, 6, 6);
     } else if (s.dna.eye === 3) {
       ctx.fillRect(cx - 14, eyeY - 1, 8, 4);
@@ -138,12 +144,12 @@ export function drawAkotchi(
       ctx.fillStyle = '#fff';
       ctx.fillRect(cx - 10, eyeY - 2, 2, 2);
       ctx.fillRect(cx + 7, eyeY - 2, 2, 2);
-      ctx.fillStyle = '#111';
+      ctx.fillStyle = isDark ? '#111' : '#222';
     }
   }
 
   // Mouth
-  ctx.fillStyle = '#111';
+  ctx.fillStyle = isDark ? '#111' : '#222';
   const mouthY = cy + 6;
   if (anim === 'Eating') {
     const chew = Math.floor((t / 120) % 2) === 0;
@@ -153,7 +159,7 @@ export function drawAkotchi(
     ctx.fillStyle = '#c8a15a';
     const foodX = cx + 18 - Math.floor((t / 100) % 24);
     ctx.fillRect(foodX, mouthY - 2, 4, 4);
-    ctx.fillStyle = '#111';
+    ctx.fillStyle = isDark ? '#111' : '#222';
   } else if (anim === 'Hungry' || anim === 'Sad' || anim === 'Sick' || anim === 'LowEnergy') {
     // Frown
     ctx.fillRect(cx - 6, mouthY + 2, 12, 2);

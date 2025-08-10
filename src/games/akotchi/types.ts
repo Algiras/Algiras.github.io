@@ -23,6 +23,8 @@ export type PetMachineState =
   | 'Scolded'
   | 'Dead';
 
+export type GrowthStage = 'Baby' | 'Child' | 'Teen' | 'Adult' | 'Elder';
+
 export interface AkotchiDNA {
   bodyHue: number; // 0-360
   eye: number; // 1..5
@@ -51,6 +53,9 @@ export interface AkotchiState {
   petState?: PetMachineState;
   lastInteractionAt?: number;
   recentActions?: { action: ActionKey; at: number }[];
+  stage?: GrowthStage;
+  lastStageUpAt?: number;
+  lastStageUpStage?: GrowthStage;
 }
 
 
