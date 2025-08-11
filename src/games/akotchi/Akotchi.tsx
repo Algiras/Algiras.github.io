@@ -4,7 +4,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { notifications } from '@mantine/notifications';
 import { useMediaQuery } from '@mantine/hooks';
 import { useMachine } from '@xstate/react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { petMachine } from './machine';
 import { useDocumentTitle } from '../../utils/documentUtils';
 import { AkotchiState, AnimationState } from './types';
@@ -141,6 +141,7 @@ const Akotchi: React.FC = () => {
   useDocumentTitle('Akotchi — Retro Tamagotchi-Inspired Game');
   const { state, setState, applyElapsedTick, store, createPet, selectPet } = useAkotchiState();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [animState, setAnimState] = useState<AnimationState>('Idle');
   const [animUntil, setAnimUntil] = useState<number>(0);
   const [showThoughtBubble, setShowThoughtBubble] = useState<boolean>(false);
@@ -711,6 +712,7 @@ Examples:
   }, []);
   const [exportOpen, setExportOpen] = useState(false);
   const [shareUrlFrozen, setShareUrlFrozen] = useState<string | null>(null);
+  const importedFromUrlRef = useRef<boolean>(false);
 
   const exportPayload = useMemo(() => {
     const payload = { version: 1, pet: state };
@@ -777,36 +779,37 @@ Examples:
 
   // Handle URL parameters for importing pets
   useEffect(() => {
+    if (importedFromUrlRef.current) return;
     const petParam = searchParams.get('pet');
-    if (petParam) {
-      try {
-        const decodedPet = decodeURIComponent(petParam);
-        const parsed = JSON.parse(decodedPet);
-        const sanitized = sanitizeImportedPet(parsed, state.id);
-        if (sanitized) {
-          setState(() => ({ ...sanitized, id: state.id, lastUpdated: Date.now() }));
-          notifications.show({ 
-            color: 'teal', 
-            title: 'Imported from URL', 
-            message: 'Akotchi state loaded from shared link.', 
-            autoClose: 3000 
-          });
-          // Clear the URL parameter after successful import
-          setSearchParams({});
-        }
-      } catch (error) {
-        console.error('Failed to import pet from URL:', error);
+    if (!petParam) return;
+    importedFromUrlRef.current = true; // prevent re-processing
+    try {
+      const decodedPet = decodeURIComponent(petParam);
+      const parsed = JSON.parse(decodedPet);
+      const sanitized = sanitizeImportedPet(parsed, state.id);
+      if (sanitized) {
+        setState(() => ({ ...sanitized, id: state.id, lastUpdated: Date.now() }));
         notifications.show({ 
-          color: 'red', 
-          title: 'Import failed', 
-          message: 'Could not parse pet data from URL.', 
-          autoClose: 4000 
+          color: 'teal', 
+          title: 'Imported from URL', 
+          message: 'Akotchi state loaded from shared link.', 
+          autoClose: 3000 
         });
-        // Clear the invalid URL parameter
-        setSearchParams({});
       }
+    } catch (error) {
+      console.error('Failed to import pet from URL:', error);
+      notifications.show({ 
+        color: 'red', 
+        title: 'Import failed', 
+        message: 'Could not parse pet data from URL.', 
+        autoClose: 4000 
+      });
+    } finally {
+      // Clear the URL parameter and replace history to avoid loops
+      try { setSearchParams({}, { replace: true }); } catch { /* ignore */ }
+      try { navigate('/games/akotchi', { replace: true }); } catch { /* ignore */ }
     }
-  }, [searchParams, setSearchParams, sanitizeImportedPet, setState, state.id]);
+  }, [searchParams, setSearchParams, sanitizeImportedPet, setState, state.id, navigate]);
 
   // Import happens by opening a link with ?pet=... – no manual import function needed anymore
 
