@@ -16,7 +16,8 @@
     "clean:unused": "npx unimported",
     "clean:imports": "npx organize-imports-cli tsconfig.json",
     "clean:all": "yarn clean:imports && yarn lint:fix && yarn format",
-    "fix:unused": "node scripts/fix-unused-vars.js"
+    "fix:unused": "node scripts/fix-unused-vars.js",
+    "fetch:kokoro": "node scripts/fetch-kokoro.cjs"
   },
   "dependencies": {
     "@mantine/core": "^8.1.3",
@@ -28,6 +29,7 @@
     "@sentry/react": "^9.13.0",
     "@sentry/tracing": "^7.120.3",
     "@types/marked": "^5.0.2",
+    "@xenova/transformers": "^2.17.2",
     "@xstate/react": "^6.0.0",
     "howler": "^2.2.4",
     "lucide-react": "^0.525.0",
@@ -45,6 +47,7 @@
     "@sentry/vite-plugin": "^3.3.1",
     "@types/howler": "^2.2.12",
     "@types/jest": "^29.5.14",
+    "@types/qrcode.react": "^3.0.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-router-dom": "^5.3.3",
@@ -60,9 +63,11 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "html5-qrcode": "^2.3.8",
     "jest": "^29.7.0",
     "organize-imports-cli": "^0.10.0",
     "prettier": "^3.6.2",
+    "qrcode.react": "^4.2.0",
     "ts-jest": "^29.3.2",
     "ts-unused-exports": "^11.0.1",
     "typescript": "^5.0.2",

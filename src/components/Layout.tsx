@@ -2,6 +2,9 @@ import { Anchor, AppShell, Box, Container, Group, Text } from '@mantine/core';
 import React from 'react';
 import CookieConsent from './CookieConsent';
 import Navbar from './Navbar';
+import Breadcrumb from './Breadcrumb';
+import { useRouteBasedTitle } from '../utils/documentUtils';
+import { trackRouteChange } from '../utils/analytics';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,6 +12,15 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const currentYear = new Date().getFullYear();
+  
+  // Automatically set page titles based on current route
+  useRouteBasedTitle();
+  
+  // Track route changes for analytics
+  React.useEffect(() => {
+    const currentPath = window.location.pathname + window.location.hash;
+    trackRouteChange(currentPath);
+  }, []);
 
   return (
     <AppShell
@@ -21,6 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </AppShell.Header>
 
       <AppShell.Main>
+        <Breadcrumb />
         {children}
       </AppShell.Main>
 

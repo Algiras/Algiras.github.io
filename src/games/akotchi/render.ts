@@ -22,7 +22,8 @@ export function drawAkotchi(
   s: AkotchiState,
   t: number,
   anim: AnimationState,
-  theme: 'light' | 'dark' = 'light'
+  theme: 'light' | 'dark' = 'light',
+  showThoughtBubble: boolean = false
 ) {
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, w, h);
@@ -247,10 +248,48 @@ export function drawAkotchi(
     ctx.fillStyle = 'rgba(255, 80, 80, 0.8)';
     ctx.fillRect(cx - 2, cy - 50, 4, 10);
     ctx.fillRect(cx - 6, cy - 40, 12, 4);
+  } else if (anim === 'Crying') {
+    // Crying animation with tears
+    ctx.fillStyle = 'rgba(100, 150, 255, 0.8)';
+    // Left tear
+    ctx.fillRect(cx - 12, cy - 35, 2, 6);
+    ctx.fillRect(cx - 11, cy - 29, 2, 2);
+    // Right tear
+    ctx.fillRect(cx + 10, cy - 35, 2, 6);
+    ctx.fillRect(cx + 9, cy - 29, 2, 2);
+    // Crying mouth (open, sad)
+    ctx.fillStyle = isDark ? '#111' : '#222';
+    ctx.fillRect(cx - 4, mouthY - 1, 8, 4);
+    ctx.fillRect(cx - 2, mouthY + 3, 4, 2);
   }
 
   // Particles
   updateAndDrawParticles(ctx, anim);
+  
+  // Thought bubble when Akotchi is asking for something
+  if (showThoughtBubble) {
+    const bubbleX = cx + 25;
+    const bubbleY = cy - 60;
+    const bubbleSize = 20;
+    
+    // Main bubble
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillRect(bubbleX, bubbleY, bubbleSize, bubbleSize);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bubbleX, bubbleY, bubbleSize, bubbleSize);
+    
+    // Small connecting bubble
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillRect(bubbleX + 5, bubbleY + bubbleSize - 2, 8, 8);
+    ctx.strokeRect(bubbleX + 5, bubbleY + bubbleSize - 2, 8, 8);
+    
+    // Question mark or thought dots
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.font = '12px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('?', bubbleX + bubbleSize/2, bubbleY + bubbleSize/2 + 4);
+  }
 }
 
 

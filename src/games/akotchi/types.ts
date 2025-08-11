@@ -9,7 +9,8 @@ export type AnimationState =
   | 'Hungry'
   | 'Happy'
   | 'Sad'
-  | 'LowEnergy';
+  | 'LowEnergy'
+  | 'Crying';
 
 export type ActionKey = 'feed' | 'play' | 'sleep' | 'clean' | 'heal' | 'scold';
 

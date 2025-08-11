@@ -11,6 +11,8 @@ type PetSnapshot = {
   hunger: number;
   energy: number;
   health: number;
+  happiness: number;
+  ageHours: number;
   isDead?: boolean;
   lastUpdated: number;
 };
@@ -21,7 +23,8 @@ type IncomingMessage =
 
 type OutgoingMessage =
   | { type: 'REQUEST'; petId: string; request: 'FEED' | 'SLEEP' | 'HEAL'; reason: string; at: number }
-  | { type: 'SUGGEST_MESSAGE'; petId: string; reason: string; at: number };
+  | { type: 'SUGGEST_MESSAGE'; petId: string; reason: string; at: number }
+  | { type: 'CRYING'; petId: string; reason: string; at: number };
 
 const CHECK_INTERVAL_MS = 60 * 1000; // evaluate once per minute
 const RATE_LIMIT_MS = 15 * 60 * 1000; // at most one message per need every 15 minutes
@@ -33,6 +36,7 @@ let lastSent: Record<RequestType, number> = {
   SLEEP: 0,
   HEAL: 0,
 };
+let lastCryingSent = 0;
 
 function maybeSend(request: RequestType, reason: string) {
   if (!latest || latest.isDead) return;
@@ -57,6 +61,24 @@ setInterval(() => {
     maybeSend('HEAL', 'Health is low');
     postMessage({ type: 'SUGGEST_MESSAGE', petId: latest.petId, reason: 'sick', at: Date.now() } as OutgoingMessage);
   }
+  
+  // Crying logic with age-based frequency
+  if (latest.happiness < 15) {
+    const now = Date.now();
+    // Younger pets cry more frequently
+    const ageBasedInterval = Math.max(5 * 60 * 1000, Math.min(30 * 60 * 1000, latest.ageHours * 2 * 60 * 1000)); // 5-30 minutes based on age
+    if (now - lastCryingSent > ageBasedInterval) {
+      lastCryingSent = now;
+      const cryingReasons = [
+        'feeling very sad and lonely',
+        'needing attention and care',
+        'feeling neglected and upset',
+        'wanting to be comforted'
+      ];
+      const randomReason = cryingReasons[Math.floor(Math.random() * cryingReasons.length)];
+      postMessage({ type: 'CRYING', petId: latest.petId, reason: randomReason, at: now } as OutgoingMessage);
+    }
+  }
 }, CHECK_INTERVAL_MS);
 
 self.onmessage = (e: MessageEvent<IncomingMessage>) => {
@@ -72,6 +94,8 @@ self.onmessage = (e: MessageEvent<IncomingMessage>) => {
         hunger: 100,
         energy: 100,
         health: 100,
+        happiness: 100,
+        ageHours: 0,
         isDead: false,
         lastUpdated: Date.now(),
       };

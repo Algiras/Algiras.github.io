@@ -45,6 +45,14 @@ export const initializeAnalytics = (): void => {
 };
 
 /**
+ * Initialize Google Analytics
+ */
+export const initGA = () => {
+  // You can add your GA4 measurement ID here when ready
+  // ReactGA.initialize('G-XXXXXXXXXX');
+};
+
+/**
  * Track page views
  * @param path - The current page path
  */
@@ -58,31 +66,45 @@ export const trackPageView = (path: string): void => {
 };
 
 /**
- * Track custom events
- * @param category - Event category
- * @param action - Event action
- * @param label - Optional event label
- * @param value - Optional event value
+ * Track route changes
+ * @param path - The current page path
  */
-export const trackEvent = (
-  category: string,
-  action: string,
-  label?: string,
-  value?: number
-): void => {
-  const hasConsent = localStorage.getItem(ANALYTICS_CONSENT_KEY) === 'true';
-  console.log(
-    `Tracking event: ${category}/${action}, Label: ${label}, Value: ${value}, Consent: ${hasConsent}`
-  );
-  if (hasConsent) {
-    ReactGA.event({
-      category,
-      action,
-      label,
-      value,
-    });
-    console.log(`Event sent to GA: ${category}/${action}`);
-  }
+export const trackRouteChange = (path: string): void => {
+  // Track route changes for user behavior analysis
+  ReactGA.event({
+    category: 'Navigation',
+    action: 'Route Change',
+    label: path,
+  });
+  
+  // Also track as pageview
+  trackPageView(path);
+};
+
+/**
+ * Track tool usage
+ * @param toolName - The name of the tool
+ * @param action - The action performed on the tool (e.g., 'view', 'click')
+ */
+export const trackToolUsage = (toolName: string, action: string = 'view'): void => {
+  ReactGA.event({
+    category: 'Tool Usage',
+    action: action,
+    label: toolName,
+  });
+};
+
+/**
+ * Track button clicks
+ * @param buttonName - The name of the button
+ * @param location - The location of the button (e.g., 'header', 'footer')
+ */
+export const trackButtonClick = (buttonName: string, location: string): void => {
+  ReactGA.event({
+    category: 'Button Click',
+    action: 'Click',
+    label: `${buttonName} - ${location}`,
+  });
 };
 
 /**
