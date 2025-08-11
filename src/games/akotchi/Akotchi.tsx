@@ -17,6 +17,79 @@ import { Howl, Howler } from 'howler';
 
 type PetsStore = { pets: AkotchiState[]; selectedId: string };
 
+function generateBeepDataUri(
+  frequencyHz: number,
+  durationMs: number,
+  options?: { volume?: number; wave?: 'sine' | 'square' | 'triangle' | 'sawtooth'; attackMs?: number; decayMs?: number }
+): string {
+  const sampleRate = 44100;
+  const channels = 1;
+  const bitsPerSample = 16;
+  const numSamples = Math.max(1, Math.floor((durationMs / 1000) * sampleRate));
+  const volume = Math.max(0, Math.min(1, options?.volume ?? 0.35));
+  const wave = options?.wave ?? 'sine';
+  const attackSamples = Math.floor(((options?.attackMs ?? 5) / 1000) * sampleRate);
+  const decaySamples = Math.floor(((options?.decayMs ?? 50) / 1000) * sampleRate);
+
+  const data = new Int16Array(numSamples);
+  for (let i = 0; i < numSamples; i += 1) {
+    const t = i / sampleRate;
+    const phase = 2 * Math.PI * frequencyHz * t;
+    let sample: number;
+    switch (wave) {
+      case 'square': sample = Math.sign(Math.sin(phase)) || 1; break;
+      case 'triangle': sample = 2 * Math.asin(Math.sin(phase)) / Math.PI; break;
+      case 'sawtooth': sample = 2 * (t * frequencyHz - Math.floor(0.5 + t * frequencyHz)); break;
+      default: sample = Math.sin(phase); break;
+    }
+    // Simple AR envelope
+    let env = 1;
+    if (i < attackSamples) env = i / Math.max(1, attackSamples);
+    if (numSamples - i < decaySamples) env = Math.min(env, (numSamples - i) / Math.max(1, decaySamples));
+    const v = Math.max(-1, Math.min(1, sample * env * volume));
+    data[i] = (v * 32767) | 0;
+  }
+
+  // WAV header
+  const blockAlign = (channels * bitsPerSample) / 8;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = data.length * blockAlign;
+  const headerSize = 44;
+  const buffer = new ArrayBuffer(headerSize + dataSize);
+  const view = new DataView(buffer);
+  let offset = 0;
+  function writeString(s: string) { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); offset += s.length; }
+  function writeUint32(v: number) { view.setUint32(offset, v, true); offset += 4; }
+  function writeUint16(v: number) { view.setUint16(offset, v, true); offset += 2; }
+
+  writeString('RIFF');
+  writeUint32(36 + dataSize);
+  writeString('WAVE');
+  writeString('fmt ');
+  writeUint32(16); // PCM
+  writeUint16(1); // audio format = PCM
+  writeUint16(channels);
+  writeUint32(sampleRate);
+  writeUint32(byteRate);
+  writeUint16(blockAlign);
+  writeUint16(bitsPerSample);
+  writeString('data');
+  writeUint32(dataSize);
+  // PCM data
+  const out = new Int16Array(buffer, headerSize);
+  out.set(data);
+
+  // To base64
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)) as any);
+  }
+  const base64 = btoa(binary);
+  return `data:audio/wav;base64,${base64}`;
+}
+
 function loadPetsStore(): PetsStore {
   // Try new multi-pet store
   try {
@@ -179,14 +252,22 @@ const Akotchi: React.FC = () => {
   const sfxRef = useRef<{ feed?: Howl; play?: Howl; sleep?: Howl; clean?: Howl; heal?: Howl; scold?: Howl; crying?: Howl } | null>(null);
   const ensureSfx = useCallback(() => {
     if (sfxRef.current) return;
+    // Distinct short UI/game cues generated at runtime and embedded as data URIs
+    const feedUri = generateBeepDataUri(660, 160, { wave: 'sine', volume: 0.35, attackMs: 5, decayMs: 120 });
+    const playUri = generateBeepDataUri(880, 200, { wave: 'triangle', volume: 0.35, attackMs: 5, decayMs: 120 });
+    const sleepUri = generateBeepDataUri(330, 280, { wave: 'sine', volume: 0.25, attackMs: 10, decayMs: 160 });
+    const cleanUri = generateBeepDataUri(1200, 140, { wave: 'sawtooth', volume: 0.25, attackMs: 2, decayMs: 80 });
+    const healUri = generateBeepDataUri(520, 180, { wave: 'sine', volume: 0.3, attackMs: 6, decayMs: 140 });
+    const scoldUri = generateBeepDataUri(200, 220, { wave: 'square', volume: 0.35, attackMs: 2, decayMs: 140 });
+    const cryingUri = generateBeepDataUri(440, 500, { wave: 'triangle', volume: 0.35, attackMs: 10, decayMs: 280 });
     sfxRef.current = {
-      feed: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.3 }),
-      play: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.3 }),
-      sleep: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.25 }),
-      clean: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.2 }),
-      heal: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.3 }),
-      scold: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.35 }),
-      crying: new Howl({ src: ['data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA='], volume: 0.4 })
+      feed: new Howl({ src: [feedUri], volume: 1.0 }),
+      play: new Howl({ src: [playUri], volume: 1.0 }),
+      sleep: new Howl({ src: [sleepUri], volume: 1.0 }),
+      clean: new Howl({ src: [cleanUri], volume: 1.0 }),
+      heal: new Howl({ src: [healUri], volume: 1.0 }),
+      scold: new Howl({ src: [scoldUri], volume: 1.0 }),
+      crying: new Howl({ src: [cryingUri], volume: 1.0 })
     };
   }, []);
 
@@ -744,6 +825,29 @@ Examples:
     setTimeout(() => setShareUrlFrozen(null), 0);
   }, []);
 
+  const copyShareUrl = useCallback(async () => {
+    const url = shareUrlFrozen || shareableUrl;
+    if (!url) return;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      notifications.show({ color: 'teal', title: 'Link copied', message: 'Share URL copied to clipboard.', autoClose: 2000 });
+    } catch {
+      notifications.show({ color: 'red', title: 'Copy failed', message: 'Could not copy the URL. Please copy it manually.', autoClose: 3000 });
+    }
+  }, [shareUrlFrozen, shareableUrl]);
+
   const sanitizeImportedPet = useCallback((raw: any, currentId: string): AkotchiState | null => {
     try {
       const pet = raw?.pet ?? raw;
@@ -1021,6 +1125,9 @@ Examples:
             <Box>
               <QRExporter value={shareUrlFrozen || shareableUrl} />
             </Box>
+            <Group>
+              <Button size="xs" variant="light" onClick={copyShareUrl}>Copy link</Button>
+            </Group>
           </Stack>
         </Modal>
 
