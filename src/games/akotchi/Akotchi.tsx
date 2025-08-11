@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Card, Container, Group, Progress, Stack, Text, Title, Switch, Select, Modal, Textarea, Loader } from '@mantine/core';
+import { Box, Button, Card, Container, Group, Progress, Stack, Text, Title, Switch, Select, Modal, Loader } from '@mantine/core';
 import { QRCodeCanvas } from 'qrcode.react';
 import { notifications } from '@mantine/notifications';
 import { useMediaQuery } from '@mantine/hooks';
@@ -654,12 +654,19 @@ Examples:
       const ok = permission === 'granted';
       setNotificationsEnabled(ok);
       try { localStorage.setItem('akotchi_notify_enabled_v1', ok ? '1' : '0'); } catch { /* ignore */ }
+      // Fire a test notification so the user can confirm it works
+      if (ok) {
+        try {
+          new Notification('Akotchi reminders enabled', {
+            body: 'You will receive alerts for hunger, tiredness, sickness, or crying.',
+          });
+        } catch { /* ignore */ }
+      }
     } catch { /* ignore */ }
   }, [canNotify]);
 
   useEffect(() => {
     if (!notificationsEnabled || !canNotify) return;
-    if (document.visibilityState !== 'hidden') return; // only notify when not visible
     const now = Date.now();
     if (state.hunger < 25) {
       let last = 0;
@@ -691,7 +698,19 @@ Examples:
 
   const hoursStr = useMemo(() => `${Math.floor(state.ageHours)}h ${Math.floor((state.ageHours % 1) * 60)}m`, [state.ageHours]);
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const isIOS = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }, []);
+  const isStandalone = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    // iOS: navigator.standalone; others: display-mode: standalone
+    const mq = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    const ns = (navigator as any)?.standalone === true;
+    return mq || ns;
+  }, []);
   const [exportOpen, setExportOpen] = useState(false);
+  const [shareUrlFrozen, setShareUrlFrozen] = useState<string | null>(null);
 
   const exportPayload = useMemo(() => {
     const payload = { version: 1, pet: state };
@@ -701,10 +720,27 @@ Examples:
   // Generate shareable URL
   const shareableUrl = useMemo(() => {
     if (typeof window === 'undefined') return '';
-    const baseUrl = window.location.origin + window.location.pathname;
+    const originAndPath = window.location.origin + window.location.pathname;
+    // Ensure we use HashRouter path for deep-linking
+    const currentHash = (window.location.hash || '').split('?')[0];
+    const akotchiHashPath = currentHash && currentHash.startsWith('#/games/akotchi')
+      ? currentHash
+      : '#/games/akotchi';
+    const baseUrl = originAndPath + akotchiHashPath;
     const encodedPet = encodeURIComponent(exportPayload);
     return `${baseUrl}?pet=${encodedPet}`;
   }, [exportPayload]);
+
+  // When opening Share, freeze the current URL so the QR doesn't keep changing
+  const openShare = useCallback(() => {
+    setShareUrlFrozen(shareableUrl);
+    setExportOpen(true);
+  }, [shareableUrl]);
+  const closeShare = useCallback(() => {
+    setExportOpen(false);
+    // small delay to avoid flicker when reopening immediately
+    setTimeout(() => setShareUrlFrozen(null), 0);
+  }, []);
 
   const sanitizeImportedPet = useCallback((raw: any, currentId: string): AkotchiState | null => {
     try {
@@ -808,8 +844,7 @@ Examples:
 
             <Stack gap={isMobile ? 'sm' : 'md'} style={{ flex: 1, minWidth: isMobile ? '100%' : 260 }}>
               <Group justify="space-between" align="center">
-                <Button size={isMobile ? 'xs' : 'xs'} variant="light" onClick={() => setExportOpen(true)}>Share</Button>
-                <Button size={isMobile ? 'xs' : 'xs'} variant="light" component="a" href={shareableUrl} target="_blank" rel="noopener noreferrer">Open Link</Button>
+                <Button size={isMobile ? 'xs' : 'xs'} variant="light" onClick={openShare}>Share</Button>
               </Group>
               <Group justify="space-between" align="center" wrap={isMobile ? 'wrap' : 'nowrap'}>
                 <Group gap="xs" wrap={isMobile ? 'wrap' : 'nowrap'}>
@@ -852,11 +887,23 @@ Examples:
                   disabled={!canNotify}
                   label={canNotify ? (notificationsEnabled ? 'On' : 'Off') : 'Unavailable'}
                 />
+                {canNotify && Notification.permission === 'denied' && (
+                  <Text size="xs" c="red" ta="center">
+                    Notifications are blocked by the browser. Enable them in Site Settings.
+                  </Text>
+                )}
               </Group>
               {notificationsEnabled && (
-                <Text size="xs" c="dimmed" ta="center">
-                  💡 You&apos;ll get notifications when {state.name} is hungry, tired, sick, or crying
-                </Text>
+                <Stack gap={4} align="center">
+                  <Text size="xs" c="dimmed" ta="center">
+                    💡 You&apos;ll get notifications when {state.name} is hungry, tired, sick, or crying
+                  </Text>
+                  {isIOS && !isStandalone && (
+                    <Text size="xs" c="yellow" ta="center">
+                      Tip: On iOS, to receive notifications reliably, add this app to Home Screen and open from there.
+                    </Text>
+                  )}
+                </Stack>
               )}
               <Group justify="space-between" align="center">
                 <Text size="sm" c="dimmed">SFX</Text>
@@ -965,38 +1012,12 @@ Examples:
         </Card>
 
         {/* Export Modal */}
-        <Modal opened={exportOpen} onClose={() => setExportOpen(false)} title="Export Akotchi" centered>
+        <Modal opened={exportOpen} onClose={closeShare} title="Export Akotchi" centered>
           <Stack gap="md" align="center">
-            <Text size="sm" c="dimmed">Share your Akotchi via QR code or link.</Text>
+            <Text size="sm" c="dimmed">Scan this QR code on another device to import your Akotchi.</Text>
             <Box>
-              <QRExporter value={shareableUrl} />
+              <QRExporter value={shareUrlFrozen || shareableUrl} />
             </Box>
-            <Group gap="xs" align="end">
-              <Textarea 
-                readOnly 
-                value={shareableUrl} 
-                autosize 
-                minRows={2} 
-                label="Shareable URL" 
-                styles={{ input: { fontFamily: 'monospace', fontSize: '12px' } }}
-                style={{ flex: 1 }}
-              />
-              <Button 
-                size="xs" 
-                variant="light" 
-                onClick={() => {
-                  navigator.clipboard.writeText(shareableUrl);
-                  notifications.show({ 
-                    color: 'green', 
-                    title: 'Copied!', 
-                    message: 'Shareable URL copied to clipboard', 
-                    autoClose: 2000 
-                  });
-                }}
-              >
-                Copy
-              </Button>
-            </Group>
           </Stack>
         </Modal>
 

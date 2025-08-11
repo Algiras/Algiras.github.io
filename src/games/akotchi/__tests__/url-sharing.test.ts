@@ -17,7 +17,7 @@ const mockURL = (url: string) => {
 
 describe('Akotchi URL Sharing', () => {
   it('should parse URL with pet parameter', () => {
-    const testUrl = 'http://localhost:3000/games/akotchi?pet=%7B%22version%22%3A1%2C%22pet%22%3A%7B%22name%22%3A%22TestPet%22%7D%7D';
+    const testUrl = 'http://localhost:3000/#/games/akotchi?pet=%7B%22version%22%3A1%2C%22pet%22%3A%7B%22name%22%3A%22TestPet%22%7D%7D';
     const url = mockURL(testUrl);
     const petParam = url.searchParams.get('pet');
     
@@ -30,7 +30,7 @@ describe('Akotchi URL Sharing', () => {
   });
 
   it('should handle URL without pet parameter', () => {
-    const testUrl = 'http://localhost:3000/games/akotchi';
+    const testUrl = 'http://localhost:3000/#/games/akotchi';
     const url = mockURL(testUrl);
     const petParam = url.searchParams.get('pet');
     
@@ -40,7 +40,7 @@ describe('Akotchi URL Sharing', () => {
   it('should generate shareable URL', () => {
     const mockPet = { version: 1, pet: { name: 'TestPet', id: '123' } };
     const mockExportPayload = JSON.stringify(mockPet);
-    const mockBaseUrl = 'http://localhost:3000/games/akotchi';
+    const mockBaseUrl = 'http://localhost:3000/#/games/akotchi';
     
     const shareableUrl = `${mockBaseUrl}?pet=${encodeURIComponent(mockExportPayload)}`;
     
