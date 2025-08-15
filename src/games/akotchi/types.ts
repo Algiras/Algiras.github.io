@@ -30,8 +30,13 @@ export interface AkotchiDNA {
   bodyHue: number; // 0-360
   eye: number; // 1..5
   mouth: number; // 1..5
-  accessory: number; // 0 none, 1..5
-  markings: number; // 0 none, 1..5
+  accessory: number; // 0 none, 1..9 (extended)
+  markings: number; // 0 none, 1..7 (extended)
+  ear: number; // 0 none, 1..3
+  tail: number; // 0 none, 1..3
+  horns: number; // 0 none, 1..2
+  wings: number; // 0 none, 1..2
+  line: number; // 1..3 evolution line (leaf/fire/water-inspired)
 }
 
 export interface AkotchiState {
@@ -57,6 +62,8 @@ export interface AkotchiState {
   stage?: GrowthStage;
   lastStageUpAt?: number;
   lastStageUpStage?: GrowthStage;
+  messCount?: number; // Number of poops/messes that need cleaning
+  lastPoopAt?: number; // When last poop occurred
 }
 
 

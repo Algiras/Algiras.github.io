@@ -1,16 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Card, Container, Group, Progress, Stack, Text, Title, Switch, Select, Modal, Loader } from '@mantine/core';
+import { Box, Button, Card, Container, Group, Progress, Stack, Text, Title, Switch, Select, Modal, TextInput } from '@mantine/core';
 import { QRCodeCanvas } from 'qrcode.react';
-import { notifications } from '@mantine/notifications';
+
+
 import { useMediaQuery } from '@mantine/hooks';
 import { useMachine } from '@xstate/react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { petMachine } from './machine';
 import { useDocumentTitle } from '../../utils/documentUtils';
 import { AkotchiState, AnimationState } from './types';
-import { createNewAkotchi, updateByElapsed, PETS_KEY, SELECTED_KEY, STORAGE_KEY } from './state';
+import { createNewAkotchi, updateByElapsed, PETS_KEY, SELECTED_KEY, STORAGE_KEY, clamp } from './state';
 // use draw from render module
 import { drawAkotchi as renderDrawAkotchi } from './render';
+
 import { useTheme } from '../../context/ThemeContext';
 import { msRemaining, formatSeconds } from './utils';
 import { Howl, Howler } from 'howler';
@@ -219,17 +221,238 @@ const Akotchi: React.FC = () => {
   const [animUntil, setAnimUntil] = useState<number>(0);
   const [showThoughtBubble, setShowThoughtBubble] = useState<boolean>(false);
   const [thoughtBubbleUntil, setThoughtBubbleUntil] = useState<number>(0);
-  // Removed unused modal state
-  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() => {
-    try { return localStorage.getItem('akotchi_notify_enabled_v1') === '1'; } catch { return false; }
+  const lastPetAtRef = useRef<number>(0);
+
+  // New pet modal state
+  const [newPetModalOpened, setNewPetModalOpened] = useState<boolean>(false);
+  const [newPetName, setNewPetName] = useState<string>('');
+  
+  // Periodic thought timer
+  const lastThoughtTimeRef = useRef<number>(0);
+  
+  // Message display state
+  const [currentMessage, setCurrentMessage] = useState<string>('');
+  const [messageTitle, setMessageTitle] = useState<string>('');
+  const [messageColor, setMessageColor] = useState<string>('blue');
+  const messageTimeoutRef = useRef<number | null>(null);
+  const [lastMessage, setLastMessage] = useState<string>('');
+  const [lastMessageTitle, setLastMessageTitle] = useState<string>('');
+  const [lastMessageColor, setLastMessageColor] = useState<string>('blue');
+  const lastStatusUpdateRef = useRef<number>(0);
+  const lastStatusRef = useRef<{hunger: number, energy: number, health: number, happiness: number, isDead: boolean}>({
+    hunger: 100, energy: 100, health: 100, happiness: 100, isDead: false
   });
   const [muted, setMuted] = useState<boolean>(() => {
     try { return localStorage.getItem('akotchi_sfx_muted_v1') === '1'; } catch { return false; }
   });
   
+  // Helper function to show messages under canvas
+  const showMessage = useCallback((title: string, message: string, color: string = 'blue', duration: number = 6000) => {
+    if (messageTimeoutRef.current) {
+      clearTimeout(messageTimeoutRef.current);
+    }
+    
+    setMessageTitle(title);
+    setCurrentMessage(message);
+    setMessageColor(color);
+    
+    // Also update last message
+    setLastMessage(message);
+    setLastMessageTitle(title);
+    setLastMessageColor(color);
+    
+    messageTimeoutRef.current = window.setTimeout(() => {
+      setCurrentMessage('');
+      setMessageTitle('');
+      messageTimeoutRef.current = null;
+    }, duration);
+  }, []);
+
+  // Generate default status message based on pet's current state
+  const generateDefaultMessage = useCallback(() => {
+    if (state.isDead) {
+      return {
+        title: `${state.name} has passed away`,
+        message: "Thank you for taking care of me. I had a wonderful life!",
+        color: 'gray'
+      };
+    }
+
+    // Check for messes first (high priority)
+    if ((state.messCount || 0) > 0) {
+      const messCount = state.messCount || 0;
+      if (messCount >= 3) {
+        return {
+          title: `${state.name} is embarrassed`,
+          message: "This is so embarrassing! There's mess everywhere! Please clean it up!",
+          color: 'orange'
+        };
+      } else if (messCount >= 2) {
+        return {
+          title: `${state.name} needs cleaning`,
+          message: "It's getting pretty messy around here... Could you clean up please?",
+          color: 'yellow'
+        };
+      } else {
+        return {
+          title: `${state.name} made a mess`,
+          message: "Oops! I made a little mess. Could you clean it up for me?",
+          color: 'yellow'
+        };
+      }
+    }
+
+    // Check for urgent needs
+    if (state.health < 20) {
+      return {
+        title: `${state.name} is very sick`,
+        message: "I really need medical attention! Please heal me soon.",
+        color: 'red'
+      };
+    }
+    
+    if (state.happiness < 15) {
+      return {
+        title: `${state.name} is crying`,
+        message: "I'm feeling so sad... Could you play with me or give me some attention?",
+        color: 'red'
+      };
+    }
+    
+    if (state.hunger < 20) {
+      return {
+        title: `${state.name} is very hungry`,
+        message: "My tummy is rumbling! I really need some food right now.",
+        color: 'orange'
+      };
+    }
+    
+    if (state.energy < 20) {
+      return {
+        title: `${state.name} is exhausted`,
+        message: "I'm so tired... I could really use some rest.",
+        color: 'purple'
+      };
+    }
+
+    // Check for moderate needs
+    if (state.hunger < 50) {
+      return {
+        title: `${state.name} is getting hungry`,
+        message: "I could go for some food soon!",
+        color: 'yellow'
+      };
+    }
+    
+    if (state.energy < 50) {
+      return {
+        title: `${state.name} is feeling tired`,
+        message: "A little nap would be nice.",
+        color: 'blue'
+      };
+    }
+    
+    if (state.happiness < 50) {
+      return {
+        title: `${state.name} wants attention`,
+        message: "I'd love to play or get some cuddles!",
+        color: 'pink'
+      };
+    }
+
+    // Happy states
+    if (state.hunger > 80 && state.energy > 80 && state.health > 80 && state.happiness > 80) {
+      const happyMessages = [
+        "I'm feeling absolutely wonderful today!",
+        "Life is great when you take such good care of me!",
+        "I'm so happy and healthy! Thank you!",
+        "Everything is perfect right now!",
+        "I love spending time with you!"
+      ];
+      return {
+        title: `${state.name} is very happy`,
+        message: happyMessages[Math.floor(Math.random() * happyMessages.length)],
+        color: 'green'
+      };
+    }
+
+    // Default content state
+    const contentMessages = [
+      "I'm doing well, thanks for taking care of me!",
+      "Just enjoying life one moment at a time.",
+      "Everything seems pretty good right now.",
+      "I'm content and peaceful.",
+      "Just thinking about life and stuff."
+    ];
+    
+    return {
+      title: `${state.name} is content`,
+      message: contentMessages[Math.floor(Math.random() * contentMessages.length)],
+      color: 'blue'
+    };
+  }, [state]);
+
   useEffect(() => {
     Howler.mute(muted);
   }, [muted]);
+
+  // Initialize default message on first load
+  useEffect(() => {
+    if (!lastMessage) {
+      const defaultMsg = generateDefaultMessage();
+      setLastMessage(defaultMsg.message);
+      setLastMessageTitle(defaultMsg.title);
+      setLastMessageColor(defaultMsg.color);
+    }
+  }, [lastMessage, generateDefaultMessage]);
+
+  // Update default message when pet status changes significantly (only if no active message)
+  useEffect(() => {
+    if (currentMessage) return; // Don't update if there's an active message
+    
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastStatusUpdateRef.current;
+    
+    // Only check for updates every 5 seconds minimum
+    if (timeSinceLastUpdate < 5000) return;
+    
+    const lastStatus = lastStatusRef.current;
+    const currentStatus = {
+      hunger: state.hunger,
+      energy: state.energy,
+      health: state.health,
+      happiness: state.happiness,
+      isDead: Boolean(state.isDead)
+    };
+    
+    // Check if there's a significant change (more than 10 points or death status change)
+    const significantChange = 
+      Math.abs(currentStatus.hunger - lastStatus.hunger) > 10 ||
+      Math.abs(currentStatus.energy - lastStatus.energy) > 10 ||
+      Math.abs(currentStatus.health - lastStatus.health) > 10 ||
+      Math.abs(currentStatus.happiness - lastStatus.happiness) > 10 ||
+      currentStatus.isDead !== lastStatus.isDead ||
+      // Or if any stat crosses critical thresholds
+      (currentStatus.hunger < 20 && lastStatus.hunger >= 20) ||
+      (currentStatus.energy < 20 && lastStatus.energy >= 20) ||
+      (currentStatus.health < 20 && lastStatus.health >= 20) ||
+      (currentStatus.happiness < 15 && lastStatus.happiness >= 15) ||
+      (currentStatus.hunger >= 20 && lastStatus.hunger < 20) ||
+      (currentStatus.energy >= 20 && lastStatus.energy < 20) ||
+      (currentStatus.health >= 20 && lastStatus.health < 20) ||
+      (currentStatus.happiness >= 15 && lastStatus.happiness < 15);
+    
+    if (significantChange) {
+      const defaultMsg = generateDefaultMessage();
+      setLastMessage(defaultMsg.message);
+      setLastMessageTitle(defaultMsg.title);
+      setLastMessageColor(defaultMsg.color);
+      
+      // Update refs
+      lastStatusUpdateRef.current = now;
+      lastStatusRef.current = currentStatus;
+    }
+  }, [state.hunger, state.energy, state.health, state.happiness, state.isDead, currentMessage, generateDefaultMessage]);
 
   // Tiny in-web LLM to generate pet messages (runs on-device)
   const [llmReady, setLlmReady] = useState(false);
@@ -318,18 +541,8 @@ const Akotchi: React.FC = () => {
           // Generate proactive message for what Akotchi needs
           generateProactiveMessage(data.reason || 'something');
           
-          // Surface as Notification if enabled, also subtle UI toast via alert as fallback
-          if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            try { new Notification(`${state.name} requests ${data.request.toLowerCase()}!`, { body: data.reason }); } catch { /* ignore */ }
-          } else {
-            notifications.show({
-              color: 'yellow',
-              title: `${state.name} needs ${data.request.toLowerCase()}`,
-              message: data.reason,
-              withCloseButton: true,
-              autoClose: 4000,
-            });
-          }
+          // Log request for debugging
+          console.log(`${state.name} needs ${data.request.toLowerCase()}: ${data.reason}`);
         } else if (data?.type === 'SUGGEST_MESSAGE') {
           // Ask the on-device LLM to compose something friendly
           requestPetMessage();
@@ -337,28 +550,8 @@ const Akotchi: React.FC = () => {
           setShowThoughtBubble(true);
           setThoughtBubbleUntil(Date.now() + 3000);
         } else if (data?.type === 'CRYING') {
-          // Handle crying notifications with higher priority
-          if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            try { 
-              new Notification(`${state.name} is crying! 😢`, { 
-                body: data.reason,
-                icon: '/favicon.ico', // Add icon if available
-                tag: 'akotchi-crying', // Group crying notifications
-                requireInteraction: true, // Keep notification visible
-                silent: false // Allow sound
-              }); 
-            } catch { /* ignore */ }
-          }
-          
-          // Show in-app notification as well
-          notifications.show({
-            color: 'red',
-            title: `${state.name} is crying! 😢`,
-            message: data.reason,
-            withCloseButton: true,
-            autoClose: 8000, // Keep crying notifications visible longer
-            icon: '😢'
-          });
+          // Log crying status
+          console.log(`${state.name} is crying: ${data.reason}`);
           
           // Trigger crying animation and play sound
           setTempAnim('Crying', 5000);
@@ -398,8 +591,9 @@ const Akotchi: React.FC = () => {
 
   // Updates now happen inside machine actions; component only sends events and sets temp anim
 
-  // Simple 8-12 FPS loop
+  // Simple 8-12 FPS loop (disabled when Pixi is enabled)
   useEffect(() => {
+
     let raf = 0;
     let last = performance.now();
     const fpsInterval = 1000 / 10;
@@ -508,11 +702,13 @@ Examples:
         ] as any,
       });
       const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
-      if (text) notifications.show({ color: 'blue', title: `${next.name} says`, message: text, autoClose: 6000 });
+      if (text) {
+        showMessage(`${next.name} says`, text, 'blue', 6000);
+      }
     } catch {
       // ignore
     } finally { setLlmBusy(false); }
-  }, [ensureLlm, llmBusy]);
+  }, [ensureLlm, llmBusy, showMessage]);
 
   // Actions
   const setTempAnim = useCallback((anim: AnimationState, durationMs = 1800) => {
@@ -623,12 +819,12 @@ Examples:
       });
       const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
       if (text) {
-        notifications.show({ color: 'blue', title: `${s.name} says`, message: text, autoClose: 6000 });
+        showMessage(`${s.name} says`, text, 'blue', 6000);
       }
     } catch {
       // ignore
     } finally { setLlmBusy(false); }
-  }, [ensureLlm, state, llmBusy]);
+  }, [ensureLlm, state, llmBusy, showMessage]);
 
   
 
@@ -674,13 +870,7 @@ Examples:
       });
       const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
       if (text) {
-        notifications.show({ 
-          color: 'yellow', 
-          title: `${s.name} needs something!`, 
-          message: text, 
-          autoClose: 7000,
-          icon: '💭'
-        });
+        showMessage(`${s.name} needs something!`, text, 'yellow', 7000);
         // Show thought bubble briefly
         setShowThoughtBubble(true);
         setThoughtBubbleUntil(Date.now() + 4000);
@@ -688,11 +878,92 @@ Examples:
     } catch {
       // ignore
     } finally { setLlmBusy(false); }
-  }, [ensureLlm, state, llmBusy]);
+  }, [ensureLlm, state, llmBusy, showMessage]);
 
-  const talk = useCallback(() => {
-    requestPetMessage();
-  }, [requestPetMessage]);
+  // Generate periodic thoughts based on pet status
+  const generatePeriodicThought = useCallback(async () => {
+    if (llmBusy || state.isDead) return;
+    
+    const now = Date.now();
+    if (now - lastThoughtTimeRef.current < 2 * 60 * 1000) return; // 2 minutes
+    
+    lastThoughtTimeRef.current = now;
+    
+    setLlmBusy(true);
+    try {
+      const ok = await ensureLlm();
+      if (!ok || !llmRef.current) { setLlmBusy(false); return; }
+
+      // Create a status summary for the LLM
+      const statusSummary = [];
+      if (state.hunger < 30) statusSummary.push('hungry');
+      if (state.energy < 30) statusSummary.push('tired');
+      if (state.health < 30) statusSummary.push('unwell');
+      if (state.happiness < 30) statusSummary.push('sad');
+      if (state.hunger > 80 && state.energy > 80 && state.health > 80 && state.happiness > 80) {
+        statusSummary.push('very content');
+      }
+      
+      const statusText = statusSummary.length > 0 
+        ? `Currently feeling ${statusSummary.join(', ')}`
+        : 'Feeling okay overall';
+
+      const system = `You are ${state.name}, a virtual pet. Generate a brief, natural thought about what you're thinking or feeling right now. Keep it under 50 words. Be expressive and show personality. ${statusText}. Stage: ${state.stage}. Personality: ${state.personality}.`;
+      
+      const user = 'What are you thinking about right now?';
+
+      const reply = await llmRef.current.chat.completions.create({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ] as any,
+      });
+      
+      const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
+      if (text) {
+        showMessage(`${state.name} thinks`, text, 'cyan', 8000);
+        
+        // Show thought bubble
+        setShowThoughtBubble(true);
+        setThoughtBubbleUntil(Date.now() + 5000);
+      }
+    } catch {
+      // ignore
+    } finally { setLlmBusy(false); }
+  }, [ensureLlm, llmBusy, state, showMessage]);
+
+  // Timer for periodic thoughts
+  useEffect(() => {
+    const timer = setInterval(() => {
+      generatePeriodicThought();
+    }, 30000); // Check every 30 seconds (function has its own 2-minute cooldown)
+    
+    return () => clearInterval(timer);
+  }, [generatePeriodicThought]);
+
+  const handlePetClick = useCallback(() => {
+    const now = Date.now();
+    if (now - lastPetAtRef.current < 700) return;
+    lastPetAtRef.current = now;
+    setTempAnim('Happy', 800);
+    ensureSfx();
+    sfxRef.current?.play?.play();
+    setState((current) => ({
+      ...current,
+      happiness: clamp((current.happiness ?? 0) + 2, 0, 100),
+      lastInteractionAt: now,
+    }));
+  }, [setTempAnim, ensureSfx, setState]);
+
+  // Canvas click handler only when using Canvas
+  useEffect(() => {
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const onClick = () => handlePetClick();
+    canvas.addEventListener('click', onClick);
+    return () => { try { canvas.removeEventListener('click', onClick); } catch { /* ignore */ } };
+  }, [handlePetClick]);
 
   // Optional: Auto-act on worker requests when idle and allowed
   const [autoCare, setAutoCare] = useState<boolean>(false);
@@ -727,39 +998,7 @@ Examples:
     };
   }, [autoCare, state.busyUntil, state.isDead, state.cooldowns, send]);
 
-  // Notifications: hungry reminders
-  const canNotify = typeof window !== 'undefined' && 'Notification' in window;
-  const requestEnableNotifications = useCallback(async () => {
-    if (!canNotify) return;
-    try {
-      const permission = await Notification.requestPermission();
-      const ok = permission === 'granted';
-      setNotificationsEnabled(ok);
-      try { localStorage.setItem('akotchi_notify_enabled_v1', ok ? '1' : '0'); } catch { /* ignore */ }
-      // Fire a test notification so the user can confirm it works
-      if (ok) {
-        try {
-          new Notification('Akotchi reminders enabled', {
-            body: 'You will receive alerts for hunger, tiredness, sickness, or crying.',
-          });
-        } catch { /* ignore */ }
-      }
-    } catch { /* ignore */ }
-  }, [canNotify]);
 
-  useEffect(() => {
-    if (!notificationsEnabled || !canNotify) return;
-    const now = Date.now();
-    if (state.hunger < 25) {
-      let last = 0;
-      try { last = parseInt(localStorage.getItem('akotchi_notify_hungry_last_v1') || '0', 10); } catch { /* ignore */ }
-      if (isNaN(last)) last = 0;
-      if (now - last > 30 * 60 * 1000) { // 30 minutes
-        try { new Notification('Akotchi is hungry! 🍎', { body: 'Come back and feed your Akotchi.' }); } catch { /* ignore */ }
-        try { localStorage.setItem('akotchi_notify_hungry_last_v1', String(now)); } catch { /* ignore */ }
-      }
-    }
-  }, [notificationsEnabled, canNotify, state.hunger]);
 
   // Toast on stage-up
   useEffect(() => {
@@ -767,12 +1006,7 @@ Examples:
     const now = Date.now();
     // Only show once within a few seconds of update
     if (now - state.lastStageUpAt < 5000) {
-      notifications.show({
-        color: 'teal',
-        title: `${state.name} advanced to ${state.lastStageUpStage}!`,
-        message: 'A new cosmetic has been unlocked.',
-        autoClose: 5000,
-      });
+      console.log(`${state.name} advanced to ${state.lastStageUpStage}!`);
       ensureSfx();
       sfxRef.current?.play?.play();
     }
@@ -780,17 +1014,7 @@ Examples:
 
   const hoursStr = useMemo(() => `${Math.floor(state.ageHours)}h ${Math.floor((state.ageHours % 1) * 60)}m`, [state.ageHours]);
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const isIOS = useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  }, []);
-  const isStandalone = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    // iOS: navigator.standalone; others: display-mode: standalone
-    const mq = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
-    const ns = (navigator as any)?.standalone === true;
-    return mq || ns;
-  }, []);
+
   const [exportOpen, setExportOpen] = useState(false);
   const [shareUrlFrozen, setShareUrlFrozen] = useState<string | null>(null);
   const importedFromUrlRef = useRef<boolean>(false);
@@ -842,9 +1066,9 @@ Examples:
         document.execCommand('copy');
         document.body.removeChild(textarea);
       }
-      notifications.show({ color: 'teal', title: 'Link copied', message: 'Share URL copied to clipboard.', autoClose: 2000 });
+      console.log('Link copied to clipboard');
     } catch {
-      notifications.show({ color: 'red', title: 'Copy failed', message: 'Could not copy the URL. Please copy it manually.', autoClose: 3000 });
+      console.log('Failed to copy URL');
     }
   }, [shareUrlFrozen, shareableUrl]);
 
@@ -893,21 +1117,11 @@ Examples:
       const sanitized = sanitizeImportedPet(parsed, state.id);
       if (sanitized) {
         setState(() => ({ ...sanitized, id: state.id, lastUpdated: Date.now() }));
-        notifications.show({ 
-          color: 'teal', 
-          title: 'Imported from URL', 
-          message: 'Akotchi state loaded from shared link.', 
-          autoClose: 3000 
-        });
+        console.log('Imported from URL: Akotchi state loaded from shared link.');
       }
     } catch (error) {
       console.error('Failed to import pet from URL:', error);
-      notifications.show({ 
-        color: 'red', 
-        title: 'Import failed', 
-        message: 'Could not parse pet data from URL.', 
-        autoClose: 4000 
-      });
+      console.log('Import failed: Could not parse pet data from URL.');
     } finally {
       // Clear the URL parameter and replace history to avoid loops
       try { setSearchParams({}, { replace: true }); } catch { /* ignore */ }
@@ -938,20 +1152,51 @@ Examples:
           </Card>
         ) : (
           <Card withBorder radius="md" padding={isMobile ? 'sm' : 'md'} style={{ overflow: 'hidden' }}>
-          <Group align="start" gap={isMobile ? 'md' : 'xl'} wrap={isMobile ? 'wrap' : 'nowrap'}>
-            <Box style={{
-              width: isMobile ? '100%' : 320,
-              height: isMobile ? 'auto' : 240,
-              border: '3px solid var(--mantine-color-default-border)',
-              background: theme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
-              imageRendering: 'pixelated' as any,
-            }}>
-              <canvas ref={canvasRef} width={320} height={240} style={{ width: '100%', height: '100%' }} />
-            </Box>
+            <Stack gap="md">
+              <Group align="start" gap={isMobile ? 'md' : 'xl'} wrap={isMobile ? 'wrap' : 'nowrap'}>
+                <Stack gap="xs" align="center">
+                  <Box style={{
+                    width: isMobile ? '100%' : 320,
+                    height: 240,
+                    border: '3px solid var(--mantine-color-default-border)',
+                    background: theme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
+                    imageRendering: 'pixelated' as any,
+                  }}>
+                    <canvas
+                      ref={canvasRef}
+                      width={320}
+                      height={240}
+                      style={{ imageRendering: 'pixelated' as any, width: '100%', height: '100%' }}
+                    />
+                  </Box>
+                  
+                  {/* Message display under canvas - always show a message */}
+                  <Box style={{
+                    width: isMobile ? '100%' : 320,
+                    minHeight: 60,
+                    padding: 12,
+                    border: '2px solid var(--mantine-color-default-border)',
+                    borderRadius: 8,
+                    background: theme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)',
+                    boxSizing: 'border-box'
+                  }}>
+                    <Text size="xs" fw={600} c={currentMessage ? messageColor : (lastMessageColor || 'blue')} mb={6}>
+                      {currentMessage ? messageTitle : (lastMessageTitle || `${state.name} says`)}
+                    </Text>
+                    <Text size="sm" style={{ 
+                      lineHeight: 1.4,
+                      wordBreak: 'break-word',
+                      whiteSpace: 'pre-wrap'
+                    }}>
+                      {currentMessage || lastMessage || `Hi, I'm ${state.name}! Thanks for taking care of me.`}
+                    </Text>
+                  </Box>
+                </Stack>
 
-            <Stack gap={isMobile ? 'sm' : 'md'} style={{ flex: 1, minWidth: isMobile ? '100%' : 260 }}>
+                <Stack gap={isMobile ? 'sm' : 'md'} style={{ flex: 1, minWidth: isMobile ? '100%' : 260 }}>
               <Group justify="space-between" align="center">
                 <Button size={isMobile ? 'xs' : 'xs'} variant="light" onClick={openShare}>Share</Button>
+
               </Group>
               <Group justify="space-between" align="center" wrap={isMobile ? 'wrap' : 'nowrap'}>
                 <Group gap="xs" wrap={isMobile ? 'wrap' : 'nowrap'}>
@@ -965,53 +1210,12 @@ Examples:
                   />
                 </Group>
                 <Button size={isMobile ? 'sm' : 'xs'} variant="light" onClick={() => {
-                  const name = prompt('Give your new Akotchi a name:') || '';
-                  createPet(name);
+                  setNewPetName('');
+                  setNewPetModalOpened(true);
                 }}>New</Button>
               </Group>
 
-              <Group justify="space-between" align="center">
-                <Text size="sm" c="dimmed">Reminders</Text>
-                <Switch
-                  size="sm"
-                  checked={notificationsEnabled}
-                  onChange={(e) => {
-                    const next = e.currentTarget.checked;
-                    if (next && Notification?.permission !== 'granted') {
-                      requestEnableNotifications();
-                    } else {
-                      setNotificationsEnabled(next);
-                      try { localStorage.setItem('akotchi_notify_enabled_v1', next ? '1' : '0'); } catch { /* ignore */ }
-                    }
-                  }}
-                  onClick={(e) => {
-                    const target = e.currentTarget as HTMLInputElement;
-                    if (!notificationsEnabled && target.checked) {
-                      // Ensure we request permission on user gesture
-                      requestEnableNotifications();
-                    }
-                  }}
-                  disabled={!canNotify}
-                  label={canNotify ? (notificationsEnabled ? 'On' : 'Off') : 'Unavailable'}
-                />
-                {canNotify && Notification.permission === 'denied' && (
-                  <Text size="xs" c="red" ta="center">
-                    Notifications are blocked by the browser. Enable them in Site Settings.
-                  </Text>
-                )}
-              </Group>
-              {notificationsEnabled && (
-                <Stack gap={4} align="center">
-                  <Text size="xs" c="dimmed" ta="center">
-                    💡 You&apos;ll get notifications when {state.name} is hungry, tired, sick, or crying
-                  </Text>
-                  {isIOS && !isStandalone && (
-                    <Text size="xs" c="yellow" ta="center">
-                      Tip: On iOS, to receive notifications reliably, add this app to Home Screen and open from there.
-                    </Text>
-                  )}
-                </Stack>
-              )}
+
               <Group justify="space-between" align="center">
                 <Text size="sm" c="dimmed">SFX</Text>
                 <Switch
@@ -1061,7 +1265,7 @@ Examples:
                 </Button>
                 <Button onClick={clean} variant="light" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.clean || 0)}
                   style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  Clean {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)))})` : ''}
+                  Clean {(state.messCount || 0) > 0 ? `💩×${state.messCount}` : ''} {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)))})` : ''}
                 </Button>
                 <Button onClick={heal} variant="light" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.heal || 0)}
                   style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
@@ -1071,26 +1275,7 @@ Examples:
                   style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
                   Scold {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)))})` : ''}
                 </Button>
-                <Button onClick={talk} variant="light" fullWidth={isMobile}
-                  disabled={llmBusy}
-                  style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  {llmBusy ? (
-                    <Group gap={6} align="center">
-                      <Loader size="xs" />
-                      <Text size="sm">Composing…</Text>
-                    </Group>
-                  ) : 'Talk'}
-                </Button>
-                <Button onClick={() => generateProactiveMessage('something')} variant="light" fullWidth={isMobile}
-                  disabled={llmBusy}
-                  style={{ minWidth: isMobile ? 180 : 220, whiteSpace: 'nowrap' }}>
-                  {llmBusy ? (
-                    <Group gap={6} align="center">
-                      <Loader size="xs" />
-                      <Text size="sm">Thinking…</Text>
-                    </Group>
-                  ) : 'What do you think?'}
-                </Button>
+
               </Group>
               <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
                 {state.busyUntil && Date.now() < state.busyUntil ? `Busy: ${formatSeconds(msRemaining(state.busyUntil))}` : 'Ready for actions'}
@@ -1106,9 +1291,10 @@ Examples:
                   😢 {state.name} is crying and needs immediate attention!
                 </Text>
               )}
+                </Stack>
+              </Group>
             </Stack>
-          </Group>
-        </Card>
+          </Card>
         )}
 
         <Card withBorder radius="md" padding={isMobile ? 'sm' : 'md'}>
@@ -1133,6 +1319,50 @@ Examples:
 
         {/* Import Modal removed – importing happens via opening the shared link */}
       </Stack>
+
+      {/* New Pet Modal */}
+      <Modal
+        opened={newPetModalOpened}
+        onClose={() => setNewPetModalOpened(false)}
+        title="Create New Akotchi"
+        centered
+        size="sm"
+      >
+        <Stack gap="md">
+          <TextInput
+            label="Pet Name"
+            placeholder="Enter a name for your new Akotchi..."
+            value={newPetName}
+            onChange={(e) => setNewPetName(e.target.value)}
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && newPetName.trim()) {
+                createPet(newPetName.trim());
+                setNewPetModalOpened(false);
+              }
+            }}
+          />
+          <Group justify="flex-end">
+            <Button
+              variant="subtle"
+              onClick={() => setNewPetModalOpened(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (newPetName.trim()) {
+                  createPet(newPetName.trim());
+                  setNewPetModalOpened(false);
+                }
+              }}
+              disabled={!newPetName.trim()}
+            >
+              Create
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Container>
   );
 };

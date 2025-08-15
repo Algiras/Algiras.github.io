@@ -64,19 +64,49 @@ export function drawAkotchi(
   // Subtle drop shadow (softer on light theme)
   const cx = Math.floor(w / 2);
   const cy = Math.floor(h / 2);
-  const bw = 48;
-  const bh = 40;
+  // Stage-based sizing and line-specific silhouette tweaks
+  let bw = 48;
+  let bh = 40;
+  if (s.stage === 'Baby') { bw = 40; bh = 32; }
+  else if (s.stage === 'Teen') { bw = 50; bh = 42; }
+  else if (s.stage === 'Adult') { bw = 56; bh = 46; }
+  else if (s.stage === 'Elder') { bw = 54; bh = 44; }
+
+  // Species line modifiers: 1=Leaf (rounder), 2=Ember (spikier), 3=Ripple (wavier)
+  const line = s.dna.line || 1;
+  if (line === 1) { bw += 0; bh += 2; } // rounder, squat
+  if (line === 2) { bw += 2; bh -= 0; } // a bit wider
+  if (line === 3) { bw -= 0; bh += 0; } // neutral
   ctx.fillStyle = isDark ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.06)';
   ctx.fillRect(cx - bw / 2 + 6, cy + bh / 2 - 2, bw - 12, 3);
-  ctx.fillStyle = `hsl(${s.dna.bodyHue}, 70%, 55%)`;
+  // Elder slightly desaturated
+  const sat = s.stage === 'Elder' ? 45 : 70;
+  const light = s.stage === 'Elder' ? 60 : 55;
+  ctx.fillStyle = `hsl(${s.dna.bodyHue}, ${sat}%, ${light}%)`;
   ctx.fillRect(cx - bw / 2, cy - bh / 2, bw, bh);
-  // Rounded corners using cutouts
-  ctx.clearRect(cx - bw / 2, cy - bh / 2, 4, 4);
-  ctx.clearRect(cx + bw / 2 - 4, cy - bh / 2, 4, 4);
-  ctx.clearRect(cx - bw / 2, cy + bh / 2 - 4, 4, 4);
-  ctx.clearRect(cx + bw / 2 - 4, cy + bh / 2 - 4, 4, 4);
+  // Corners by line: round (leaf), spikes (ember), waves (ripple)
+  if (line === 1) {
+    // Rounded corners using cutouts
+    ctx.clearRect(cx - bw / 2, cy - bh / 2, 4, 4);
+    ctx.clearRect(cx + bw / 2 - 4, cy - bh / 2, 4, 4);
+    ctx.clearRect(cx - bw / 2, cy + bh / 2 - 4, 4, 4);
+    ctx.clearRect(cx + bw / 2 - 4, cy + bh / 2 - 4, 4, 4);
+  } else if (line === 2) {
+    // Small spikes on top and sides
+    ctx.fillStyle = `hsl(${s.dna.bodyHue}, ${sat}%, ${light - 6}%)`;
+    for (let i = -bw / 2 + 6; i <= bw / 2 - 6; i += 10) {
+      ctx.fillRect(cx + i, cy - bh / 2 - 4, 4, 4);
+    }
+  } else {
+    // Ripple edges
+    ctx.fillStyle = `hsl(${s.dna.bodyHue}, ${sat}%, ${light - 6}%)`;
+    for (let i = -bw / 2 + 6; i <= bw / 2 - 6; i += 12) {
+      ctx.fillRect(cx + i, cy - bh / 2 - 2, 2, 2);
+      ctx.fillRect(cx + i, cy + bh / 2, 2, 2);
+    }
+  }
 
-  // Markings
+  // Markings + line-specific overlays
   if (s.dna.markings === 1) {
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(cx - 10, cy - 8, 6, 6);
@@ -103,6 +133,15 @@ export function drawAkotchi(
     ctx.fillRect(cx - 5, cy - 6, 4, 4);
     ctx.fillRect(cx + 1, cy - 6, 4, 4);
     ctx.fillRect(cx - 4, cy - 3, 8, 6);
+  } else if (s.dna.markings === 6 && line === 1) {
+    // Leaf veins
+    ctx.fillStyle = 'rgba(0, 80, 0, 0.25)';
+    for (let i = -12; i <= 12; i += 6) ctx.fillRect(cx + i, cy, 2, 12);
+  } else if (s.dna.markings === 7 && line === 3) {
+    // Water ripple bands
+    ctx.fillStyle = 'rgba(50, 120, 255, 0.15)';
+    ctx.fillRect(cx - 16, cy - 12, 32, 3);
+    ctx.fillRect(cx - 12, cy - 2, 24, 3);
   }
 
   // Eyes (blink)
@@ -183,6 +222,53 @@ export function drawAkotchi(
     ctx.fillRect(cx + 6, mouthY + 2, 2, 2);
   }
 
+  // Extra features: ears, horns, wings, tail
+  // Ears
+  if (s.dna.ear === 1) {
+    ctx.fillStyle = `hsl(${s.dna.bodyHue}, ${sat}%, ${light - 8}%)`;
+    ctx.fillRect(cx - bw / 2 + 4, cy - bh / 2 - 6, 6, 6);
+    ctx.fillRect(cx + bw / 2 - 10, cy - bh / 2 - 6, 6, 6);
+  } else if (s.dna.ear === 2) {
+    ctx.fillStyle = `hsl(${s.dna.bodyHue}, ${sat}%, ${light - 8}%)`;
+    ctx.fillRect(cx - bw / 2 + 2, cy - bh / 2 - 10, 8, 10);
+    ctx.fillRect(cx + bw / 2 - 10, cy - bh / 2 - 10, 8, 10);
+  } else if (s.dna.ear === 3) {
+    ctx.fillStyle = '#333';
+    ctx.fillRect(cx - bw / 2 + 6, cy - bh / 2 - 8, 4, 8);
+    ctx.fillRect(cx + bw / 2 - 10, cy - bh / 2 - 8, 4, 8);
+  }
+  // Horns
+  if (s.dna.horns === 1) {
+    ctx.fillStyle = '#c9c2a3';
+    ctx.fillRect(cx - 10, cy - bh / 2 - 10, 4, 10);
+    ctx.fillRect(cx + 6, cy - bh / 2 - 10, 4, 10);
+  } else if (s.dna.horns === 2) {
+    ctx.fillStyle = '#a88c5c';
+    ctx.fillRect(cx - 12, cy - bh / 2 - 12, 4, 12);
+    ctx.fillRect(cx + 8, cy - bh / 2 - 12, 4, 12);
+  }
+  // Wings (line-specific tint)
+  if (s.dna.wings === 1) {
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillRect(cx - bw / 2 - 10, cy - 6, 10, 12);
+    ctx.fillRect(cx + bw / 2, cy - 6, 10, 12);
+  } else if (s.dna.wings === 2) {
+    ctx.fillStyle = line === 2 ? 'rgba(255,200,160,0.7)' : 'rgba(200,220,255,0.7)';
+    ctx.fillRect(cx - bw / 2 - 12, cy - 10, 12, 16);
+    ctx.fillRect(cx + bw / 2, cy - 10, 12, 16);
+  }
+  // Tail
+  if (s.dna.tail === 1) {
+    ctx.fillStyle = `hsl(${s.dna.bodyHue}, ${sat}%, ${light - 8}%)`;
+    ctx.fillRect(cx + bw / 2, cy + 4, 8, 4);
+  } else if (s.dna.tail === 2) {
+    ctx.fillStyle = `hsl(${s.dna.bodyHue}, ${sat}%, ${light - 12}%)`;
+    ctx.fillRect(cx + bw / 2, cy + 2, 10, 6);
+  } else if (s.dna.tail === 3) {
+    ctx.fillStyle = '#333';
+    ctx.fillRect(cx + bw / 2, cy + 2, 2, 10);
+  }
+
   // Accessory
   if (s.dna.accessory === 1) {
     // hat
@@ -212,6 +298,28 @@ export function drawAkotchi(
     drawStar(ctx, cx + 18, cy - 22, 3);
     ctx.fillStyle = '#e255a1';
     drawStar(ctx, cx + 18, cy - 22, 2);
+  } else if (s.dna.accessory === 6) {
+    // headphones
+    ctx.fillStyle = '#444';
+    ctx.fillRect(cx - 22, cy - 10, 6, 16);
+    ctx.fillRect(cx + 16, cy - 10, 6, 16);
+    ctx.fillRect(cx - 16, cy - 14, 32, 4);
+  } else if (s.dna.accessory === 7) {
+    // crown
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(cx - 14, cy - bh / 2 - 8, 28, 6);
+    ctx.fillRect(cx - 10, cy - bh / 2 - 14, 6, 6);
+    ctx.fillRect(cx + 4, cy - bh / 2 - 14, 6, 6);
+  } else if (s.dna.accessory === 8) {
+    // monocle
+    ctx.fillStyle = '#222';
+    ctx.fillRect(cx + 6, cy - 6, 12, 10);
+    ctx.fillRect(cx + 12, cy + 4, 2, 8);
+  } else if (s.dna.accessory === 9) {
+    // tie
+    ctx.fillStyle = '#b30000';
+    ctx.fillRect(cx - 2, cy + 10, 4, 8);
+    ctx.fillRect(cx - 4, cy + 18, 8, 8);
   }
 
   // Sick overlay
@@ -289,6 +397,46 @@ export function drawAkotchi(
     ctx.font = '12px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('?', bubbleX + bubbleSize/2, bubbleY + bubbleSize/2 + 4);
+  }
+
+  // Draw poop/mess
+  const messCount = s.messCount || 0;
+  if (messCount > 0) {
+    for (let i = 0; i < Math.min(messCount, 3); i++) {
+      const poopX = cx - 25 + (i * 15) + Math.sin(t * 0.001 + i) * 2;
+      const poopY = cy + 35 + Math.cos(t * 0.0015 + i) * 1;
+      
+      // Poop shape (brown pile)
+      ctx.fillStyle = '#8B4513';
+      
+      // Bottom part (wider)
+      ctx.beginPath();
+      ctx.ellipse(poopX, poopY + 2, 6, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Middle part
+      ctx.beginPath();
+      ctx.ellipse(poopX, poopY, 5, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Top part (smaller)
+      ctx.beginPath();
+      ctx.ellipse(poopX, poopY - 2, 3, 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Stink lines (optional visual effect)
+      ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)';
+      ctx.lineWidth = 1;
+      const stinkOffset = Math.sin(t * 0.003 + i) * 2;
+      
+      // Three small wavy lines above the poop
+      for (let j = 0; j < 3; j++) {
+        ctx.beginPath();
+        ctx.moveTo(poopX - 2 + j * 2, poopY - 8);
+        ctx.lineTo(poopX - 2 + j * 2 + stinkOffset, poopY - 12);
+        ctx.stroke();
+      }
+    }
   }
 }
 

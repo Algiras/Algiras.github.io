@@ -22,8 +22,13 @@ export function createNewAkotchi(name?: string): AkotchiState {
     bodyHue: randomInt(0, 360),
     eye: randomInt(1, 5),
     mouth: randomInt(1, 5),
-    accessory: randomInt(0, 5),
-    markings: randomInt(0, 5),
+    accessory: randomInt(0, 9),
+    markings: randomInt(0, 7),
+    ear: randomInt(0, 3),
+    tail: randomInt(0, 3),
+    horns: randomInt(0, 2),
+    wings: randomInt(0, 2),
+    line: randomInt(1, 3),
   };
   const personality: Personality = pick(['Cheerful', 'Lazy', 'Hyper', 'Moody', 'Shy']);
   return {
@@ -45,6 +50,8 @@ export function createNewAkotchi(name?: string): AkotchiState {
     lastInteractionAt: now,
     recentActions: [],
     stage: 'Baby',
+    messCount: 0,
+    lastPoopAt: now,
   };
 }
 
@@ -98,6 +105,44 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
   else health += 2 * hours * (state.happiness > 60 ? 1.2 : 1);
   if (state.sick) health -= 3 * hours;
 
+  // Pooping mechanics
+  let messCount = state.messCount || 0;
+  let lastPoopAt = state.lastPoopAt || now;
+  
+  // Check if it's time to poop (based on hunger consumption and personality)
+  const timeSinceLastPoop = now - lastPoopAt;
+  const minTimeBetweenPoops = 15 * 60 * 1000; // Minimum 15 minutes between poops
+  const maxTimeBetweenPoops = 45 * 60 * 1000; // Maximum 45 minutes between poops
+  
+  // Personality affects pooping frequency
+  let poopFrequencyMultiplier = 1.0;
+  switch (state.personality) {
+    case 'Hyper': poopFrequencyMultiplier = 1.3; break; // Poops more often
+    case 'Lazy': poopFrequencyMultiplier = 0.7; break; // Poops less often
+    case 'Moody': poopFrequencyMultiplier = 1.1; break; // Slightly more often
+    default: poopFrequencyMultiplier = 1.0; break;
+  }
+  
+  // Higher hunger consumption = more likely to poop
+  const hungerBasedPoopChance = Math.max(0, (state.hunger - hunger)) / 20; // 0-1 based on hunger consumed
+  const timeBasedPoopChance = Math.min(1, timeSinceLastPoop / (maxTimeBetweenPoops * poopFrequencyMultiplier));
+  const totalPoopChance = (hungerBasedPoopChance + timeBasedPoopChance) / 2;
+  
+  // Random chance to poop (higher with time and food consumption)
+  if (timeSinceLastPoop > minTimeBetweenPoops && Math.random() < totalPoopChance * hours) {
+    messCount = Math.min(3, messCount + 1); // Max 3 poops at once
+    lastPoopAt = now;
+    
+    // Pooping affects happiness slightly (embarrassment)
+    happiness = Math.max(0, happiness - 3);
+  }
+  
+  // Having mess affects happiness over time
+  if (messCount > 0) {
+    happiness -= messCount * 2 * hours; // -2 happiness per hour per mess
+    health -= messCount * 1 * hours; // -1 health per hour per mess (hygiene)
+  }
+
   // Caps & clamps
   hunger = clamp(hunger);
   happiness = clamp(happiness);
@@ -146,6 +191,8 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
     lastUpdated: state.lastUpdated + elapsedMs,
     petState: state.petState && state.petState !== 'Dead' ? state.petState : 'Idle',
     stage,
+    messCount,
+    lastPoopAt,
   };
 }
 

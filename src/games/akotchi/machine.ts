@@ -208,9 +208,16 @@ export const petMachine = createMachine({
         const countSame = recent.filter((r) => r.action === 'clean').length;
         const factors = [1, 0.8, 0.6, 0.4];
         const f = factors[Math.min(countSame, factors.length - 1)];
+        
+        // Clear messes and give extra happiness if there were messes to clean
+        const messCount = prev.messCount || 0;
+        const extraHappiness = messCount > 0 ? messCount * 5 : 0; // +5 happiness per mess cleaned
+        
         return {
           ...prev,
-          happiness: clamp(prev.happiness + 4 * f),
+          happiness: clamp(prev.happiness + 4 * f + extraHappiness),
+          health: clamp(prev.health + (messCount > 0 ? messCount * 2 : 0)), // +2 health per mess cleaned
+          messCount: 0, // Clear all messes
           lastUpdated: now,
           busyUntil: now + ACTION_BUSY_MS.clean,
           cooldowns: { ...(prev.cooldowns || {}), clean: now + ACTION_COOLDOWN_MS.clean },
