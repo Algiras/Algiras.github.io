@@ -193,15 +193,18 @@ function useAkotchiState() {
 
 // renderer moved to render.ts
 
-const StatBar = ({ label, value, color }: { label: string; value: number; color: string }) => (
-  <Stack gap={4} style={{ minWidth: 160 }}>
-    <Group justify="space-between">
-      <Text size="sm" c="dimmed">{label}</Text>
-      <Text size="sm" fw={600}>{Math.round(value)}</Text>
-    </Group>
-    <Progress value={value} color={color as any} radius="md" size="md" />
-  </Stack>
-);
+const StatBar = ({ label, value, color }: { label: string; value: number; color: string }) => {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  return (
+    <Stack gap={4} style={{ minWidth: isMobile ? 'auto' : 160, width: isMobile ? '100%' : 'auto' }}>
+      <Group justify="space-between">
+        <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">{label}</Text>
+        <Text size={isMobile ? 'xs' : 'sm'} fw={600}>{Math.round(value)}</Text>
+      </Group>
+      <Progress value={value} color={color as any} radius="md" size={isMobile ? 'sm' : 'md'} />
+    </Stack>
+  );
+};
 
 const QRExporter: React.FC<{ value: string }> = ({ value }) => {
   if (!value) return null;
@@ -1153,146 +1156,310 @@ Examples:
         ) : (
           <Card withBorder radius="md" padding={isMobile ? 'sm' : 'md'} style={{ overflow: 'hidden' }}>
             <Stack gap="md">
-              <Group align="start" gap={isMobile ? 'md' : 'xl'} wrap={isMobile ? 'wrap' : 'nowrap'}>
-                <Stack gap="xs" align="center">
-                  <Box style={{
-                    width: isMobile ? '100%' : 320,
-                    height: 240,
-                    border: '3px solid var(--mantine-color-default-border)',
-                    background: theme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
-                    imageRendering: 'pixelated' as any,
-                  }}>
-                    <canvas
-                      ref={canvasRef}
-                      width={320}
-                      height={240}
-                      style={{ imageRendering: 'pixelated' as any, width: '100%', height: '100%' }}
-                    />
-                  </Box>
-                  
-                  {/* Message display under canvas - always show a message */}
-                  <Box style={{
-                    width: isMobile ? '100%' : 320,
-                    minHeight: 60,
-                    padding: 12,
-                    border: '2px solid var(--mantine-color-default-border)',
-                    borderRadius: 8,
-                    background: theme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)',
-                    boxSizing: 'border-box'
-                  }}>
-                    <Text size="xs" fw={600} c={currentMessage ? messageColor : (lastMessageColor || 'blue')} mb={6}>
-                      {currentMessage ? messageTitle : (lastMessageTitle || `${state.name} says`)}
-                    </Text>
-                    <Text size="sm" style={{ 
-                      lineHeight: 1.4,
-                      wordBreak: 'break-word',
-                      whiteSpace: 'pre-wrap'
+              {isMobile ? (
+                <Stack gap="lg">
+                  {/* Canvas and message section - mobile */}
+                  <Stack gap="xs" align="center">
+                    <Box style={{
+                      width: '100%',
+                      height: 'auto',
+                      aspectRatio: '4/3',
+                      border: '3px solid var(--mantine-color-default-border)',
+                      background: theme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
+                      imageRendering: 'pixelated' as any,
                     }}>
-                      {currentMessage || lastMessage || `Hi, I'm ${state.name}! Thanks for taking care of me.`}
+                      <canvas
+                        ref={canvasRef}
+                        width={320}
+                        height={240}
+                        style={{ 
+                          imageRendering: 'pixelated' as any, 
+                          width: '100%', 
+                          height: '100%',
+                          display: 'block'
+                        }}
+                      />
+                    </Box>
+                    
+                    {/* Message display under canvas - always show a message */}
+                    <Box style={{
+                      width: '100%',
+                      minHeight: 60,
+                      padding: 12,
+                      border: '2px solid var(--mantine-color-default-border)',
+                      borderRadius: 8,
+                      background: theme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)',
+                      boxSizing: 'border-box'
+                    }}>
+                      <Text size="xs" fw={600} c={currentMessage ? messageColor : (lastMessageColor || 'blue')} mb={6}>
+                        {currentMessage ? messageTitle : (lastMessageTitle || `${state.name} says`)}
+                      </Text>
+                      <Text size="sm" style={{ 
+                        lineHeight: 1.4,
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        {currentMessage || lastMessage || `Hi, I'm ${state.name}! Thanks for taking care of me.`}
+                      </Text>
+                    </Box>
+                  </Stack>
+
+                  {/* Controls section - mobile */}
+                  <Stack gap="sm" style={{ width: '100%' }}>
+                    <Group justify="space-between" align="center">
+                      <Button size="xs" variant="light" onClick={openShare}>Share</Button>
+                    </Group>
+
+                    {/* Pet selector - mobile */}
+                    <Stack gap="xs">
+                      <Group justify="space-between" align="center">
+                        <Text size="sm" c="dimmed">Pet</Text>
+                        <Button size="xs" variant="light" onClick={() => {
+                          setNewPetName('');
+                          setNewPetModalOpened(true);
+                        }}>New</Button>
+                      </Group>
+                      <Select
+                        size="sm"
+                        data={store.pets.map((p) => ({ value: p.id, label: `${p.name}` }))}
+                        value={store.selectedId}
+                        onChange={(val) => val && selectPet(val)}
+                      />
+                    </Stack>
+
+                    <Group justify="space-between" align="center">
+                      <Text size="xs" c="dimmed">SFX</Text>
+                      <Switch
+                        size="xs"
+                        checked={!muted}
+                        onChange={(e) => {
+                          const next = !e.currentTarget.checked ? true : false;
+                          setMuted(next);
+                          try { localStorage.setItem('akotchi_sfx_muted_v1', next ? '1' : '0'); } catch { /* ignore */ }
+                        }}
+                        label={!muted ? 'On' : 'Off'}
+                      />
+                    </Group>
+
+                    <Group justify="space-between" align="center">
+                      <Text size="xs" c="dimmed">Auto care</Text>
+                      <Switch
+                        size="xs"
+                        checked={autoCare}
+                        onChange={(e) => setAutoCare(e.currentTarget.checked)}
+                        label={autoCare ? 'On' : 'Off'}
+                      />
+                    </Group>
+
+                    <Stack gap="xs">
+                      <StatBar label="Hunger" value={state.hunger} color="yellow" />
+                      <StatBar 
+                        label={state.happiness < 15 ? "Happiness 😢" : "Happiness"} 
+                        value={state.happiness} 
+                        color={state.happiness < 15 ? "red" : "pink"} 
+                      />
+                      <StatBar label="Energy" value={state.energy} color="blue" />
+                      <StatBar label="Health" value={state.health} color="green" />
+                    </Stack>
+
+                    <Stack gap="sm">
+                      <Group grow>
+                        <Button onClick={feed} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.feed || 0)}
+                          size="sm">
+                          Feed {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.feed || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.feed || 0)))})` : ''}
+                        </Button>
+                        <Button onClick={play} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.play || 0)}
+                          size="sm">
+                          Play {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.play || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.play || 0)))})` : ''}
+                        </Button>
+                      </Group>
+                      <Group grow>
+                        <Button onClick={sleep} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.sleep || 0)}
+                          size="sm">
+                          Sleep {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.sleep || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.sleep || 0)))})` : ''}
+                        </Button>
+                        <Button onClick={clean} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.clean || 0)}
+                          size="sm">
+                          Clean {(state.messCount || 0) > 0 ? `💩×${state.messCount}` : ''} {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)))})` : ''}
+                        </Button>
+                      </Group>
+                      <Group grow>
+                        <Button onClick={heal} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.heal || 0)}
+                          size="sm">
+                          Heal {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.heal || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.heal || 0)))})` : ''}
+                        </Button>
+                        <Button onClick={scold} variant="outline" color="red" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.scold || 0)}
+                          size="sm">
+                          Scold {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)))})` : ''}
+                        </Button>
+                      </Group>
+                    </Stack>
+
+                    <Text size="xs" c="dimmed">
+                      {state.busyUntil && Date.now() < state.busyUntil ? `Busy: ${formatSeconds(msRemaining(state.busyUntil))}` : 'Ready for actions'}
                     </Text>
-                  </Box>
+
+                    <Text size="xs" c="dimmed">
+                      Tip: {state.name} keeps living even when you close the tab. Come back later to see how they&apos;re doing.
+                    </Text>
+                    
+                    {/* Crying warning */}
+                    {state.happiness < 15 && (
+                      <Text size="xs" c="red" ta="center" fw={600}>
+                        😢 {state.name} is crying and needs immediate attention!
+                      </Text>
+                    )}
+                  </Stack>
                 </Stack>
+              ) : (
+                <Group align="start" gap="xl" wrap="nowrap">
+                  {/* Canvas and message section - desktop */}
+                  <Stack gap="xs" align="center">
+                    <Box style={{
+                      width: 320,
+                      height: 240,
+                      border: '3px solid var(--mantine-color-default-border)',
+                      background: theme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-color-gray-0)',
+                      imageRendering: 'pixelated' as any,
+                    }}>
+                      <canvas
+                        ref={canvasRef}
+                        width={320}
+                        height={240}
+                        style={{ 
+                          imageRendering: 'pixelated' as any, 
+                          width: '100%', 
+                          height: '100%',
+                          display: 'block'
+                        }}
+                      />
+                    </Box>
+                    
+                    {/* Message display under canvas - always show a message */}
+                    <Box style={{
+                      width: 320,
+                      minHeight: 60,
+                      padding: 12,
+                      border: '2px solid var(--mantine-color-default-border)',
+                      borderRadius: 8,
+                      background: theme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-1)',
+                      boxSizing: 'border-box'
+                    }}>
+                      <Text size="xs" fw={600} c={currentMessage ? messageColor : (lastMessageColor || 'blue')} mb={6}>
+                        {currentMessage ? messageTitle : (lastMessageTitle || `${state.name} says`)}
+                      </Text>
+                      <Text size="sm" style={{ 
+                        lineHeight: 1.4,
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        {currentMessage || lastMessage || `Hi, I'm ${state.name}! Thanks for taking care of me.`}
+                      </Text>
+                    </Box>
+                  </Stack>
 
-                <Stack gap={isMobile ? 'sm' : 'md'} style={{ flex: 1, minWidth: isMobile ? '100%' : 260 }}>
-              <Group justify="space-between" align="center">
-                <Button size={isMobile ? 'xs' : 'xs'} variant="light" onClick={openShare}>Share</Button>
+                  {/* Controls section - desktop */}
+                  <Stack gap="md" style={{ flex: 1, minWidth: 260 }}>
+                    <Group justify="space-between" align="center">
+                      <Button size="xs" variant="light" onClick={openShare}>Share</Button>
+                    </Group>
 
-              </Group>
-              <Group justify="space-between" align="center" wrap={isMobile ? 'wrap' : 'nowrap'}>
-                <Group gap="xs" wrap={isMobile ? 'wrap' : 'nowrap'}>
-                  <Text size="sm" c="dimmed">Pet</Text>
-                  <Select
-                    size="sm"
-                    data={store.pets.map((p) => ({ value: p.id, label: `${p.name}` }))}
-                    value={store.selectedId}
-                    onChange={(val) => val && selectPet(val)}
-                    w={isMobile ? '100%' : 220}
-                  />
+                    <Group justify="space-between" align="center" wrap="nowrap">
+                      <Group gap="xs" wrap="nowrap">
+                        <Text size="sm" c="dimmed">Pet</Text>
+                        <Select
+                          size="sm"
+                          data={store.pets.map((p) => ({ value: p.id, label: `${p.name}` }))}
+                          value={store.selectedId}
+                          onChange={(val) => val && selectPet(val)}
+                          w={220}
+                        />
+                      </Group>
+                      <Button size="xs" variant="light" onClick={() => {
+                        setNewPetName('');
+                        setNewPetModalOpened(true);
+                      }}>New</Button>
+                    </Group>
+
+                    <Group justify="space-between" align="center">
+                      <Text size="sm" c="dimmed">SFX</Text>
+                      <Switch
+                        size="sm"
+                        checked={!muted}
+                        onChange={(e) => {
+                          const next = !e.currentTarget.checked ? true : false;
+                          setMuted(next);
+                          try { localStorage.setItem('akotchi_sfx_muted_v1', next ? '1' : '0'); } catch { /* ignore */ }
+                        }}
+                        label={!muted ? 'On' : 'Off'}
+                      />
+                    </Group>
+
+                    <Group justify="space-between" align="center">
+                      <Text size="sm" c="dimmed">Auto care</Text>
+                      <Switch
+                        size="sm"
+                        checked={autoCare}
+                        onChange={(e) => setAutoCare(e.currentTarget.checked)}
+                        label={autoCare ? 'On' : 'Off'}
+                      />
+                    </Group>
+
+                    <Group wrap="wrap" gap="md">
+                      <StatBar label="Hunger" value={state.hunger} color="yellow" />
+                      <StatBar 
+                        label={state.happiness < 15 ? "Happiness 😢" : "Happiness"} 
+                        value={state.happiness} 
+                        color={state.happiness < 15 ? "red" : "pink"} 
+                      />
+                      <StatBar label="Energy" value={state.energy} color="blue" />
+                      <StatBar label="Health" value={state.health} color="green" />
+                    </Group>
+
+                    <Group wrap="wrap" gap="md" style={{ rowGap: 12 }}>
+                      <Button onClick={feed} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.feed || 0)}
+                        style={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                        Feed {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.feed || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.feed || 0)))})` : ''}
+                      </Button>
+                      <Button onClick={play} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.play || 0)}
+                        style={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                        Play {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.play || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.play || 0)))})` : ''}
+                      </Button>
+                      <Button onClick={sleep} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.sleep || 0)}
+                        style={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                        Sleep {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.sleep || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.sleep || 0)))})` : ''}
+                      </Button>
+                      <Button onClick={clean} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.clean || 0)}
+                        style={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                        Clean {(state.messCount || 0) > 0 ? `💩×${state.messCount}` : ''} {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)))})` : ''}
+                      </Button>
+                      <Button onClick={heal} variant="light" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.heal || 0)}
+                        style={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                        Heal {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.heal || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.heal || 0)))})` : ''}
+                      </Button>
+                      <Button onClick={scold} variant="outline" color="red" disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.scold || 0)}
+                        style={{ minWidth: 160, whiteSpace: 'nowrap' }}>
+                        Scold {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)))})` : ''}
+                      </Button>
+                    </Group>
+
+                    <Text size="sm" c="dimmed">
+                      {state.busyUntil && Date.now() < state.busyUntil ? `Busy: ${formatSeconds(msRemaining(state.busyUntil))}` : 'Ready for actions'}
+                    </Text>
+
+                    <Text size="sm" c="dimmed">
+                      Tip: {state.name} keeps living even when you close the tab. Come back later to see how they&apos;re doing.
+                    </Text>
+                    
+                    {/* Crying warning */}
+                    {state.happiness < 15 && (
+                      <Text size="sm" c="red" ta="center" fw={600}>
+                        😢 {state.name} is crying and needs immediate attention!
+                      </Text>
+                    )}
+                  </Stack>
                 </Group>
-                <Button size={isMobile ? 'sm' : 'xs'} variant="light" onClick={() => {
-                  setNewPetName('');
-                  setNewPetModalOpened(true);
-                }}>New</Button>
-              </Group>
-
-
-              <Group justify="space-between" align="center">
-                <Text size="sm" c="dimmed">SFX</Text>
-                <Switch
-                  size="sm"
-                  checked={!muted}
-                  onChange={(e) => {
-                    const next = !e.currentTarget.checked ? true : false;
-                    setMuted(next);
-                    try { localStorage.setItem('akotchi_sfx_muted_v1', next ? '1' : '0'); } catch { /* ignore */ }
-                  }}
-                  label={!muted ? 'On' : 'Off'}
-                />
-              </Group>
-              {/* TTS removed */}
-              <Group justify="space-between" align="center">
-                <Text size="sm" c="dimmed">Auto care</Text>
-                <Switch
-                  size="sm"
-                  checked={autoCare}
-                  onChange={(e) => setAutoCare(e.currentTarget.checked)}
-                  label={autoCare ? 'On' : 'Off'}
-                />
-              </Group>
-              <Group wrap="wrap" gap={isMobile ? 'sm' : 'md'}>
-                <StatBar label="Hunger" value={state.hunger} color="yellow" />
-                <StatBar 
-                  label={state.happiness < 15 ? "Happiness 😢" : "Happiness"} 
-                  value={state.happiness} 
-                  color={state.happiness < 15 ? "red" : "pink"} 
-                />
-                <StatBar label="Energy" value={state.energy} color="blue" />
-                <StatBar label="Health" value={state.health} color="green" />
-              </Group>
-
-              <Group wrap={"wrap"} gap={isMobile ? 'sm' : 'md'} style={{ rowGap: isMobile ? 8 : 12 }}>
-                <Button onClick={feed} variant="light" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.feed || 0)}
-                  style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  Feed {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.feed || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.feed || 0)))})` : ''}
-                </Button>
-                <Button onClick={play} variant="light" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.play || 0)}
-                  style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  Play {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.play || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.play || 0)))})` : ''}
-                </Button>
-                <Button onClick={sleep} variant="light" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.sleep || 0)}
-                  style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  Sleep {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.sleep || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.sleep || 0)))})` : ''}
-                </Button>
-                <Button onClick={clean} variant="light" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.clean || 0)}
-                  style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  Clean {(state.messCount || 0) > 0 ? `💩×${state.messCount}` : ''} {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.clean || 0)))})` : ''}
-                </Button>
-                <Button onClick={heal} variant="light" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.heal || 0)}
-                  style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  Heal {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.heal || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.heal || 0)))})` : ''}
-                </Button>
-                <Button onClick={scold} variant="outline" color="red" fullWidth={isMobile} disabled={Date.now() < (state.busyUntil || 0) || Date.now() < (state.cooldowns?.scold || 0)}
-                  style={{ minWidth: isMobile ? 140 : 160, whiteSpace: 'nowrap' }}>
-                  Scold {msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)) > 0 ? `(${formatSeconds(msRemaining(Math.max(state.busyUntil || 0, state.cooldowns?.scold || 0)))})` : ''}
-                </Button>
-
-              </Group>
-              <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                {state.busyUntil && Date.now() < state.busyUntil ? `Busy: ${formatSeconds(msRemaining(state.busyUntil))}` : 'Ready for actions'}
-              </Text>
-
-              <Text size={isMobile ? 'xs' : 'sm'} c="dimmed">
-                Tip: {state.name} keeps living even when you close the tab. Come back later to see how they&apos;re doing.
-              </Text>
-              
-              {/* Crying warning */}
-              {state.happiness < 15 && (
-                <Text size={isMobile ? 'xs' : 'sm'} c="red" ta="center" fw={600}>
-                  😢 {state.name} is crying and needs immediate attention!
-                </Text>
               )}
-                </Stack>
-              </Group>
             </Stack>
           </Card>
         )}

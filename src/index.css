@@ -686,3 +686,40 @@ html {
 [data-mantine-color-scheme="light"] .recharts-yAxis line {
   stroke: rgba(0, 0, 0, 0.6) !important;
 }
+
+/* Akotchi game mobile optimizations */
+@media (max-width: 768px) {
+  /* Ensure canvas doesn't overflow on small screens */
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Improve touch interaction for canvas */
+  .akotchi-canvas {
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  
+  /* Better button layout for mobile */
+  .akotchi-mobile-buttons {
+    width: 100%;
+  }
+  
+  .akotchi-mobile-buttons .mantine-Button-root {
+    min-height: 44px;
+    font-size: 0.875rem;
+    flex: 1;
+  }
+  
+  /* Improved stat bars for mobile */
+  .akotchi-stat-bar {
+    width: 100%;
+  }
+  
+  /* Better text sizing for mobile */
+  .akotchi-mobile-text {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+  }
+}
