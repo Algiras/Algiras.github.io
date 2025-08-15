@@ -779,6 +779,8 @@ Examples:
     setTimeout(() => requestActionMessage('SCOLD', prev, latestStateRef.current), 200);
   }, [send, setTempAnim, ensureSfx, requestActionMessage]);
 
+
+
   // Enhanced LLM message generation with personality-driven requests
   const requestPetMessage = useCallback(async () => {
     if (llmBusy) return;
@@ -1208,6 +1210,7 @@ Examples:
                   <Stack gap="sm" style={{ width: '100%' }}>
                     <Group justify="space-between" align="center">
                       <Button size="xs" variant="light" onClick={openShare}>Share</Button>
+
                     </Group>
 
                     {/* Pet selector - mobile */}
@@ -1362,6 +1365,7 @@ Examples:
                   <Stack gap="md" style={{ flex: 1, minWidth: 260 }}>
                     <Group justify="space-between" align="center">
                       <Button size="xs" variant="light" onClick={openShare}>Share</Button>
+
                     </Group>
 
                     <Group justify="space-between" align="center" wrap="nowrap">

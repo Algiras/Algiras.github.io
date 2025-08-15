@@ -118,13 +118,13 @@ export const petMachine = createMachine({
   },
   actions: {
     applyTick: ({ context }) => {
-      // Apply 1s worth of elapsed decay using existing updateByElapsed logic
+      // Apply elapsed time decay using existing updateByElapsed logic
       const now = Date.now();
       context.setPet((prev) => {
         const elapsed = Math.max(0, now - prev.lastUpdated);
         if (elapsed <= 0) return prev;
-        // Limit single step to avoid jumping too far if tab was backgrounded; rely on updateByElapsed to handle large gaps
-        const next = updateByElapsed(prev, Math.min(elapsed, 1000));
+        // Allow larger time chunks for proper poop generation, but limit to reasonable max to avoid huge jumps
+        const next = updateByElapsed(prev, Math.min(elapsed, 60000)); // Max 1 minute per tick
         if (prev.stage !== next.stage) {
           return {
             ...next,

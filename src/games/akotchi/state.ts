@@ -107,7 +107,7 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
 
   // Pooping mechanics
   let messCount = state.messCount || 0;
-  let lastPoopAt = state.lastPoopAt || now;
+  let lastPoopAt = state.lastPoopAt || (state.createdAt || now - 30 * 60 * 1000); // Default to 30 mins ago if not set
   
   // Check if it's time to poop (based on hunger consumption and personality)
   const timeSinceLastPoop = now - lastPoopAt;
@@ -129,12 +129,15 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
   const totalPoopChance = (hungerBasedPoopChance + timeBasedPoopChance) / 2;
   
   // Random chance to poop (higher with time and food consumption)
-  if (timeSinceLastPoop > minTimeBetweenPoops && Math.random() < totalPoopChance * hours) {
+  const shouldPoop = timeSinceLastPoop > minTimeBetweenPoops && Math.random() < totalPoopChance * hours;
+  if (shouldPoop) {
     messCount = Math.min(3, messCount + 1); // Max 3 poops at once
     lastPoopAt = now;
     
     // Pooping affects happiness slightly (embarrassment)
     happiness = Math.max(0, happiness - 3);
+    
+
   }
   
   // Having mess affects happiness over time
