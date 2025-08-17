@@ -15,35 +15,63 @@ async function ensurePersistentStorage(): Promise<void> {
   }
 }
 
-export async function getSharedEngine(initProgressCallback?: InitProgressCallback): Promise<any> {
-  if (typeof window !== 'undefined' && (window as any).__mlcEngine) {
-    return (window as any).__mlcEngine;
+export async function getSharedEngine(
+  initProgressCallback?: InitProgressCallback, 
+  preferredModel?: string
+): Promise<any> {
+  const cacheKey = preferredModel || 'default';
+  const windowKey = `__mlcEngine_${cacheKey}`;
+  
+  if (typeof window !== 'undefined' && (window as any)[windowKey]) {
+    return (window as any)[windowKey];
   }
+  
+  // Reset engine promise if we're requesting a different model
+  if (preferredModel && enginePromise) {
+    enginePromise = null;
+  }
+  
   if (!enginePromise) {
     enginePromise = (async () => {
       await ensurePersistentStorage();
       const webllm = await import('@mlc-ai/web-llm');
       const { CreateMLCEngine } = webllm as any;
-      // Prefer a consistent small model to maximize cache reuse across the app
-      const preferredModels = [
-        'Qwen2-0.5B-Instruct-q4f16_1-MLC',
-        'Llama-3.2-1B-Instruct-q4f32_1-MLC',
-      ];
+      
       let engine: any | null = null;
-      for (const model of preferredModels) {
+      
+      // Try the preferred model first if specified
+      if (preferredModel) {
         try {
-          engine = await CreateMLCEngine(model, initProgressCallback ? { initProgressCallback } : {});
-          break;
-        } catch {
-          // try next
+          engine = await CreateMLCEngine(preferredModel, initProgressCallback ? { initProgressCallback } : {});
+        } catch (error) {
+          console.warn(`Failed to load preferred model ${preferredModel}:`, error);
         }
       }
+      
+      // Fallback to default models if preferred model failed or wasn't specified
       if (!engine) {
-        // Last resort: try a generic model id, will likely fail if unavailable
-        engine = await CreateMLCEngine('Qwen2-0.5B-Instruct-q4f16_1-MLC', initProgressCallback ? { initProgressCallback } : {});
+        const fallbackModels = [
+          'Llama-3.2-3B-Instruct-q4f32_1-MLC',
+          'Llama-3.2-1B-Instruct-q4f32_1-MLC',
+          'Qwen2-0.5B-Instruct-q4f16_1-MLC',
+        ];
+        
+        for (const model of fallbackModels) {
+          try {
+            engine = await CreateMLCEngine(model, initProgressCallback ? { initProgressCallback } : {});
+            break;
+          } catch {
+            // try next
+          }
+        }
       }
+      
+      if (!engine) {
+        throw new Error('Failed to initialize any WebLLM model');
+      }
+      
       if (typeof window !== 'undefined') {
-        (window as any).__mlcEngine = engine;
+        (window as any)[windowKey] = engine;
       }
       return engine;
     })();

@@ -112,15 +112,15 @@ export const voiceStateMachine = createMachine({
   actions: {
     clearError: assign({ error: null }),
     setTranscript: assign({ 
-      transcript: (_, event: any) => event.type === 'SPEECH_DETECTED' ? event.transcript : ''
+      transcript: (_, event: any) => event?.type === 'SPEECH_DETECTED' ? event.transcript || '' : ''
     }),
     setResponse: assign({ 
-      response: (_, event: any) => event.type === 'LLM_RESPONSE' ? event.response : ''
+      response: (_, event: any) => event?.type === 'LLM_RESPONSE' ? event.response || '' : ''
     }),
     setError: assign({ 
       error: (_, event: any) => 
-        event.type === 'SPEECH_ERROR' ? event.error :
-        event.type === 'LLM_ERROR' ? event.error : null
+        event?.type === 'SPEECH_ERROR' ? event.error :
+        event?.type === 'LLM_ERROR' ? event.error : null
     }),
     startSpeechRecognition: () => {
       console.log('FSM: Starting speech recognition');

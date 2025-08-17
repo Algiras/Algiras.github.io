@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Card, Group, Progress, Stack, Text, Title, TextInput } from '@mantine/core';
+import { Button, Card, Group, Progress, Stack, Text, Title, Textarea, useMantineColorScheme, Select, Slider } from '@mantine/core';
 import { getSharedEngine } from '../../lib/webllmEngine';
 import { useMachine } from '@xstate/react';
 import { assistantMachine } from './assistantMachine';
@@ -45,6 +45,46 @@ const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
 };
 
 const VoiceAssistant: React.FC = () => {
+  // Theme detection
+  const { colorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === 'dark';
+  
+  // Theme-aware styling
+  const getCardStyle = useMemo(() => ({
+    backgroundColor: isDark ? 'rgba(37, 38, 43, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+    backdropFilter: 'blur(10px)',
+    border: isDark ? '1px solid rgba(55, 58, 64, 0.6)' : '1px solid rgba(233, 236, 239, 0.6)'
+  }), [isDark]);
+  
+  const getStatusStyle = useMemo(() => (type: 'loading' | 'ready' | 'error') => ({
+    backgroundColor: type === 'error' 
+      ? (isDark ? 'rgba(250, 82, 82, 0.15)' : 'rgba(255, 107, 107, 0.1)')
+      : type === 'ready' 
+        ? (isDark ? 'rgba(64, 192, 87, 0.15)' : 'rgba(18, 184, 134, 0.1)')
+        : (isDark ? 'rgba(116, 192, 252, 0.15)' : 'rgba(74, 144, 226, 0.1)'),
+    border: `1px solid ${type === 'error' 
+      ? (isDark ? 'rgba(250, 82, 82, 0.25)' : 'rgba(255, 107, 107, 0.2)')
+      : type === 'ready' 
+        ? (isDark ? 'rgba(64, 192, 87, 0.25)' : 'rgba(18, 184, 134, 0.2)')
+        : (isDark ? 'rgba(116, 192, 252, 0.25)' : 'rgba(74, 144, 226, 0.2)')}`
+  }), [isDark]);
+  
+  const getChatStyle = useMemo(() => ({
+    backgroundColor: isDark ? 'rgba(26, 27, 30, 0.6)' : 'rgba(248, 249, 250, 0.6)',
+    border: isDark ? '1px solid rgba(55, 58, 64, 0.5)' : '1px solid rgba(233, 236, 239, 0.5)'
+  }), [isDark]);
+  
+  const getInputStyle = useMemo(() => ({
+    backgroundColor: isDark ? 'rgba(55, 58, 64, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+    border: isDark ? '1px solid rgba(55, 58, 64, 0.6)' : '1px solid rgba(233, 236, 239, 0.6)',
+    boxShadow: isDark ? '0 2px 12px rgba(0, 0, 0, 0.15)' : '0 2px 12px rgba(0, 0, 0, 0.05)'
+  }), [isDark]);
+  
+  const getTranscriptStyle = useMemo(() => ({
+    backgroundColor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(239, 246, 255, 0.6)',
+    border: isDark ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(191, 219, 254, 0.5)'
+  }), [isDark]);
+  
   const [engine, setEngine] = useState<any | null>(null);
   const [isEngineInitializing, setIsEngineInitializing] = useState<boolean>(false);
   const [status, setStatus] = useState<string>('Checking WebLLM compatibility...');
@@ -68,25 +108,181 @@ const VoiceAssistant: React.FC = () => {
   const isSpeaking = voiceState.matches('speaking');  
   const isProcessing = voiceState.matches('processing');
   
-  const [debugLog, setDebugLog] = useState<string[]>([]);
-  const [showDebug, setShowDebug] = useState<boolean>(false);
   const [manualInput, setManualInput] = useState<string>('');
+  const [systemPrompt, setSystemPrompt] = useState<string>('You are a helpful AI assistant. Provide clear, concise, and accurate responses.');
+  const [isConfiguring, setIsConfiguring] = useState<boolean>(false);
   const [/* micPermission */, setMicPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
+  const [isSwitchingModel, setIsSwitchingModel] = useState<boolean>(false);
+  
+  // Voice configuration
+  const [voiceConfig, setVoiceConfig] = useState({
+    rate: 1.0,
+    pitch: 1.0,
+    volume: 1.0,
+    voice: null as any,
+    language: navigator.language || 'en-US'
+  });
+  const [availableVoices, setAvailableVoices] = useState<any[]>([]);
+  
+  // Memory management configuration
+  const [memoryConfig, setMemoryConfig] = useState({
+    maxMessages: 20, // Maximum messages before summarization
+    summaryTrigger: 16, // Start summarization when reaching this count
+    keepRecentMessages: 6, // Always keep this many recent messages
+    enableAutoSummary: true
+  });
+  
+  // Conversation memory state
+  const [conversationSummary, setConversationSummary] = useState<string>('');
+
+  // Model configuration
+  const [modelConfig, setModelConfig] = useState({
+    selectedModel: 'Llama-3.2-3B-Instruct-q4f32_1-MLC',
+    availableModels: [
+      { id: 'Llama-3.2-3B-Instruct-q4f32_1-MLC', name: 'Llama 3.2 3B (Fast)', size: '~2GB' },
+      { id: 'Llama-3.2-1B-Instruct-q4f32_1-MLC', name: 'Llama 3.2 1B (Ultra Fast)', size: '~1GB' },
+      { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', name: 'Phi 3.5 Mini (Balanced)', size: '~2GB' },
+      { id: 'Qwen2.5-3B-Instruct-q4f32_1-MLC', name: 'Qwen 2.5 3B (Multilingual)', size: '~2GB' },
+      { id: 'gemma-2-2b-it-q4f16_1-MLC', name: 'Gemma 2 2B (Google)', size: '~1.5GB' },
+      { id: 'Mistral-7B-Instruct-v0.3-q4f16_1-MLC', name: 'Mistral 7B (Advanced)', size: '~4GB' }
+    ]
+  });
 
   const recognitionRef = useRef<any | null>(null);
   const autoListenTimeoutRef = useRef<number | null>(null);
   const processUserInputRef = useRef<(text: string) => void>(() => {});
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const transcriptRef = useRef<HTMLDivElement | null>(null);
 
   const log = useCallback((message: string) => {
     const entry = `[${new Date().toLocaleTimeString()}] ${message}`;
-    setDebugLog(prev => {
-      const next = [...prev, entry];
-      return next.slice(-500);
-    });
     // eslint-disable-next-line no-console
     console.log(entry);
+    // Debug UI removed for cleaner interface
   }, []);
+
+  // Summarize conversation history
+  const summarizeConversation = useCallback(async (messages: Array<{role: string, content: string}>) => {
+    if (!engine || !memoryConfig.enableAutoSummary) return '';
+    
+    try {
+      log('Summarizing conversation history...');
+      
+      // Create a prompt to summarize the conversation
+      const summaryPrompt = `Please provide a concise summary of this conversation, focusing on key topics, decisions, and important context that should be remembered for future responses. Keep it under 200 words.
+
+Conversation to summarize:
+${messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n')}
+
+Summary:`;
+
+      const summaryMessages = [
+        { role: 'system', content: 'You are a helpful assistant that creates concise conversation summaries.' },
+        { role: 'user', content: summaryPrompt }
+      ];
+
+      const summaryReply = await withTimeout(
+        engine.chat.completions.create({
+          messages: summaryMessages,
+          stream: false,
+          max_tokens: 300,
+          temperature: 0.3
+        }),
+        30000 // 30 second timeout for summary
+      );
+
+      const summary = (summaryReply as any)?.choices?.[0]?.message?.content?.trim() || '';
+      log(`Generated conversation summary: ${summary.substring(0, 100)}...`);
+      return summary;
+      
+    } catch (error: any) {
+      const errorMsg = error?.message || String(error) || 'Unknown error';
+      log(`Failed to summarize conversation: ${errorMsg}`);
+      
+      // Special handling for VectorInt errors in summarization
+      if (errorMsg.includes('VectorInt') || errorMsg.includes('vector') || errorMsg.includes('Vector')) {
+        log('Detected VectorInt error in summarization, attempting recovery...');
+        try {
+          // Retry with very simple summarization request
+          const simpleMessages: ChatMessage[] = [
+            { role: 'system', content: 'Summarize briefly.' },
+            { role: 'user', content: 'Please provide a brief summary of the conversation.' }
+          ];
+          const retryReply = await withTimeout(
+            engine.chat.completions.create({
+              messages: simpleMessages,
+              max_tokens: 50,
+              temperature: 0.1
+            }),
+            15000
+          );
+          const summary = (retryReply as any)?.choices?.[0]?.message?.content?.trim() || '';
+          log(`Summary recovery successful: ${summary}`);
+          return summary;
+        } catch (retryError: any) {
+          log(`Summary recovery failed: ${retryError?.message || retryError}`);
+        }
+      }
+      
+      return '';
+    }
+  }, [engine, memoryConfig.enableAutoSummary, log]);
+
+  // Manage conversation memory and trigger summarization when needed
+  const manageConversationMemory = useCallback(async (currentHistory: Array<{role: string, content: string}>) => {
+    if (!memoryConfig.enableAutoSummary || currentHistory.length < memoryConfig.summaryTrigger) {
+      return currentHistory;
+    }
+
+    log(`Conversation has ${currentHistory.length} messages, triggering memory management...`);
+
+    // Get messages to summarize (exclude the most recent ones)
+    const recentMessages = currentHistory.slice(-memoryConfig.keepRecentMessages);
+    const messagesToSummarize = currentHistory.slice(0, -memoryConfig.keepRecentMessages);
+
+    if (messagesToSummarize.length === 0) {
+      return currentHistory;
+    }
+
+    // Generate summary of older messages
+    const newSummary = await summarizeConversation(messagesToSummarize);
+    
+    if (newSummary) {
+      // Combine with existing summary if any
+      const combinedSummary = conversationSummary 
+        ? `Previous context: ${conversationSummary}\n\nRecent summary: ${newSummary}`
+        : newSummary;
+      
+      setConversationSummary(combinedSummary);
+      log(`Updated conversation summary. Reduced ${messagesToSummarize.length} messages to summary.`);
+      
+      // Return only recent messages (summary will be added to context in processUserInput)
+      return recentMessages;
+    }
+
+    return currentHistory;
+  }, [memoryConfig, conversationSummary, summarizeConversation, log]);
+
+  // Load available voices and set locale-based defaults
+  const loadVoices = useCallback(() => {
+    const voices = window.speechSynthesis.getVoices();
+    setAvailableVoices(voices);
+    
+    if (voices.length > 0 && !voiceConfig.voice) {
+      // Try to find a voice that matches the user's language
+      const userLang = voiceConfig.language.split('-')[0]; // e.g., 'en' from 'en-US'
+      const matchingVoice = voices.find(voice => 
+        voice.lang.toLowerCase().startsWith(userLang.toLowerCase())
+      ) || voices.find(voice => voice.default) || voices[0];
+      
+      setVoiceConfig(prev => ({
+        ...prev,
+        voice: matchingVoice
+      }));
+      
+      log(`Voice set to: ${matchingVoice.name} (${matchingVoice.lang})`);
+    }
+  }, [voiceConfig.language, voiceConfig.voice, log]);
 
   const updateStatus = useCallback((message: string, type: 'loading' | 'ready' | 'error' = 'loading') => {
     setStatus(message);
@@ -129,13 +325,7 @@ const VoiceAssistant: React.FC = () => {
     }, delay);
   }, [clearAutoListenTimeout, conversationMode, log, sendVoice]);
 
-  const stopEverything = useCallback(() => {
-    try { recognitionRef.current?.stop(); } catch (e) { void e; }
-    window.speechSynthesis.cancel();
-    clearAutoListenTimeout();
-    sendVoice({ type: 'STOP_EVERYTHING' });
-    log('Stopped all voice activities');
-  }, [clearAutoListenTimeout, log, sendVoice]);
+
 
   const initializeRecognition = useCallback(() => {
     const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -160,7 +350,7 @@ const VoiceAssistant: React.FC = () => {
     recognition.continuous = false;
     recognition.interimResults = false;
     try { recognition.maxAlternatives = 1; } catch { /* noop */ }
-    recognition.lang = 'en-US';
+    recognition.lang = voiceConfig.language;
 
     recognition.onstart = () => {
       log('Speech recognition started');
@@ -183,15 +373,15 @@ const VoiceAssistant: React.FC = () => {
       sendVoice({ type: 'SPEECH_ERROR', error: err });
       
       if (err === 'no-speech') {
-        updateStatus('No speech detected. Please try again.', 'error');
+        updateStatus('No speech detected', 'error');
         if (conversationMode) scheduleAutoListen(2000);
       } else if (err === 'not-allowed' || err === 'service-not-allowed') {
-        updateStatus('Microphone permission denied. Please allow mic access.', 'error');
+        updateStatus('Microphone access denied', 'error');
         setMicPermission('denied');
       } else if (err === 'aborted') {
         // user stopped; no status change
       } else if (err === 'network') {
-        updateStatus('Network error with speech service. Try again.', 'error');
+        updateStatus('Network error', 'error');
       } else {
         updateStatus(`Speech recognition error: ${err}`, 'error');
       }
@@ -226,7 +416,7 @@ const VoiceAssistant: React.FC = () => {
     recognitionRef.current = recognition;
   }, [conversationMode, log, scheduleAutoListen, updateStatus]);
 
-  const initializeEngine = useCallback(async () => {
+  const initializeEngine = useCallback(async (selectedModel?: string) => {
     if (engine || isEngineInitializing) {
       log('Engine already initialized or initializing, skipping');
       return;
@@ -234,16 +424,17 @@ const VoiceAssistant: React.FC = () => {
     
     setIsEngineInitializing(true);
     try {
-      updateStatus('Loading AI engine...', 'loading');
-      log('Getting shared WebLLM engine');
+      const modelToUse = selectedModel || modelConfig.selectedModel;
+      updateStatus(`Loading AI engine (${modelConfig.availableModels.find(m => m.id === modelToUse)?.name || modelToUse})...`, 'loading');
+      log(`Getting shared WebLLM engine with model: ${modelToUse}`);
       const loaded = await getSharedEngine((p: any) => {
         const percent = Math.round((p?.progress ?? 0) * 100);
         setProgress(percent);
         updateStatus(`Downloading model... ${percent}%`, 'loading');
-      });
+      }, modelToUse);
       setEngine(loaded);
       setProgress(100);
-      updateStatus('AI Assistant ready! Click the microphone to start.', 'ready');
+      updateStatus('Ready', 'ready');
     } catch (e: any) {
       log(`WebLLM initialization failed: ${e?.message ?? e}`);
       // Fallback mock engine
@@ -271,12 +462,12 @@ const VoiceAssistant: React.FC = () => {
         }
       };
       setEngine(mock);
-      updateStatus('Demo AI ready! (Using mock responses)', 'ready');
+      updateStatus('Ready (Demo Mode)', 'ready');
       sendAssistant({ type: 'ADD_ASSISTANT', content: '🎭 Demo Mode: Using mock AI responses since WebLLM failed to load.' });
     } finally {
       setIsEngineInitializing(false);
     }
-  }, [engine, isEngineInitializing, log, updateStatus]);
+  }, [engine, isEngineInitializing, log, updateStatus, modelConfig]);
 
   const speakResponse = useCallback((text: string) => {
     try { 
@@ -285,12 +476,22 @@ const VoiceAssistant: React.FC = () => {
     } catch (e) { void e; }
     
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.1;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-    const voices = window.speechSynthesis.getVoices();
-    const voice = preferredVoice(voices);
-    if (voice) utterance.voice = voice;
+    
+    // Apply voice configuration
+    utterance.rate = voiceConfig.rate;
+    utterance.pitch = voiceConfig.pitch;
+    utterance.volume = voiceConfig.volume;
+    utterance.lang = voiceConfig.language;
+    
+    // Apply voice selection - user's choice takes priority
+    if (voiceConfig.voice) {
+      utterance.voice = voiceConfig.voice;
+    } else {
+      // Fallback voice selection only if no voice configured
+      const voices = window.speechSynthesis.getVoices();
+      const voice = preferredVoice(voices);
+      if (voice) utterance.voice = voice;
+    }
     
     // Set up event handlers
     utterance.onstart = () => {
@@ -364,96 +565,93 @@ const VoiceAssistant: React.FC = () => {
     // Add user message to history
     log(`Sending ADD_USER event: "${text}"`);
     sendAssistant({ type: 'ADD_USER', content: text });
-    // Build messages for API call
+    
+    // Build messages for API call with memory management
     const nextHistory: ChatMessage[] = [...conversationHistory, { role: 'user', content: text }];
+    
+    // Apply memory management before sending to LLM
+    const managedHistory = await manageConversationMemory(nextHistory);
+    
     try {
       const messages: ChatMessage[] = [
-        { role: 'system', content: 'You are a helpful AI assistant. Keep responses concise and conversational for voice.' },
-        ...nextHistory
+        { role: 'system' as const, content: systemPrompt },
+        // Add conversation summary as context if available
+        ...(conversationSummary ? [{ role: 'system' as const, content: `Previous conversation context: ${conversationSummary}` }] : []),
+        ...managedHistory as ChatMessage[]
       ];
       const reply: any = await withTimeout(engine.chat.completions.create({
         messages,
         temperature: 0.7,
         max_tokens: 200
       }), 45000);
-      const content: string = reply?.choices?.[0]?.message?.content ?? 'Sorry, I had trouble responding.';
+      const content: string = (reply as any)?.choices?.[0]?.message?.content ?? 'Sorry, I had trouble responding.';
       sendVoice({ type: 'LLM_RESPONSE', response: content });
       sendAssistant({ type: 'ADD_ASSISTANT', content });
       if (conversationMode) {
-        updateStatus('Speaking... (will auto-listen when done)', 'loading');
+        updateStatus('Speaking...', 'loading');
       } else {
-        updateStatus('Ready for next question', 'ready');
+        updateStatus('Ready', 'ready');
       }
       speakResponse(content);
     } catch (e: any) {
       const msg = e?.message || String(e) || 'Unknown error';
       log(`AI processing error: ${msg}`);
+      
+      // Special handling for VectorInt errors - try simpler parameters
+      if (msg.includes('VectorInt') || msg.includes('vector') || msg.includes('Vector')) {
+        log('Detected VectorInt error, attempting recovery with simpler parameters...');
+        try {
+          // Retry with simpler parameters and shorter messages
+          const simpleMessages: ChatMessage[] = [
+            { role: 'system' as const, content: 'You are a helpful assistant. Keep responses brief.' },
+            { role: 'user' as const, content: text.substring(0, 100) } // Truncate input
+          ];
+          const retryReply: any = await withTimeout(engine.chat.completions.create({
+            messages: simpleMessages,
+            temperature: 0.5,
+            max_tokens: 100 // Reduce token limit
+          }), 30000);
+          const retryContent: string = (retryReply as any)?.choices?.[0]?.message?.content ?? 'I apologize, but I had trouble processing that request.';
+          log(`Recovery successful: ${retryContent}`);
+          sendVoice({ type: 'LLM_RESPONSE', response: retryContent });
+          sendAssistant({ type: 'ADD_ASSISTANT', content: retryContent });
+          if (conversationMode) {
+            updateStatus('Speaking...', 'loading');
+          } else {
+            updateStatus('Ready', 'ready');
+          }
+          speakResponse(retryContent);
+          return; // Success, exit early
+        } catch (retryError: any) {
+          log(`Recovery attempt failed: ${retryError?.message || retryError}`);
+        }
+      }
+      
+      // If recovery failed or wasn't attempted, show error
       sendVoice({ type: 'LLM_ERROR', error: msg });
       sendAssistant({ type: 'ADD_ASSISTANT', content: `Sorry, I encountered an error. (${msg})` });
-      updateStatus(`Error processing request: ${msg}`, 'error');
+      updateStatus('Processing error', 'error');
       if (conversationMode) scheduleAutoListen(2000);
     } finally {
       // FSM handles processing state automatically
       // Don't schedule auto-listen here - let TTS onend handle it
       // This prevents multiple conflicting scheduleAutoListen calls
     }
-  }, [conversationHistory, conversationMode, engine, isProcessing, log, scheduleAutoListen, speakResponse, updateStatus, sendVoice]);
+  }, [conversationHistory, conversationMode, engine, isProcessing, log, scheduleAutoListen, speakResponse, updateStatus, sendVoice, systemPrompt, manageConversationMemory, conversationSummary]);
 
   useEffect(() => {
     processUserInputRef.current = (t: string) => { void processUserInput(t); };
   }, [processUserInput]);
 
-  const ensureMicPermission = useCallback(async () => {
-    try {
-      if (!navigator?.mediaDevices?.getUserMedia) return true;
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      setMicPermission('granted');
-      return true;
-    } catch {
-      setMicPermission('denied');
-      updateStatus('Microphone permission denied. Please allow mic access.', 'error');
-      return false;
-    }
-  }, [updateStatus]);
 
-  const onMicClick = useCallback(async () => {
-    if (!engine || isProcessing) return;
-    if (conversationMode) {
-      // Stop conversation mode
-      setConversationMode(false);
-      stopEverything();
-      updateStatus('Conversation mode stopped', 'ready');
-      return;
-    }
-    // Interrupt TTS immediately when user initiates talking
-    try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-    const ok = await ensureMicPermission();
-    if (!ok) return;
-    
-    if (isListening) {
-      // Stop listening
-      try { recognitionRef.current?.stop(); } catch (e) { void e; }
-      sendVoice({ type: 'STOP_EVERYTHING' });
-    } else {
-      // Start listening
-      sendVoice({ type: 'START_LISTENING' });
-      try {
-        recognitionRef.current?.start();
-      } catch {
-        // if already started, stop and retry
-        try { recognitionRef.current?.stop(); } catch (err) { void err; }
-        window.setTimeout(() => {
-          try { recognitionRef.current?.start(); } catch (err2) { void err2; }
-        }, 400);
-      }
-    }
-  }, [conversationMode, engine, ensureMicPermission, isListening, isProcessing, stopEverything, updateStatus, sendVoice]);
+
+
 
   const startConversation = useCallback(() => {
     if (!engine) return;
     setConversationMode(true);
     sendVoice({ type: 'START_LISTENING' });
-    updateStatus('Conversation mode active - start speaking...', 'ready');
+    updateStatus('Listening...', 'loading');
     try { recognitionRef.current?.start(); } catch (e) { void e; }
   }, [engine, updateStatus, sendVoice]);
 
@@ -469,9 +667,70 @@ const VoiceAssistant: React.FC = () => {
   }, [log, sendVoice]);
 
   const clearHistory = useCallback(() => {
+    // Stop any ongoing conversation activities
+    sendVoice({ type: 'STOP_EVERYTHING' });
+    
+    // Stop speech synthesis
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      // Ignore errors
+    }
+    
+    // Stop speech recognition
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // Ignore errors
+      }
+    }
+    
+    // Clear conversation history and reset state
     sendAssistant({ type: 'CLEAR' });
-    updateStatus('Chat history cleared. Ready for new conversation.', 'ready');
-  }, [updateStatus]);
+    updateStatus('Ready', 'ready');
+    
+    // Turn off conversation mode
+    setConversationMode(false);
+    
+    log('Conversation cleared and stopped');
+  }, [updateStatus, sendVoice, log]);
+
+  const changeModel = useCallback(async (newModelId: string) => {
+    if (newModelId === modelConfig.selectedModel) return;
+    
+    try {
+      setIsSwitchingModel(true);
+      
+      // Clear current engine
+      setEngine(null);
+      setIsEngineInitializing(false);
+      
+      // Update model config
+      setModelConfig(prev => ({ ...prev, selectedModel: newModelId }));
+      
+      // Initialize new engine
+      updateStatus('Switching models...', 'loading');
+      await initializeEngine(newModelId);
+      
+      log(`Successfully switched to model: ${newModelId}`);
+    } catch (error: any) {
+      log(`Failed to switch models: ${error?.message || error}`);
+      updateStatus('Model switch failed', 'error');
+    } finally {
+      setIsSwitchingModel(false);
+    }
+  }, [modelConfig.selectedModel, initializeEngine, log, updateStatus]);
+
+  // Initialize voices
+  useEffect(() => {
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, [loadVoices]);
 
   // Initialize on mount
   useEffect(() => {
@@ -521,6 +780,40 @@ const VoiceAssistant: React.FC = () => {
     } catch (e) {
       log(`Failed to restore conversation: ${e}`);
     }
+
+    // Restore voice configuration
+    try {
+      const savedVoiceConfig = localStorage.getItem('ai-voice-config');
+      if (savedVoiceConfig) {
+        const parsed = JSON.parse(savedVoiceConfig);
+        log(`Restoring voice config: ${parsed.voice?.name || 'default'}`);
+        
+        // Wait for voices to be available before restoring
+        const restoreVoiceConfig = () => {
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length === 0) {
+            setTimeout(restoreVoiceConfig, 100);
+            return;
+          }
+          
+          const restoredVoice = parsed.voice 
+            ? voices.find(v => v.name === parsed.voice.name && v.lang === parsed.voice.lang)
+            : null;
+          
+          setVoiceConfig({
+            rate: parsed.rate || 1.0,
+            pitch: parsed.pitch || 1.0,
+            volume: parsed.volume || 1.0,
+            voice: restoredVoice,
+            language: parsed.language || navigator.language || 'en-US'
+          });
+        };
+        
+        restoreVoiceConfig();
+      }
+    } catch (e) {
+      log(`Failed to restore voice config: ${e}`);
+    }
   }, []); // Empty dependency array to run only once
 
   // FSM handles state management automatically - no manual sync needed
@@ -533,10 +826,31 @@ const VoiceAssistant: React.FC = () => {
     } catch { /* ignore */ }
   }, [conversationHistory.length, transcript, response]);
 
+  // Save voice configuration to localStorage
+  useEffect(() => {
+    try {
+      const voiceConfigToSave = {
+        ...voiceConfig,
+        voice: voiceConfig.voice ? {
+          name: voiceConfig.voice.name,
+          lang: voiceConfig.voice.lang
+        } : null
+      };
+      localStorage.setItem('ai-voice-config', JSON.stringify(voiceConfigToSave));
+    } catch { /* ignore */ }
+  }, [voiceConfig]);
+
   // Auto-scroll chat to latest message
   useEffect(() => {
     try { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); } catch { /* ignore */ }
   }, [conversationHistory.length]);
+
+  // Auto-scroll transcript to bottom when transcript changes
+  useEffect(() => {
+    try { 
+      transcriptRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); 
+    } catch { /* ignore */ }
+  }, [transcript]);
 
   // Voices may load asynchronously
   useEffect(() => {
@@ -548,166 +862,807 @@ const VoiceAssistant: React.FC = () => {
     }
   }, []);
 
-  const micButtonLabel = useMemo(() => {
-    if (!engine) return '⏳';
-    if (conversationMode) return '⏹️';
-    if (isListening) return '🔴';
-    if (isSpeaking) return '🔊';
-    return '🎤';
-  }, [conversationMode, engine, isListening, isSpeaking]);
 
-  return (
-    <Card withBorder radius="lg" p="lg" shadow="sm">
-      <Stack gap="md">
-        <Title order={2} ta="center">AI Voice Assistant</Title>
-        <Text ta="center" c={statusType === 'error' ? 'red' : statusType === 'ready' ? 'teal' : 'yellow'}>
-          {status}
-        </Text>
-        {statusType === 'loading' && (
-          <Progress value={progress} striped animated>
-          </Progress>
-        )}
 
-        <Box ta="center">
-          <Button
-            onClick={onMicClick}
-            disabled={!engine || isProcessing}
-            variant="gradient"
-            gradient={{ from: conversationMode ? 'teal' : isListening ? 'cyan' : isSpeaking ? 'indigo' : 'red', to: 'pink' }}
-            radius={999}
-            styles={{ root: { width: 120, height: 120, borderRadius: 9999, fontSize: 36 } }}
-          >
-            {micButtonLabel}
-          </Button>
-        </Box>
+  // Configuration UI - rendered as overlay to keep conversation logic mounted
+  const configurationOverlay = isConfiguring ? (
+      <div style={{ 
+        width: '100%', 
+        maxWidth: '600px', 
+        margin: '0 auto', 
+        padding: window.innerWidth <= 768 ? '0.5rem' : '1rem',
+        maxHeight: '100vh',
+        overflowY: 'auto'
+      }}>
+        <Card 
+          withBorder={false} 
+          radius={window.innerWidth <= 768 ? "lg" : "xl"} 
+          p={window.innerWidth <= 768 ? "md" : "xl"} 
+          shadow="xs" 
+          style={getCardStyle}
+        >
+        <Stack gap="xl">
+          <Stack gap="sm" ta="center">
+            <Title order={1} size="h2" fw={600} c={isDark ? "gray.1" : "gray.8"}>Assistant Configuration</Title>
+            <Text size="sm" c={isDark ? "gray.4" : "gray.6"}>
+              Customize your AI assistant settings
+            </Text>
+          </Stack>
 
-        <Group justify="center">
-          <Button variant="light" onClick={() => (conversationMode ? setConversationMode(false) : startConversation())}>
-            {conversationMode ? 'Stop Conversation' : 'Start Conversation'}
-          </Button>
-          <Button 
-            variant={isSpeaking ? "filled" : "light"} 
-            color={isSpeaking ? "orange" : undefined}
-            onClick={stopSpeech}
-            disabled={!isSpeaking}
-          >
-            {isSpeaking ? "🔇 Stop Speaking" : "Stop Speech"}
-          </Button>
-          {isListening && (
-            <Button 
-              variant="filled" 
-              color="yellow"
-              onClick={() => {
-                log('Manual reset: stopping recognition and clearing state');
-                try { recognitionRef.current?.stop(); } catch (e) { void e; }
-                sendVoice({ type: 'RESET' });
-                clearAutoListenTimeout();
-              }}
-            >
-              🔄 Reset
-            </Button>
-          )}
-          <Button variant="filled" color="red" onClick={clearHistory}>Clear Chat</Button>
-        </Group>
+          <Stack gap="lg">
+            {/* System Prompt */}
+            <Stack gap="sm">
+              <Text fw={600} c={isDark ? "gray.3" : "gray.7"}>System Prompt</Text>
+              <Textarea
+                placeholder="You are a helpful AI assistant..."
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.currentTarget.value)}
+                radius="lg"
+                size="md"
+                autosize
+                minRows={2}
+                maxRows={4}
+                styles={{
+                  input: {
+                    backgroundColor: isDark ? 'rgba(37, 38, 43, 0.8)' : 'rgba(248, 249, 250, 0.8)',
+                    border: isDark ? '1px solid rgba(55, 58, 64, 0.8)' : '1px solid rgba(233, 236, 239, 0.8)',
+                    fontSize: '14px',
+                    color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)'
+                  }
+                }}
+              />
+              <Text size="xs" c="gray.5">
+                This defines how the AI will behave and respond to your messages
+              </Text>
+            </Stack>
 
-        <Group align="flex-end">
-          <TextInput
-            style={{ flex: 1 }}
-            placeholder="Type a message (fallback if mic disabled)"
-            value={manualInput}
-            onChange={(e) => setManualInput(e.currentTarget.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && manualInput.trim() && !isProcessing) {
-                const t = manualInput.trim();
-                try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-                sendVoice({ type: 'STOP_EVERYTHING' });
-                sendAssistant({ type: 'SET_TRANSCRIPT', content: `You said: "${t}"` });
-                void processUserInput(t);
-                setManualInput('');
-              }
-            }}
-          />
-          <Button
-            onClick={() => {
-              if (!manualInput.trim() || isProcessing) return;
-              const t = manualInput.trim();
-              try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-              sendVoice({ type: 'STOP_EVERYTHING' });
-              sendAssistant({ type: 'SET_TRANSCRIPT', content: `You said: "${t}"` });
-              void processUserInput(t);
-              setManualInput('');
-            }}
-            disabled={!engine || isProcessing || !manualInput.trim()}
-          >
-            Send
-          </Button>
-        </Group>
+            {/* Voice Settings */}
+            <Stack gap="sm">
+              <Text fw={600} c={isDark ? "gray.3" : "gray.7"}>Voice Settings</Text>
+              
+              {/* Voice Selection */}
+              <Select
+                label="Voice"
+                placeholder="Select a voice..."
+                value={voiceConfig.voice?.name || ''}
+                onChange={(value) => {
+                  const selectedVoice = availableVoices.find(v => v.name === value);
+                  if (selectedVoice) {
+                    setVoiceConfig(prev => ({ ...prev, voice: selectedVoice }));
+                  }
+                }}
+                data={availableVoices.map(voice => ({
+                  value: voice.name,
+                  label: `${voice.name} (${voice.lang})`
+                }))}
+                radius="lg"
+                size="sm"
+                styles={{
+                  input: {
+                    backgroundColor: isDark ? 'rgba(37, 38, 43, 0.8)' : 'rgba(248, 249, 250, 0.8)',
+                    border: isDark ? '1px solid rgba(55, 58, 64, 0.8)' : '1px solid rgba(233, 236, 239, 0.8)',
+                    fontSize: '14px',
+                    color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)'
+                  },
+                  dropdown: {
+                    backgroundColor: isDark ? 'rgba(37, 38, 43, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    border: isDark ? '1px solid rgba(55, 58, 64, 0.8)' : '1px solid rgba(233, 236, 239, 0.8)'
+                  },
 
-        <Card withBorder radius="md" p="md">
-          <Text c="dimmed" fs="italic">{transcript}</Text>
-        </Card>
+                  label: {
+                    color: isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-7)'
+                  }
+                }}
+              />
 
-        <Card withBorder radius="md" p="md">
-          <Text style={{ whiteSpace: 'pre-wrap' }}>{response || 'AI response will appear here...'}</Text>
-        </Card>
+              {/* Language Selection */}
+              <Select
+                label="Language"
+                placeholder="Select language..."
+                value={voiceConfig.language}
+                onChange={(value) => {
+                  if (value) {
+                    setVoiceConfig(prev => ({ ...prev, language: value }));
+                  }
+                }}
+                data={[
+                  { value: 'en-US', label: 'English (US)' },
+                  { value: 'en-GB', label: 'English (UK)' },
+                  { value: 'es-ES', label: 'Spanish (Spain)' },
+                  { value: 'es-MX', label: 'Spanish (Mexico)' },
+                  { value: 'fr-FR', label: 'French (France)' },
+                  { value: 'de-DE', label: 'German (Germany)' },
+                  { value: 'it-IT', label: 'Italian (Italy)' },
+                  { value: 'pt-BR', label: 'Portuguese (Brazil)' },
+                  { value: 'ja-JP', label: 'Japanese' },
+                  { value: 'ko-KR', label: 'Korean' },
+                  { value: 'zh-CN', label: 'Chinese (Simplified)' },
+                  { value: 'ru-RU', label: 'Russian' },
+                  { value: 'ar-SA', label: 'Arabic' },
+                  { value: 'hi-IN', label: 'Hindi' }
+                ]}
+                radius="lg"
+                size="sm"
+                styles={{
+                  input: {
+                    backgroundColor: isDark ? 'rgba(37, 38, 43, 0.8)' : 'rgba(248, 249, 250, 0.8)',
+                    border: isDark ? '1px solid rgba(55, 58, 64, 0.8)' : '1px solid rgba(233, 236, 239, 0.8)',
+                    fontSize: '14px',
+                    color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)'
+                  },
+                  dropdown: {
+                    backgroundColor: isDark ? 'rgba(37, 38, 43, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    border: isDark ? '1px solid rgba(55, 58, 64, 0.8)' : '1px solid rgba(233, 236, 239, 0.8)'
+                  },
 
-        <Card withBorder radius="md" p="md" style={{ maxHeight: 300, overflowY: 'auto' }}>
-          <Stack gap="sm">
-            {conversationHistory.length === 0 ? (
-              <Text c="dimmed" ta="center" py="xl">Chat will appear here...</Text>
-            ) : (
-              conversationHistory.map((m, idx) => (
+                  label: {
+                    color: isDark ? 'var(--mantine-color-gray-3)' : 'var(--mantine-color-gray-7)'
+                  }
+                }}
+              />
+
+              {/* Voice Controls */}
+              <Group grow>
+                <Stack gap="xs">
+                  <Text size="sm" c={isDark ? "gray.4" : "gray.6"}>
+                    Speed: {voiceConfig.rate.toFixed(1)}x
+                  </Text>
+                  <Slider
+                    value={voiceConfig.rate}
+                    onChange={(value) => setVoiceConfig(prev => ({ ...prev, rate: value }))}
+                    min={0.5}
+                    max={2.0}
+                    step={0.1}
+                    marks={[
+                      { value: 0.5, label: '0.5x' },
+                      { value: 1.0, label: '1x' },
+                      { value: 2.0, label: '2x' }
+                    ]}
+                    size="sm"
+                    styles={{
+                      track: {
+                        backgroundColor: isDark ? 'rgba(55, 58, 64, 0.8)' : 'rgba(233, 236, 239, 0.8)'
+                      },
+                      bar: {
+                        backgroundColor: isDark ? 'var(--mantine-color-blue-4)' : 'var(--mantine-color-blue-6)'
+                      },
+                      thumb: {
+                        backgroundColor: isDark ? 'var(--mantine-color-blue-4)' : 'var(--mantine-color-blue-6)',
+                        border: isDark ? '2px solid rgba(37, 38, 43, 0.95)' : '2px solid rgba(255, 255, 255, 0.95)'
+                      },
+                      markLabel: {
+                        color: isDark ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-6)'
+                      }
+                    }}
+                  />
+                </Stack>
+                <Stack gap="xs">
+                  <Text size="sm" c={isDark ? "gray.4" : "gray.6"}>
+                    Pitch: {voiceConfig.pitch.toFixed(1)}
+                  </Text>
+                  <Slider
+                    value={voiceConfig.pitch}
+                    onChange={(value) => setVoiceConfig(prev => ({ ...prev, pitch: value }))}
+                    min={0.5}
+                    max={2.0}
+                    step={0.1}
+                    marks={[
+                      { value: 0.5, label: '0.5' },
+                      { value: 1.0, label: '1' },
+                      { value: 2.0, label: '2' }
+                    ]}
+                    size="sm"
+                    styles={{
+                      track: {
+                        backgroundColor: isDark ? 'rgba(55, 58, 64, 0.8)' : 'rgba(233, 236, 239, 0.8)'
+                      },
+                      bar: {
+                        backgroundColor: isDark ? 'var(--mantine-color-violet-4)' : 'var(--mantine-color-violet-6)'
+                      },
+                      thumb: {
+                        backgroundColor: isDark ? 'var(--mantine-color-violet-4)' : 'var(--mantine-color-violet-6)',
+                        border: isDark ? '2px solid rgba(37, 38, 43, 0.95)' : '2px solid rgba(255, 255, 255, 0.95)'
+                      },
+                      markLabel: {
+                        color: isDark ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-6)'
+                      }
+                    }}
+                  />
+                </Stack>
+              </Group>
+
+              {/* Test Voice Button */}
+              <Button
+                style={{ marginTop: '1rem' }}
+                onClick={() => {
+                  const testText = "Hello! This is how I will sound with your current voice settings.";
+                  
+                  // Create a direct test utterance to ensure settings are applied
+                  const testVoice = () => {
+                    try {
+                      window.speechSynthesis.cancel();
+                      
+                      // Ensure voices are loaded
+                      const voices = window.speechSynthesis.getVoices();
+                      if (voices.length === 0) {
+                        // Wait for voices to load
+                        setTimeout(testVoice, 100);
+                        return;
+                      }
+                      
+                      const utterance = new SpeechSynthesisUtterance(testText);
+                      
+                      // Explicitly apply current voice configuration
+                      if (voiceConfig.voice) {
+                        // Make sure the voice is still available
+                        const currentVoice = voices.find(v => v.name === voiceConfig.voice?.name);
+                        if (currentVoice) {
+                          utterance.voice = currentVoice;
+                        }
+                      }
+                      utterance.rate = voiceConfig.rate;
+                      utterance.pitch = voiceConfig.pitch;
+                      utterance.volume = voiceConfig.volume;
+                      utterance.lang = voiceConfig.language;
+                      
+                      console.log('Testing voice with config:', {
+                        voice: utterance.voice?.name,
+                        rate: utterance.rate,
+                        pitch: utterance.pitch,
+                        volume: utterance.volume,
+                        language: utterance.lang,
+                        availableVoices: voices.length
+                      });
+                      
+                      window.speechSynthesis.speak(utterance);
+                    } catch (error) {
+                      console.error('Voice test error:', error);
+                      // Fallback to regular speakResponse
+                      speakResponse(testText);
+                    }
+                  };
+                  
+                  testVoice();
+                }}
+                variant="light"
+                radius="lg"
+                size="sm"
+              >
+                🔊 Test Voice
+              </Button>
+
+              <Text size="xs" c="gray.5">
+                Voice settings will be applied to all AI responses and saved for future sessions
+              </Text>
+            </Stack>
+
+            {/* Memory Management Settings */}
+            <Stack gap="sm">
+              <Text fw={600} c={isDark ? "gray.3" : "gray.7"}>Memory Management</Text>
+              
+              {/* Enable Auto Summary Toggle */}
+              <Group justify="space-between">
+                <Stack gap={0}>
+                  <Text size="sm" c={isDark ? "gray.2" : "gray.8"}>Auto-summarize conversations</Text>
+                  <Text size="xs" c="gray.5">
+                    Automatically summarize old messages to maintain context while keeping conversations efficient
+                  </Text>
+                </Stack>
+                <Button
+                  variant={memoryConfig.enableAutoSummary ? "filled" : "light"}
+                  size="xs"
+                  onClick={() => setMemoryConfig(prev => ({ ...prev, enableAutoSummary: !prev.enableAutoSummary }))}
+                >
+                  {memoryConfig.enableAutoSummary ? 'ON' : 'OFF'}
+                </Button>
+              </Group>
+
+              {memoryConfig.enableAutoSummary && (
+                <>
+                  {/* Max Messages Slider */}
+                  <Stack gap="xs">
+                    <Text size="sm" c={isDark ? "gray.4" : "gray.6"}>
+                      Max messages before summarization: {memoryConfig.summaryTrigger}
+                    </Text>
+                    <Slider
+                      value={memoryConfig.summaryTrigger}
+                      onChange={(value) => setMemoryConfig(prev => ({ 
+                        ...prev, 
+                        summaryTrigger: value,
+                        maxMessages: Math.max(value + 4, prev.maxMessages)
+                      }))}
+                      min={8}
+                      max={30}
+                      step={2}
+                      marks={[
+                        { value: 8, label: '8' },
+                        { value: 16, label: '16' },
+                        { value: 30, label: '30' }
+                      ]}
+                      size="sm"
+                      styles={{
+                        track: {
+                          backgroundColor: isDark ? 'rgba(55, 58, 64, 0.8)' : 'rgba(233, 236, 239, 0.8)'
+                        },
+                        bar: {
+                          backgroundColor: isDark ? 'var(--mantine-color-teal-4)' : 'var(--mantine-color-teal-6)'
+                        },
+                        thumb: {
+                          backgroundColor: isDark ? 'var(--mantine-color-teal-4)' : 'var(--mantine-color-teal-6)',
+                          border: isDark ? '2px solid rgba(37, 38, 43, 0.95)' : '2px solid rgba(255, 255, 255, 0.95)'
+                        },
+                        markLabel: {
+                          color: isDark ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-6)'
+                        }
+                      }}
+                    />
+                  </Stack>
+
+                  {/* Recent Messages Slider */}
+                  <Stack gap="xs">
+                    <Text size="sm" c={isDark ? "gray.4" : "gray.6"}>
+                      Keep recent messages: {memoryConfig.keepRecentMessages}
+                    </Text>
+                    <Slider
+                      value={memoryConfig.keepRecentMessages}
+                      onChange={(value) => setMemoryConfig(prev => ({ ...prev, keepRecentMessages: value }))}
+                      min={4}
+                      max={12}
+                      step={1}
+                      marks={[
+                        { value: 4, label: '4' },
+                        { value: 6, label: '6' },
+                        { value: 12, label: '12' }
+                      ]}
+                      size="sm"
+                      styles={{
+                        track: {
+                          backgroundColor: isDark ? 'rgba(55, 58, 64, 0.8)' : 'rgba(233, 236, 239, 0.8)'
+                        },
+                        bar: {
+                          backgroundColor: isDark ? 'var(--mantine-color-green-4)' : 'var(--mantine-color-green-6)'
+                        },
+                        thumb: {
+                          backgroundColor: isDark ? 'var(--mantine-color-green-4)' : 'var(--mantine-color-green-6)',
+                          border: isDark ? '2px solid rgba(37, 38, 43, 0.95)' : '2px solid rgba(255, 255, 255, 0.95)'
+                        },
+                        markLabel: {
+                          color: isDark ? 'var(--mantine-color-gray-4)' : 'var(--mantine-color-gray-6)'
+                        }
+                      }}
+                    />
+                  </Stack>
+                </>
+              )}
+
+              {conversationSummary && (
                 <Card 
-                  key={idx} 
-                  p="sm" 
-                  radius="md" 
+                  withBorder={false}
+                  radius="lg" 
+                  p="sm"
                   style={{ 
-                    backgroundColor: m.role === 'user' 
-                      ? 'var(--mantine-color-blue-0)' 
-                      : 'var(--mantine-color-gray-0)',
-                    marginLeft: m.role === 'user' ? '2rem' : '0',
-                    marginRight: m.role === 'assistant' ? '2rem' : '0'
+                    backgroundColor: isDark ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                    border: isDark ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(34, 197, 94, 0.2)'
                   }}
                 >
-                  <Text size="xs" c="dimmed" mb="xs" fw={500}>
-                    {m.role === 'user' ? '👤 You' : '🤖 AI'}
+                  <Text size="xs" c={isDark ? "green.4" : "green.7"} fw={500} mb="xs">
+                    Current Memory Summary:
                   </Text>
-                  <Text style={{ whiteSpace: 'pre-wrap' }} size="sm">{m.content}</Text>
+                  <Text size="xs" c={isDark ? "green.3" : "green.8"} style={{ lineHeight: 1.4 }}>
+                    {conversationSummary.length > 150 
+                      ? `${conversationSummary.substring(0, 150)}...` 
+                      : conversationSummary}
+                  </Text>
                 </Card>
+              )}
+
+              <Text size="xs" c="gray.5">
+                Memory management helps maintain context while preventing token limits and improving performance
+              </Text>
+            </Stack>
+
+            {/* Model Selection Settings */}
+            <Stack gap="sm">
+              <Text fw={600} c={isDark ? "gray.3" : "gray.7"}>Model Selection</Text>
+              
+              <Stack gap="xs">
+                <Text size="sm" c={isDark ? "gray.2" : "gray.8"}>AI Model</Text>
+                <Select
+                  value={modelConfig.selectedModel}
+                  onChange={(value) => {
+                    if (value) {
+                      changeModel(value);
+                    }
+                  }}
+                  data={modelConfig.availableModels.map(model => ({
+                    value: model.id,
+                    label: `${model.name} - ${model.size}`
+                  }))}
+                  styles={{
+                    input: {
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                      border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                      color: isDark ? '#fff' : '#000',
+                    },
+                    dropdown: {
+                      backgroundColor: isDark ? '#2c2e33' : '#fff',
+                      border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                    },
+                    label: {
+                      color: isDark ? '#fff' : '#000',
+                    }
+                  }}
+                />
+                <Text size="xs" c="gray.5">
+                  Changing models will download the new model (~1-4GB). The current conversation will be preserved.
+                </Text>
+              </Stack>
+            </Stack>
+
+            <Card 
+              withBorder={false}
+              radius="lg" 
+              p="md"
+              style={{ 
+                backgroundColor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(239, 246, 255, 0.4)',
+                border: isDark ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(191, 219, 254, 0.3)'
+              }}
+            >
+              <Stack gap="xs">
+                <Text fw={600} c={isDark ? "blue.4" : "blue.7"} size="sm">About Conversation Mode</Text>
+                <Text size="sm" c={isDark ? "blue.3" : "blue.8"} style={{ lineHeight: 1.5 }}>
+                  When enabled, the assistant will automatically listen for your next message after responding, creating a natural back-and-forth conversation flow.
+                </Text>
+              </Stack>
+            </Card>
+          </Stack>
+
+          <Group justify="center" mt="lg">
+            <Button 
+              variant="light" 
+              radius="xl"
+              size="md"
+              onClick={() => setIsConfiguring(false)}
+              c="gray.6"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsConfiguring(false);
+                // Apply system prompt here if needed
+              }}
+              disabled={!engine || isSwitchingModel}
+              radius="xl"
+              size="md"
+              variant="gradient"
+              gradient={{ from: 'blue.5', to: 'blue.7' }}
+            >
+              Save & Continue
+            </Button>
+          </Group>
+        </Stack>
+        </Card>
+      </div>
+  ) : null;
+
+  // Main UI
+  return (
+    <div style={{ 
+      width: '100%', 
+      maxWidth: '800px', 
+      margin: '0 auto', 
+      padding: window.innerWidth <= 768 ? '0.5rem' : '1rem',
+      position: 'relative'
+    }}>
+      {/* Configuration overlay */}
+      {configurationOverlay && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+          zIndex: 1000,
+          padding: window.innerWidth <= 768 ? '0.5rem' : '1rem',
+          overflow: 'auto'
+        }}>
+          {configurationOverlay}
+        </div>
+      )}
+      
+      <Card 
+        withBorder={false} 
+        radius={window.innerWidth <= 768 ? "lg" : "xl"} 
+        p={window.innerWidth <= 768 ? "md" : "xl"} 
+        shadow="xs" 
+        style={getCardStyle}
+      >
+        <Stack gap={window.innerWidth <= 768 ? "md" : "xl"}>
+        <Stack gap="sm" ta="center">
+          <Title order={1} size="h2" fw={600} c={isDark ? "gray.1" : "gray.8"}>AI Voice Assistant</Title>
+          
+          {/* Status indicator - minimal and clean */}
+          <Card 
+            withBorder={false} 
+            radius="xl" 
+            p="sm" 
+            style={getStatusStyle(statusType)}
+          >
+            <Text 
+              ta="center" 
+              c={statusType === 'error' ? 'red.7' : statusType === 'ready' ? 'teal.7' : 'blue.7'} 
+              fw={500} 
+              size="sm"
+            >
+              {status}
+            </Text>
+            {statusType === 'loading' && (
+              <Progress 
+                value={progress} 
+                size="xs" 
+                radius="xl" 
+                mt="xs"
+                color="blue"
+              />
+            )}
+          </Card>
+        </Stack>
+
+        {/* Essential control buttons - only show when needed */}
+        {(isSpeaking || isListening) && (
+          <Group justify="center" gap="sm">
+            {isSpeaking && (
+              <Button 
+                variant="light"
+                color="orange"
+                radius="xl"
+                size="sm"
+                onClick={stopSpeech}
+                leftSection="🔇"
+              >
+                Stop Speaking
+              </Button>
+            )}
+            {isListening && (
+              <Button 
+                variant="light"
+                color="yellow"
+                radius="xl"
+                size="sm"
+                onClick={() => {
+                  log('Manual reset: stopping recognition and clearing state');
+                  try { recognitionRef.current?.stop(); } catch (e) { void e; }
+                  sendVoice({ type: 'RESET' });
+                  clearAutoListenTimeout();
+                }}
+                leftSection="🔄"
+              >
+                Stop Listening
+              </Button>
+            )}
+          </Group>
+        )}
+
+        {/* Chat History - elegant and spacious */}
+        <Card 
+          withBorder={false} 
+          radius="xl" 
+          p="lg" 
+          style={{ 
+            maxHeight: 400, 
+            overflowY: 'auto',
+            ...getChatStyle
+          }}
+        >
+          <Text fw={600} size="sm" c={isDark ? "gray.3" : "gray.7"} mb="lg">Conversation</Text>
+          <Stack gap="md">
+            {conversationHistory.length === 0 ? (
+              <Stack align="center" py="xl">
+                <Text c="gray.5" ta="center" size="sm" fs="italic">
+                  Your conversation will appear here...
+                </Text>
+              </Stack>
+            ) : (
+              conversationHistory.map((m, idx) => (
+                <Stack 
+                  key={idx}
+                  gap="xs"
+                  style={{ 
+                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                    maxWidth: '85%'
+                  }}
+                >
+                  <Text size="xs" c={isDark ? "gray.4" : "gray.6"} fw={500} ml={m.role === 'user' ? 'auto' : 0}>
+                    {m.role === 'user' ? 'You' : 'AI Assistant'}
+                  </Text>
+                  <Card 
+                    p="md" 
+                    radius="lg" 
+                    withBorder={false}
+                    style={{ 
+                      backgroundColor: m.role === 'user' 
+                        ? (isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(74, 144, 226, 0.1)')
+                        : (isDark ? 'rgba(55, 58, 64, 0.9)' : 'rgba(255, 255, 255, 0.9)'),
+                      border: `1px solid ${m.role === 'user' 
+                        ? (isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(74, 144, 226, 0.2)')
+                        : (isDark ? 'rgba(55, 58, 64, 0.8)' : 'rgba(233, 236, 239, 0.8)')}`,
+                      boxShadow: m.role === 'assistant' 
+                        ? (isDark ? '0 2px 8px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.04)')
+                        : 'none'
+                    }}
+                  >
+                    <Text 
+                      style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }} 
+                      size="sm"
+                      c={m.role === 'user' 
+                        ? (isDark ? 'blue.3' : 'blue.8')
+                        : (isDark ? 'gray.1' : 'gray.8')
+                      }
+                    >
+                      {m.content}
+                    </Text>
+                  </Card>
+                </Stack>
               ))
             )}
             <div ref={chatEndRef} />
           </Stack>
         </Card>
 
-        <Box ta="center">
-          <Button variant="subtle" size="xs" onClick={() => setShowDebug(v => !v)}>
-            {showDebug ? 'Hide Debug Info' : 'Show Debug Info'}
-          </Button>
-        </Box>
-        {showDebug && (
-          <>
-            <Card withBorder radius="md" p="md" style={{ maxHeight: 220, overflowY: 'auto', fontFamily: 'monospace', fontSize: 12 }}>
-              <pre style={{ margin: 0 }}>{debugLog.join('\n')}</pre>
-            </Card>
-            <Card withBorder radius="md" p="md" bg="gray.0">
-              <Text size="sm" fw={500} mb="xs">🔧 Voice State Machine (FSM Demo)</Text>
-              <Text size="xs" c="dimmed">Current State: <Text span c="blue" fw={600}>{String(voiceState.value)}</Text></Text>
-              <Text size="xs" c="dimmed">Context: {JSON.stringify(voiceState.context, null, 2)}</Text>
-              <Group mt="xs">
-                <Button size="xs" onClick={() => sendVoice({ type: 'START_LISTENING' })}>FSM: Start Listening</Button>
-                <Button size="xs" onClick={() => sendVoice({ type: 'STOP_EVERYTHING' })}>FSM: Stop All</Button>
-                <Button size="xs" onClick={() => sendVoice({ type: 'RESET' })}>FSM: Reset</Button>
-              </Group>
-            </Card>
-          </>
-        )}
+        {/* Modern LLM-style input section */}
+        <Stack gap="sm">
+          {/* Main input area - ChatGPT style */}
+          <Card 
+            withBorder={false}
+            radius="xl" 
+            p="md"
+            style={{
+              ...getInputStyle,
+              position: 'relative'
+            }}
+          >
+            <Group align="flex-end" gap="sm">
+              <Textarea
+                style={{ flex: 1 }}
+                placeholder="Message AI Voice Assistant..."
+                value={manualInput}
+                onChange={(e) => setManualInput(e.currentTarget.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && manualInput.trim() && !isProcessing) {
+                    e.preventDefault();
+                    const t = manualInput.trim();
+                    try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+                    sendVoice({ type: 'STOP_EVERYTHING' });
+                    sendAssistant({ type: 'SET_TRANSCRIPT', content: `You said: "${t}"` });
+                    void processUserInput(t);
+                    setManualInput('');
+                  }
+                }}
+                autosize
+                minRows={1}
+                maxRows={6}
+                radius="lg"
+                styles={{
+                  input: {
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    fontSize: '16px',
+                    lineHeight: '1.5',
+                    color: isDark ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-gray-8)',
+                    resize: 'none',
+                    '&:focus': {
+                      outline: 'none',
+                      boxShadow: 'none'
+                    },
+                    '&::placeholder': {
+                      color: isDark ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-gray-5)'
+                    }
+                  }
+                }}
+              />
+              
+              {/* Send button - only show when there's text */}
+              {manualInput.trim() && (
+                <Button
+                  onClick={() => {
+                    if (manualInput.trim() && !isProcessing) {
+                      const t = manualInput.trim();
+                      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+                      sendVoice({ type: 'STOP_EVERYTHING' });
+                      sendAssistant({ type: 'SET_TRANSCRIPT', content: `You said: "${t}"` });
+                      void processUserInput(t);
+                      setManualInput('');
+                    }
+                  }}
+                  disabled={!engine || isProcessing}
+                  variant="filled"
+                  color="blue"
+                  radius="lg"
+                  size="sm"
+                  style={{ minWidth: 60 }}
+                >
+                  Send
+                </Button>
+              )}
+            </Group>
+          </Card>
 
-        <Text size="sm" c="dimmed" ta="center">
-          This demo uses WebLLM for local AI inference and the Web Speech API for voice recognition/synthesis. First load may take a few minutes.
+          {/* Control row */}
+          <Group justify="space-between" align="center" px="md">
+            <Group gap="md">
+              <Button 
+                variant="subtle" 
+                size="xs" 
+                radius="lg"
+                onClick={() => setIsConfiguring(true)}
+                c={isDark ? "gray.4" : "gray.6"}
+                leftSection="⚙️"
+              >
+                Settings
+              </Button>
+              <Button 
+                variant="subtle" 
+                size="xs" 
+                radius="lg"
+                color="red" 
+                onClick={clearHistory}
+                c={isDark ? "red.4" : "red.6"}
+                leftSection="🗑️"
+              >
+                Clear
+              </Button>
+              
+              <Button
+                onClick={() => (conversationMode ? setConversationMode(false) : startConversation())}
+                disabled={!engine}
+                variant={conversationMode ? "filled" : "light"}
+                color={conversationMode ? "teal" : "gray"}
+                radius="lg"
+                size="xs"
+              >
+                {conversationMode ? 'Stop Conversation' : 'Start Conversation'}
+              </Button>
+            </Group>
+            
+            <Text size="xs" c={isDark ? "gray.4" : "gray.6"} fw={500}>
+              {conversationMode ? '🔄 Conversation mode' : '💬 Single message'} • Shift+Enter for new line
+            </Text>
+          </Group>
+          {/* Voice transcript - elegant bottom section */}
+          <Card 
+            ref={transcriptRef}
+            withBorder={false}
+            radius="xl" 
+            p="md"
+            style={getTranscriptStyle}
+          >
+            <Stack gap="xs" align="center">
+              <Text fw={500} size="xs" c={isDark ? "blue.4" : "blue.6"} tt="uppercase" style={{ letterSpacing: '0.5px' }}>
+                Voice Input
+              </Text>
+              <Text 
+                c={isDark ? "blue.2" : "blue.8"}
+                fs="italic" 
+                ta="center"
+                size="sm"
+                style={{ lineHeight: 1.4 }}
+              >
+                {transcript || 'Click the microphone to start speaking...'}
+              </Text>
+            </Stack>
+          </Card>
+        </Stack>
+
+
+
+        <Text size="xs" c="gray.4" ta="center" style={{ marginTop: '1rem' }}>
+          Powered by WebLLM • Local AI Processing • No Data Sent to Servers
         </Text>
       </Stack>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
