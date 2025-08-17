@@ -460,9 +460,12 @@ const Akotchi: React.FC = () => {
   // Tiny in-web LLM to generate pet messages (runs on-device)
   const [llmReady, setLlmReady] = useState(false);
   const [llmBusy, setLlmBusy] = useState(false);
+  const [llmUnsupported, setLlmUnsupported] = useState(false);
   const llmRef = useRef<any | null>(null);
   const ensureLlm = useCallback(async () => {
     if (llmRef.current || llmReady) return true;
+    if (llmUnsupported) return false; // Don't try again if we know it's unsupported
+    
     try {
       // Use the shared WebLLM engine to avoid duplicate imports and VectorInt class conflicts
       const { getSharedEngine } = await import('../../lib/webllmEngine');
@@ -471,9 +474,11 @@ const Akotchi: React.FC = () => {
       setLlmReady(true);
       return true;
     } catch {
+      setLlmUnsupported(true);
+      showMessage('Device Not Supported', '⚠️ Your device does not support AI features. This requires WebGPU and sufficient memory. Akotchi will use basic responses instead.', 'orange', 8000);
       return false;
     }
-  }, [llmReady]);
+  }, [llmReady, llmUnsupported, showMessage]);
 
   // Lazy init SFX after user gesture to comply with autoplay policies
   const sfxRef = useRef<{ feed?: Howl; play?: Howl; sleep?: Howl; clean?: Howl; heal?: Howl; scold?: Howl; crying?: Howl } | null>(null);

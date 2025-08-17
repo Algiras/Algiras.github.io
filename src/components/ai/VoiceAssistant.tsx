@@ -437,33 +437,10 @@ Summary:`;
       updateStatus('Ready', 'ready');
     } catch (e: any) {
       log(`WebLLM initialization failed: ${e?.message ?? e}`);
-      // Fallback mock engine
-      const mock = {
-        chat: {
-          completions: {
-            create: async (options: any) => {
-              await new Promise(r => setTimeout(r, 1000 + Math.random() * 1500));
-              const userMessage = (options?.messages?.[options.messages.length - 1]?.content ?? '').toLowerCase();
-              const replies = {
-                greeting: [
-                  "Hello! I'm a demo voice assistant.",
-                  'Hi there! How can I help today?',
-                ],
-                default: [
-                  'This is a mock response demonstrating the voice interface.',
-                  'Thanks for testing! This shows speech-to-text and text-to-speech working together.',
-                ]
-              };
-              const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-              const content = userMessage.includes('hello') || userMessage.includes('hi') ? pick(replies.greeting) : pick(replies.default);
-              return { choices: [{ message: { content } }] };
-            }
-          }
-        }
-      };
-      setEngine(mock);
-      updateStatus('Ready (Demo Mode)', 'ready');
-      sendAssistant({ type: 'ADD_ASSISTANT', content: '🎭 Demo Mode: Using mock AI responses since WebLLM failed to load.' });
+      // Device does not support WebLLM
+      setEngine(null);
+      updateStatus('Device Not Supported', 'error');
+      sendAssistant({ type: 'ADD_ASSISTANT', content: '⚠️ Your device does not support on-device AI processing. This requires WebGPU and sufficient memory. Voice recognition will still work, but AI responses are not available.' });
     } finally {
       setIsEngineInitializing(false);
     }
@@ -548,7 +525,12 @@ Summary:`;
   }, [conversationMode, scheduleAutoListen, log, sendVoice]);
 
   const processUserInput = useCallback(async (text: string) => {
-    if (!engine) { log('processUserInput skipped: engine not ready'); return; }
+    if (!engine) { 
+      log('processUserInput skipped: AI not supported on this device'); 
+      sendAssistant({ type: 'ADD_ASSISTANT', content: '⚠️ AI responses are not available on this device. Your voice was recognized, but AI processing requires WebGPU support.' });
+      updateStatus('AI Not Available', 'error');
+      return; 
+    }
     if (isProcessing) { log('processUserInput skipped: already processing'); return; }
     
     // Check if this is a duplicate of the last message
@@ -924,17 +906,24 @@ Summary:`;
               <Select
                 label="Voice"
                 placeholder="Select a voice..."
-                value={voiceConfig.voice?.name || ''}
+                value={voiceConfig.voice ? `${voiceConfig.voice.name}|${voiceConfig.voice.lang}` : ''}
                 onChange={(value) => {
-                  const selectedVoice = availableVoices.find(v => v.name === value);
-                  if (selectedVoice) {
-                    setVoiceConfig(prev => ({ ...prev, voice: selectedVoice }));
+                  if (value) {
+                    const [name, lang] = value.split('|');
+                    const selectedVoice = availableVoices.find(v => v.name === name && v.lang === lang);
+                    if (selectedVoice) {
+                      setVoiceConfig(prev => ({ ...prev, voice: selectedVoice }));
+                    }
                   }
                 }}
-                data={availableVoices.map(voice => ({
-                  value: voice.name,
-                  label: `${voice.name} (${voice.lang})`
-                }))}
+                data={availableVoices
+                  .filter((voice, index, arr) => 
+                    arr.findIndex(v => v.name === voice.name && v.lang === voice.lang) === index
+                  )
+                  .map(voice => ({
+                    value: `${voice.name}|${voice.lang}`,
+                    label: `${voice.name} (${voice.lang})`
+                  }))}
                 radius="lg"
                 size="sm"
                 styles={{
