@@ -19,6 +19,7 @@ import DocumentToolWrapper from './components/DocumentToolWrapper';
 import Games from './pages/Games';
 import GameToolWrapper from './components/GameToolWrapper';
 import Akotchi from './games/akotchi/Akotchi';
+import AIPage from './pages/AI';
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
             <Route path="/games/akotchi/share" element={
               <GameToolWrapper><Akotchi /></GameToolWrapper>
             } />
+            <Route path="/ai" element={<AIPage />} />
             {/* 404 Route - Catch all invalid URLs */}
             <Route path="*" element={
               <div style={{ 

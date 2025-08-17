@@ -464,8 +464,9 @@ const Akotchi: React.FC = () => {
   const ensureLlm = useCallback(async () => {
     if (llmRef.current || llmReady) return true;
     try {
-      const webllm = await import('@mlc-ai/web-llm');
-      const engine = await webllm.CreateMLCEngine('Qwen2-0.5B-Instruct-q4f16_1-MLC');
+      // Use the shared WebLLM engine to avoid duplicate imports and VectorInt class conflicts
+      const { getSharedEngine } = await import('../../lib/webllmEngine');
+      const engine = await getSharedEngine(undefined, 'Qwen2-0.5B-Instruct-q4f16_1-MLC');
       llmRef.current = engine;
       setLlmReady(true);
       return true;

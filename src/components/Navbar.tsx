@@ -3,7 +3,7 @@ import {
     Drawer, Group, Stack,
     Title, useMantineColorScheme
 } from '@mantine/core';
-import { Calculator, FileText, Home, Menu, Moon, Sun, Gamepad2 } from 'lucide-react';
+import { Calculator, FileText, Home, Menu, Moon, Sun, Gamepad2, Bot } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -67,6 +67,11 @@ const Navbar: React.FC = () => {
       label: 'Games',
       path: '/games',
       icon: Gamepad2,
+    },
+    {
+      label: 'AI',
+      path: '/ai',
+      icon: Bot,
     },
     {
       label: 'Documents',

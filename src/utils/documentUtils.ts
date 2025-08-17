@@ -46,6 +46,8 @@ export const useRouteBasedTitle = () => {
       } else if (pathname.includes('akotchi')) {
         title = 'Akotchi Game - Games';
       }
+    } else if (pathname.startsWith('/ai')) {
+      title = 'AI Voice Assistant - Algimantas Krasnauskas';
     }
     
     document.title = title;
