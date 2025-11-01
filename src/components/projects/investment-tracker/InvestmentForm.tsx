@@ -367,7 +367,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                     </div>
                   </Group>
                 </div>
-                <ActionIcon variant="light" color="blue">
+                <ActionIcon variant="light" color="blue" size="md">
                   <Calculator size={16} />
                 </ActionIcon>
               </Group>

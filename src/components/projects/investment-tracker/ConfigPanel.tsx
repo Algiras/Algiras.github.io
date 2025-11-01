@@ -116,7 +116,7 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ platforms, onChangePlatforms,
                   <Group gap="xs">
                     {inUse && <Badge color="yellow" variant="light">In use</Badge>}
                     <Tooltip label={inUse ? 'This platform is in use' : 'Remove platform'}>
-                      <ActionIcon color="red" variant="light" onClick={() => removePlatform(idx)} disabled={inUse}>
+                      <ActionIcon color="red" variant="light" size="md" onClick={() => removePlatform(idx)} disabled={inUse}>
                         <Trash2 size={16} />
                       </ActionIcon>
                     </Tooltip>
