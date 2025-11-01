@@ -1,5 +1,5 @@
-import { Badge, Card, Grid, Group, NumberInput, Stack, Tabs, Text, Title, useMantineColorScheme, Alert } from '@mantine/core';
-import { Calculator, DollarSign, Home, TrendingUp, InfoCircle } from 'lucide-react';
+import { Badge, Card, Grid, Group, NumberInput, Stack, Tabs, Text, Title, useMantineColorScheme, Alert, Switch } from '@mantine/core';
+import { Calculator, DollarSign, Home, TrendingUp, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -15,6 +15,8 @@ interface RefinanceInput {
     interestRate: number;
     termYears: number;
     closingCosts: number;
+    points: number;
+    includePointsInCosts: boolean;
   };
 }
 
@@ -66,13 +68,14 @@ const RefinanceCalculator: React.FC = () => {
       interestRate: 5.5,
       termYears: 30,
       closingCosts: 5000,
+      points: 0,
+      includePointsInCosts: true,
     },
   });
 
   const calculateLoan = (
     balance: number,
     interestRate: number,
-    termYears: number,
     monthlyPayment: number,
     monthsToCalculate: number
   ) => {
@@ -103,7 +106,6 @@ const RefinanceCalculator: React.FC = () => {
     const currentCalc = calculateLoan(
       currentLoan.balance,
       currentLoan.interestRate,
-      currentLoan.termYears,
       currentLoan.monthlyPayment,
       currentLoan.monthsRemaining
     );
@@ -111,15 +113,17 @@ const RefinanceCalculator: React.FC = () => {
     // Calculate new loan payment
     const newMonthlyRate = newLoan.interestRate / 100 / 12;
     const newTotalPayments = newLoan.termYears * 12;
-    const newMonthlyPayment = currentLoan.balance * 
+    const pointsCost = newLoan.includePointsInCosts ? (currentLoan.balance * newLoan.points / 100) : 0;
+    const totalClosingCosts = newLoan.closingCosts + pointsCost;
+    const newLoanBalance = currentLoan.balance + (newLoan.includePointsInCosts ? 0 : pointsCost);
+    const newMonthlyPayment = newLoanBalance * 
       (newMonthlyRate * Math.pow(1 + newMonthlyRate, newTotalPayments)) / 
       (Math.pow(1 + newMonthlyRate, newTotalPayments) - 1);
 
     // Calculate new loan totals
     const newCalc = calculateLoan(
-      currentLoan.balance,
+      newLoanBalance,
       newLoan.interestRate,
-      newLoan.termYears,
       newMonthlyPayment,
       newTotalPayments
     );
@@ -127,15 +131,15 @@ const RefinanceCalculator: React.FC = () => {
     // Calculate savings
     const monthlySavings = currentLoan.monthlyPayment - newMonthlyPayment;
     const interestSaved = currentCalc.totalInterest - newCalc.totalInterest;
-    const totalSavings = interestSaved - newLoan.closingCosts;
-    const breakEvenMonths = newLoan.closingCosts / monthlySavings;
+    const totalSavings = interestSaved - totalClosingCosts;
+    const breakEvenMonths = totalClosingCosts / monthlySavings;
 
     // Generate comparison schedule
     const schedule: RefinanceResult['schedule'] = [];
     const maxMonths = Math.max(currentLoan.monthsRemaining, newTotalPayments);
     
     let currentBalance = currentLoan.balance;
-    let newBalance = currentLoan.balance;
+    let newBalance = newLoanBalance;
     let currentCumInterest = 0;
     let newCumInterest = 0;
     const currentMonthlyRate = currentLoan.interestRate / 100 / 12;
@@ -175,7 +179,7 @@ const RefinanceCalculator: React.FC = () => {
       newLoan: {
         monthlyPayment: newMonthlyPayment,
         totalInterest: newCalc.totalInterest,
-        totalCost: currentLoan.balance + newLoan.closingCosts + newCalc.totalInterest,
+        totalCost: newLoanBalance + totalClosingCosts + newCalc.totalInterest,
         payoffMonths: newTotalPayments,
       },
       savings: {
@@ -230,6 +234,69 @@ const RefinanceCalculator: React.FC = () => {
 
   const isWorthRefinancing = results.savings.netSavings > 0 && results.savings.breakEvenMonths < results.newLoan.payoffMonths;
 
+  // Generate recommendations
+  const recommendations = useMemo(() => {
+    const recs = [];
+    const pointsCost = inputs.newLoan.includePointsInCosts ? (inputs.currentLoan.balance * inputs.newLoan.points / 100) : 0;
+    const totalClosingCosts = inputs.newLoan.closingCosts + pointsCost;
+    const rateDifference = inputs.currentLoan.interestRate - inputs.newLoan.interestRate;
+
+    if (rateDifference >= 0.5) {
+      recs.push({
+        type: 'success',
+        icon: <CheckCircle size={16} />,
+        title: 'Good Rate Reduction',
+        message: `A ${rateDifference.toFixed(2)}% rate reduction is significant and typically makes refinancing worthwhile.`,
+      });
+    } else if (rateDifference < 0.25) {
+      recs.push({
+        type: 'warning',
+        icon: <AlertCircle size={16} />,
+        title: 'Small Rate Difference',
+        message: `A ${rateDifference.toFixed(2)}% rate reduction may not justify refinancing costs. Consider if you plan to stay in the home long-term.`,
+      });
+    }
+
+    if (results.savings.breakEvenMonths > 60) {
+      recs.push({
+        type: 'warning',
+        icon: <AlertCircle size={16} />,
+        title: 'Long Break-Even Period',
+        message: `Break-even point is ${(results.savings.breakEvenMonths / 12).toFixed(1)} years. Only refinance if you plan to stay in the home longer.`,
+      });
+    } else if (results.savings.breakEvenMonths < 24) {
+      recs.push({
+        type: 'success',
+        icon: <CheckCircle size={16} />,
+        title: 'Quick Break-Even',
+        message: `You'll break even in ${(results.savings.breakEvenMonths / 12).toFixed(1)} years, making this a good refinancing opportunity.`,
+      });
+    }
+
+    if (inputs.newLoan.points > 0) {
+      const pointsSavings = (inputs.currentLoan.interestRate - inputs.newLoan.interestRate) * inputs.newLoan.points / 100;
+      if (pointsSavings > 0.25) {
+        recs.push({
+          type: 'info',
+          icon: <Info size={16} />,
+          title: 'Points May Be Worth It',
+          message: `Buying ${inputs.newLoan.points} point(s) reduces your rate by approximately ${pointsSavings.toFixed(2)}%. Consider if you'll stay in the home long enough to recoup the cost.`,
+        });
+      }
+    }
+
+    if (totalClosingCosts > inputs.currentLoan.balance * 0.05) {
+      recs.push({
+        type: 'warning',
+        icon: <AlertCircle size={16} />,
+        title: 'High Closing Costs',
+        message: `Closing costs of $${totalClosingCosts.toLocaleString()} represent ${((totalClosingCosts / inputs.currentLoan.balance) * 100).toFixed(1)}% of your loan balance. Shop around for better rates.`,
+      });
+    }
+
+    return recs;
+  }, [inputs, results]);
+
   return (
     <>
       <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -242,17 +309,27 @@ const RefinanceCalculator: React.FC = () => {
         </Group>
 
         {!isWorthRefinancing && (
-          <Alert icon={<InfoCircle size={16} />} title="Consider Carefully" color="yellow" mb="md">
-            Refinancing may not be beneficial in this scenario. You'll break even in {results.savings.breakEvenMonths.toFixed(1)} months, 
+          <Alert icon={<Info size={16} />} title="Consider Carefully" color="yellow" mb="md">
+            Refinancing may not be beneficial in this scenario. You&apos;ll break even in {results.savings.breakEvenMonths.toFixed(1)} months, 
             but consider your long-term plans and closing costs.
           </Alert>
         )}
 
         {isWorthRefinancing && (
-          <Alert icon={<InfoCircle size={16} />} title="Potential Savings" color="green" mb="md">
+          <Alert icon={<Info size={16} />} title="Potential Savings" color="green" mb="md">
             Refinancing could save you ${results.savings.netSavings.toLocaleString()} over the life of the loan. 
             Break-even point: {results.savings.breakEvenMonths.toFixed(1)} months.
           </Alert>
+        )}
+
+        {recommendations.length > 0 && (
+          <Stack gap="md" mb="md">
+            {recommendations.map((rec, index) => (
+              <Alert key={index} icon={rec.icon} title={rec.title} color={rec.type === 'success' ? 'green' : rec.type === 'warning' ? 'yellow' : 'blue'}>
+                {rec.message}
+              </Alert>
+            ))}
+          </Stack>
         )}
 
         <Grid>
@@ -340,8 +417,39 @@ const RefinanceCalculator: React.FC = () => {
                 min={0}
                 thousandSeparator=","
                 leftSection={<DollarSign size={16} />}
-                description="Includes fees, points, and other costs"
+                description="Includes fees and other costs (excluding points)"
               />
+
+              <NumberInput
+                label="Points"
+                value={inputs.newLoan.points}
+                onChange={(value) => setInputs(prev => ({
+                  ...prev,
+                  newLoan: { ...prev.newLoan, points: Number(value) || 0 }
+                }))}
+                min={0}
+                max={5}
+                decimalScale={1}
+                step={0.25}
+                description="Each point typically reduces rate by 0.25%"
+              />
+
+              <Switch
+                label="Include points in closing costs"
+                checked={inputs.newLoan.includePointsInCosts}
+                onChange={(e) => setInputs(prev => ({
+                  ...prev,
+                  newLoan: { ...prev.newLoan, includePointsInCosts: e.currentTarget.checked }
+                }))}
+                description="If checked, points are added to closing costs. If unchecked, points are added to loan balance."
+              />
+
+              {inputs.newLoan.points > 0 && (
+                <Text size="sm" c="dimmed">
+                  Points cost: ${(inputs.currentLoan.balance * inputs.newLoan.points / 100).toLocaleString()}
+                  {inputs.newLoan.includePointsInCosts ? ' (included in closing costs)' : ' (added to loan balance)'}
+                </Text>
+              )}
 
               <Card withBorder p="md" className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                 <Group justify="space-between">
@@ -450,8 +558,14 @@ const RefinanceCalculator: React.FC = () => {
                   </Group>
                   <Group justify="space-between">
                     <Text>Closing Costs:</Text>
-                    <Text fw={600} c="red">${inputs.newLoan.closingCosts.toLocaleString()}</Text>
+                    <Text fw={600} c="red">${(inputs.newLoan.closingCosts + (inputs.newLoan.includePointsInCosts ? (inputs.currentLoan.balance * inputs.newLoan.points / 100) : 0)).toLocaleString()}</Text>
                   </Group>
+                  {inputs.newLoan.points > 0 && (
+                    <Group justify="space-between">
+                      <Text size="sm" c="dimmed">Points Cost:</Text>
+                      <Text size="sm" c="dimmed">${(inputs.currentLoan.balance * inputs.newLoan.points / 100).toLocaleString()}</Text>
+                    </Group>
+                  )}
                   <Group justify="space-between">
                     <Text>Time Saved:</Text>
                     <Text fw={600}>
