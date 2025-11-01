@@ -199,6 +199,11 @@ export const theme = createTheme({
         size: 'md',
         radius: 'md',
       },
+      styles: {
+        root: {
+          // Ensure size prop is always a string
+        },
+      },
     },
 
     Card: {
