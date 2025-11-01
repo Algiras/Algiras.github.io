@@ -1,7 +1,8 @@
-import { Badge, Card, Divider, Grid, Group, NumberInput, Select, SimpleGrid, Stack, Tabs, Text, TextInput, Title, Button, useMantineColorScheme, Alert, Progress } from '@mantine/core';
-import { Calculator, CreditCard, DollarSign, TrendingDown, Wallet, CheckCircle, AlertCircle } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Badge, Card, Divider, Grid, Group, NumberInput, Select, SimpleGrid, Stack, Tabs, Text, TextInput, Title, Button, useMantineColorScheme, Alert, Progress, ActionIcon } from '@mantine/core';
+import { Calculator, CreditCard, DollarSign, TrendingDown, Wallet, CheckCircle, AlertCircle, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface Debt {
   id: string;
@@ -35,14 +36,26 @@ const DebtPayoffCalculator: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [debts, setDebts] = useState<Debt[]>([
+  const defaultDebts: Debt[] = [
     { id: '1', name: 'Credit Card', balance: 5000, interestRate: 18.99, minPayment: 150 },
     { id: '2', name: 'Personal Loan', balance: 10000, interestRate: 8.5, minPayment: 300 },
     { id: '3', name: 'Car Loan', balance: 15000, interestRate: 5.5, minPayment: 400 },
-  ]);
+  ];
 
-  const [strategy, setStrategy] = useState<'snowball' | 'avalanche'>('avalanche');
-  const [extraPayment, setExtraPayment] = useState(500);
+  const [debtsStorage, setDebts] = useLocalStorage<Debt[]>('debt-payoff-calculator-debts', defaultDebts);
+  const [strategyStorage, setStrategy] = useLocalStorage<'snowball' | 'avalanche'>('debt-payoff-calculator-strategy', 'avalanche');
+  const [extraPaymentStorage, setExtraPayment] = useLocalStorage<number>('debt-payoff-calculator-extra-payment', 500);
+
+  // Ensure non-null values (hook always returns initialValue if null)
+  const debts = debtsStorage ?? defaultDebts;
+  const strategy = strategyStorage ?? 'avalanche';
+  const extraPayment = extraPaymentStorage ?? 500;
+
+  const resetToDefaults = () => {
+    setDebts(defaultDebts);
+    setStrategy('avalanche');
+    setExtraPayment(500);
+  };
 
   const calculatePayoff = (debts: Debt[], strategy: 'snowball' | 'avalanche', extraPayment: number): PayoffResult => {
     // Create a copy of debts to avoid mutating state
@@ -268,7 +281,17 @@ const DebtPayoffCalculator: React.FC = () => {
             <CreditCard size={24} />
             Debt Payoff Calculator
           </Title>
-          <Badge variant="light" color="red">Debt Management</Badge>
+          <Group gap="xs">
+            <ActionIcon 
+              variant="light" 
+              color="gray" 
+              onClick={resetToDefaults}
+              title="Reset to defaults"
+            >
+              <RotateCcw size={18} />
+            </ActionIcon>
+            <Badge variant="light" color="red">Debt Management</Badge>
+          </Group>
         </Group>
 
         <Grid>

@@ -1,7 +1,8 @@
-import { Badge, Card, Grid, Group, NumberInput, Stack, Tabs, Text, Title, useMantineColorScheme, Alert, Switch } from '@mantine/core';
-import { Calculator, DollarSign, Home, TrendingUp, Info, CheckCircle, AlertCircle } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Badge, Card, Grid, Group, NumberInput, Stack, Tabs, Text, Title, useMantineColorScheme, Alert, Switch, ActionIcon } from '@mantine/core';
+import { Calculator, DollarSign, Home, TrendingUp, Info, CheckCircle, AlertCircle, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface RefinanceInput {
   currentLoan: {
@@ -56,7 +57,7 @@ const RefinanceCalculator: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [inputs, setInputs] = useState<RefinanceInput>({
+  const defaultInputs: RefinanceInput = {
     currentLoan: {
       balance: 250000,
       interestRate: 6.5,
@@ -71,7 +72,16 @@ const RefinanceCalculator: React.FC = () => {
       points: 0,
       includePointsInCosts: true,
     },
-  });
+  };
+
+  const [inputsStorage, setInputs] = useLocalStorage<RefinanceInput>('refinance-calculator-inputs', defaultInputs);
+
+  // Ensure non-null value (hook always returns initialValue if null)
+  const inputs = inputsStorage ?? defaultInputs;
+
+  const resetToDefaults = () => {
+    setInputs(defaultInputs);
+  };
 
   const calculateLoan = (
     balance: number,
@@ -305,7 +315,17 @@ const RefinanceCalculator: React.FC = () => {
             <Home size={24} />
             Refinance Calculator
           </Title>
-          <Badge variant="light" color="blue">Mortgage Analysis</Badge>
+          <Group gap="xs">
+            <ActionIcon 
+              variant="light" 
+              color="gray" 
+              onClick={resetToDefaults}
+              title="Reset to defaults"
+            >
+              <RotateCcw size={18} />
+            </ActionIcon>
+            <Badge variant="light" color="blue">Mortgage Analysis</Badge>
+          </Group>
         </Group>
 
         {!isWorthRefinancing && (
