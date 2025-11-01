@@ -2,6 +2,7 @@ import {
     ActionIcon, Badge,
     Box, Button, Card, Container, Divider, Flex, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, Tooltip
 } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import {
     ArrowRight, Bot, Code, Download,
     ExternalLink, Github, Linkedin, Mail,
@@ -14,6 +15,7 @@ import { useDocumentTitle } from '../utils/documentUtils';
 
 const Home: React.FC = () => {
   useDocumentTitle('Algimantas Krasnauskas - Software Engineer');
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const skills = [
     'React', 'TypeScript', 'Node.js', 'PostgreSQL', 
@@ -128,8 +130,10 @@ const Home: React.FC = () => {
             <Box style={{ flex: 1 }} ta="center">
               <Box
                 style={{
-                  width: 320,
-                  height: 320,
+                  width: '100%',
+                  maxWidth: 320,
+                  height: 'auto',
+                  aspectRatio: '1/1',
                   margin: '0 auto',
                   position: 'relative',
                   display: 'flex',
@@ -138,60 +142,66 @@ const Home: React.FC = () => {
                 }}
               >
                 {/* Floating Icons - Reduced animation */}
-                <Box
-                  style={{
-                    position: 'absolute',
-                    top: '10%',
-                    left: '15%',
-                    animation: 'float 6s ease-in-out infinite',
-                  }}
-                >
-                  <ThemeIcon size="lg" radius="md" variant="light" color="blue">
-                    <Bot size={20} />
-                  </ThemeIcon>
-                </Box>
-                <Box
-                  style={{
-                    position: 'absolute',
-                    top: '20%',
-                    right: '10%',
-                    animation: 'float 6s ease-in-out infinite 2s',
-                  }}
-                >
-                  <ThemeIcon size="lg" radius="md" variant="light" color="cyan">
-                    <Zap size={20} />
-                  </ThemeIcon>
-                </Box>
-                <Box
-                  style={{
-                    position: 'absolute',
-                    bottom: '25%',
-                    left: '8%',
-                    animation: 'float 6s ease-in-out infinite 4s',
-                  }}
-                >
-                  <ThemeIcon size="lg" radius="md" variant="light" color="indigo">
-                    <Target size={20} />
-                  </ThemeIcon>
-                </Box>
-                <Box
-                  style={{
-                    position: 'absolute',
-                    bottom: '15%',
-                    right: '20%',
-                    animation: 'float 6s ease-in-out infinite 3s',
-                  }}
-                >
-                  <ThemeIcon size="lg" radius="md" variant="light" color="violet">
-                    <Users size={20} />
-                  </ThemeIcon>
-                </Box>
+                {!isMobile && (
+                  <>
+                    <Box
+                      style={{
+                        position: 'absolute',
+                        top: '10%',
+                        left: '15%',
+                        animation: 'float 6s ease-in-out infinite',
+                      }}
+                    >
+                      <ThemeIcon size="lg" radius="md" variant="light" color="blue">
+                        <Bot size={20} />
+                      </ThemeIcon>
+                    </Box>
+                    <Box
+                      style={{
+                        position: 'absolute',
+                        top: '20%',
+                        right: '10%',
+                        animation: 'float 6s ease-in-out infinite 2s',
+                      }}
+                    >
+                      <ThemeIcon size="lg" radius="md" variant="light" color="cyan">
+                        <Zap size={20} />
+                      </ThemeIcon>
+                    </Box>
+                    <Box
+                      style={{
+                        position: 'absolute',
+                        bottom: '25%',
+                        left: '8%',
+                        animation: 'float 6s ease-in-out infinite 4s',
+                      }}
+                    >
+                      <ThemeIcon size="lg" radius="md" variant="light" color="indigo">
+                        <Target size={20} />
+                      </ThemeIcon>
+                    </Box>
+                    <Box
+                      style={{
+                        position: 'absolute',
+                        bottom: '15%',
+                        right: '20%',
+                        animation: 'float 6s ease-in-out infinite 3s',
+                      }}
+                    >
+                      <ThemeIcon size="lg" radius="md" variant="light" color="violet">
+                        <Users size={20} />
+                      </ThemeIcon>
+                    </Box>
+                  </>
+                )}
 
                 {/* Main Circle - Subtle animation */}
                 <Box
                   style={{
-                    width: 280,
-                    height: 280,
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: 280,
+                    maxHeight: 280,
                     position: 'relative',
                     display: 'flex',
                     alignItems: 'center',
@@ -446,11 +456,11 @@ const Home: React.FC = () => {
               I'm always interested in discussing new opportunities, innovative projects, 
               or just chatting about technology and development.
             </Text>
-            <Group justify="center" gap="md">
+            <Group justify="center" gap="md" wrap="wrap">
               <Button
                 component={Link}
                 to="/finance"
-                size="lg"
+                size={{ base: 'md', sm: 'lg' }}
                 variant="gradient"
                 gradient={{ from: 'blue', to: 'cyan' }}
                 rightSection={<ArrowRight size={18} />}
@@ -461,7 +471,7 @@ const Home: React.FC = () => {
               <Button
                 component={Link}
                 to="/documents"
-                size="lg"
+                size={{ base: 'md', sm: 'lg' }}
                 variant="gradient"
                 gradient={{ from: 'purple', to: 'pink' }}
                 rightSection={<ArrowRight size={18} />}
@@ -474,7 +484,7 @@ const Home: React.FC = () => {
                 href="https://github.com/Algiras"
                 target="_blank"
                 rel="noopener noreferrer"
-                size="lg"
+                size={{ base: 'md', sm: 'lg' }}
                 variant="outline"
                 rightSection={<ExternalLink size={18} />}
                 className="custom-button-hover"

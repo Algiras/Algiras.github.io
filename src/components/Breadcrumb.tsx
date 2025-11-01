@@ -106,8 +106,8 @@ const Breadcrumb: React.FC = () => {
     <Breadcrumbs
       separator={<ChevronRight size={16} style={{ color: 'var(--mantine-color-dimmed)' }} />}
       style={{ 
-        padding: '1rem 0',
-        marginBottom: '1rem',
+        padding: '0.75rem 0',
+        marginBottom: '0.75rem',
         borderBottom: '1px solid var(--mantine-color-default-border)'
       }}
     >

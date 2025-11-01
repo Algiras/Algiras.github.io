@@ -82,7 +82,7 @@ const Games: React.FC = () => {
                     ))}
                   </Stack>
 
-                  <Group justify="space-between">
+                  <Group justify="space-between" wrap="wrap">
                     <Button component={Link} to={game.path} variant="light" color={game.color} rightSection={<Rocket size={16} />}>
                       Play
                     </Button>

@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Card, Container, Group, Progress, Stack, Text, Title, Switch, Select, Modal, TextInput } from '@mantine/core';
 import { QRCodeCanvas } from 'qrcode.react';
-
-
 import { useMediaQuery } from '@mantine/hooks';
 import { useMachine } from '@xstate/react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -230,9 +228,6 @@ const Akotchi: React.FC = () => {
   const [newPetModalOpened, setNewPetModalOpened] = useState<boolean>(false);
   const [newPetName, setNewPetName] = useState<string>('');
   
-  // Periodic thought timer
-  const lastThoughtTimeRef = useRef<number>(0);
-  
   // Message display state
   const [currentMessage, setCurrentMessage] = useState<string>('');
   const [messageTitle, setMessageTitle] = useState<string>('');
@@ -248,6 +243,9 @@ const Akotchi: React.FC = () => {
   const [muted, setMuted] = useState<boolean>(() => {
     try { return localStorage.getItem('akotchi_sfx_muted_v1') === '1'; } catch { return false; }
   });
+  
+  // Ref to store latest generateProactiveMessage for worker callback
+  const generateProactiveMessageRef = useRef<((reason: string) => void) | null>(null);
   
   // Helper function to show messages under canvas
   const showMessage = useCallback((title: string, message: string, color: string = 'blue', duration: number = 6000) => {
@@ -457,28 +455,6 @@ const Akotchi: React.FC = () => {
     }
   }, [state.hunger, state.energy, state.health, state.happiness, state.isDead, currentMessage, generateDefaultMessage]);
 
-  // Tiny in-web LLM to generate pet messages (runs on-device)
-  const [llmReady, setLlmReady] = useState(false);
-  const [llmBusy, setLlmBusy] = useState(false);
-  const [llmUnsupported, setLlmUnsupported] = useState(false);
-  const llmRef = useRef<any | null>(null);
-  const ensureLlm = useCallback(async () => {
-    if (llmRef.current || llmReady) return true;
-    if (llmUnsupported) return false; // Don't try again if we know it's unsupported
-    
-    try {
-      // Use the shared WebLLM engine to avoid duplicate imports and VectorInt class conflicts
-      const { getSharedEngine } = await import('../../lib/webllmEngine');
-      const engine = await getSharedEngine(undefined, 'Qwen2-0.5B-Instruct-q4f16_1-MLC');
-      llmRef.current = engine;
-      setLlmReady(true);
-      return true;
-    } catch {
-      setLlmUnsupported(true);
-      showMessage('Device Not Supported', '⚠️ Your device does not support AI features. This requires WebGPU and sufficient memory. Akotchi will use basic responses instead.', 'orange', 8000);
-      return false;
-    }
-  }, [llmReady, llmUnsupported, showMessage]);
 
   // Lazy init SFX after user gesture to comply with autoplay policies
   const sfxRef = useRef<{ feed?: Howl; play?: Howl; sleep?: Howl; clean?: Howl; heal?: Howl; scold?: Howl; crying?: Howl } | null>(null);
@@ -545,23 +521,11 @@ const Akotchi: React.FC = () => {
       workerRef.current = w;
       w.postMessage({ type: 'INIT', petId: state.id, name: state.name });
       w.onmessage = (e: MessageEvent) => {
-        const data = e.data as { type: 'REQUEST' | 'SUGGEST_MESSAGE' | 'CRYING'; petId: string; request?: string; reason?: string; at: number } | any;
+        const data = e.data as { type: 'REQUEST' | 'CRYING'; petId: string; request?: string; reason?: string; at: number } | any;
         if (data?.type === 'REQUEST') {
           // Generate proactive message for what Akotchi needs
-          generateProactiveMessage(data.reason || 'something');
-          
-          // Log request for debugging
-          console.log(`${state.name} needs ${data.request.toLowerCase()}: ${data.reason}`);
-        } else if (data?.type === 'SUGGEST_MESSAGE') {
-          // Ask the on-device LLM to compose something friendly
-          requestPetMessage();
-          // Show thought bubble briefly
-          setShowThoughtBubble(true);
-          setThoughtBubbleUntil(Date.now() + 3000);
+          generateProactiveMessageRef.current?.(data.reason || 'something');
         } else if (data?.type === 'CRYING') {
-          // Log crying status
-          console.log(`${state.name} is crying: ${data.reason}`);
-          
           // Trigger crying animation and play sound
           setTempAnim('Crying', 5000);
           ensureSfx();
@@ -659,65 +623,60 @@ const Akotchi: React.FC = () => {
     if (state.isDead) send({ type: 'DIE' });
   }, [state.isDead, send]);
 
-  // Enhanced LLM response acknowledging actions with personality-driven reactions
-  const requestActionMessage = useCallback(async (
+  // Generate action response messages based on pet personality
+  const requestActionMessage = useCallback((
     action: 'FEED' | 'PLAY' | 'SLEEP' | 'CLEAN' | 'HEAL' | 'SCOLD',
-    prev: AkotchiState,
+    _prev: AkotchiState,
     next: AkotchiState
   ) => {
-    if (llmBusy) return;
-    setLlmBusy(true);
-    const ok = await ensureLlm();
-    if (!ok || !llmRef.current) { setLlmBusy(false); return; }
-    const ageStr = `${Math.floor(next.ageHours)}h ${Math.floor((next.ageHours % 1) * 60)}m`;
-    const delta = (a: number, b: number) => Math.round(b - a);
-    const statsLine = `hunger ${Math.round(prev.hunger)}→${Math.round(next.hunger)} (${delta(prev.hunger, next.hunger)}), ` +
-      `energy ${Math.round(prev.energy)}→${Math.round(next.energy)} (${delta(prev.energy, next.energy)}), ` +
-      `happiness ${Math.round(prev.happiness)}→${Math.round(next.happiness)} (${delta(prev.happiness, next.happiness)}), ` +
-      `health ${Math.round(prev.health)}→${Math.round(next.health)} (${delta(prev.health, next.health)})`;
-    
-    // Enhanced system prompt with personality-driven responses
-    const system = `You are ${next.name}, a wholesome retro virtual pet (age: ${ageStr}, personality: ${next.personality}). 
-
-Personality traits:
-- Cheerful: Very grateful, enthusiastic, loves to express joy
-- Lazy: Appreciates comfort, gentle gratitude, prefers calm responses
-- Hyper: Energetic thanks, wants more action, very expressive
-- Moody: Emotional gratitude, needs reassurance, sensitive responses
-- Shy: Quiet gratitude, gentle appreciation, modest responses
-
-Style: playful, caring, concise, personality-driven, grateful.
-Constraints: exactly one sentence under 20 words.
-Express genuine appreciation for the care received.`;
-
-    // More engaging user prompt for action responses
-    const user = `Action: ${action}. Stats change: ${statsLine}. 
-
-Respond to your human's care with personality-appropriate gratitude and express how you feel now. Be specific about what you enjoyed or how you feel!
-
-Examples:
-- FEED: "That was delicious! I feel so much better now, thank you!"
-- PLAY: "That was so much fun! I love playing with you!"
-- SLEEP: "I feel so rested and cozy now, that was perfect!"
-- CLEAN: "I feel so fresh and clean! Thank you for taking care of me!"
-- HEAL: "I'm feeling much better now! Your care really helps!"
-- SCOLD: "I understand, I'll try to be better. Thank you for teaching me."`;
-
-    try {
-      const reply = await llmRef.current.chat.completions.create({
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ] as any,
-      });
-      const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
-      if (text) {
-        showMessage(`${next.name} says`, text, 'blue', 6000);
+    const personality = next.personality;
+    const messages: Record<string, Record<string, string[]>> = {
+      Cheerful: {
+        FEED: ["That was delicious! I feel so much better now, thank you!", "Yummy! I'm so happy you fed me!", "Thank you! That was amazing!"],
+        PLAY: ["That was so much fun! I love playing with you!", "Wheee! That was the best!", "Yay! I had so much fun!"],
+        SLEEP: ["I feel so rested and cozy now, that was perfect!", "Zzz... I'm so refreshed!", "Thank you for letting me rest!"],
+        CLEAN: ["I feel so fresh and clean! Thank you for taking care of me!", "Ahh, that feels so much better!", "I'm all clean now, thank you!"],
+        HEAL: ["I'm feeling much better now! Your care really helps!", "Thank you for helping me feel better!", "I'm healing well thanks to you!"],
+        SCOLD: ["I understand, I'll try to be better. Thank you for teaching me.", "I'm sorry, I'll do better next time.", "You're right, I'll be more careful."]
+      },
+      Lazy: {
+        FEED: ["Mmm, that was nice. Thanks for the food.", "That hit the spot. Thank you.", "Good food, thanks for feeding me."],
+        PLAY: ["That was fun, but I'm getting tired now.", "Thanks for playing, I enjoyed that.", "Nice playtime, thank you."],
+        SLEEP: ["Perfect, I really needed that rest.", "So cozy... thanks for letting me sleep.", "I feel much better now."],
+        CLEAN: ["Feels good to be clean. Thanks.", "Much better now, thank you.", "I appreciate you cleaning me up."],
+        HEAL: ["I'm feeling better now, thanks.", "Thank you for helping me heal.", "I needed that, thank you."],
+        SCOLD: ["I understand. I'll be more careful.", "Sorry about that.", "I'll try better next time."]
+      },
+      Hyper: {
+        FEED: ["YES! That was AMAZING! I'm so energized!", "WOOHOO! Best food ever! Thank you!", "I'm so excited! That was great!"],
+        PLAY: ["LET'S GO AGAIN! That was SO MUCH FUN!", "I want to play MORE! That was awesome!", "YES YES YES! That was incredible!"],
+        SLEEP: ["Okay, I'll rest, but I want to play again soon!", "Zzz... I'll be ready for more action soon!", "Resting now, but I'll be back strong!"],
+        CLEAN: ["I'm CLEAN and READY FOR ACTION! Thanks!", "Fresh and ready to go! Thank you!", "Clean and energized! Let's go!"],
+        HEAL: ["I'M FEELING GREAT! Ready for more adventures!", "Back to full strength! Thank you!", "I'm healed and ready to go!"],
+        SCOLD: ["I'll calm down, I promise. Sorry!", "I got too excited, I'll be better.", "I understand, I'll be more careful."]
+      },
+      Moody: {
+        FEED: ["Thanks... I really needed that.", "That helps. I appreciate it.", "I feel a bit better now, thank you."],
+        PLAY: ["That was nice... thank you for playing with me.", "I enjoyed that. Thanks.", "That cheered me up a bit."],
+        SLEEP: ["I needed that rest. Thank you.", "Rest helps. I feel a bit better.", "Thanks for letting me rest."],
+        CLEAN: ["I feel better now. Thanks.", "Much better, thank you.", "I appreciate you cleaning me."],
+        HEAL: ["I'm feeling better. Thank you for caring.", "Thanks for helping me heal.", "I needed that care, thank you."],
+        SCOLD: ["I'm sorry... I'll try harder.", "I understand. I'll do better.", "I'll be more careful next time."]
+      },
+      Shy: {
+        FEED: ["Thank you... that was nice.", "I appreciate the food. Thank you.", "That was good, thanks."],
+        PLAY: ["That was fun... thank you for playing.", "I enjoyed that. Thanks.", "That was nice, thank you."],
+        SLEEP: ["Thanks for letting me rest.", "I needed that. Thank you.", "Rest helps, thanks."],
+        CLEAN: ["Thank you for cleaning me.", "I feel better now. Thanks.", "Much better, thank you."],
+        HEAL: ["Thank you for helping me.", "I'm feeling better. Thanks.", "I appreciate your care."],
+        SCOLD: ["I understand... I'll be better.", "Sorry. I'll try harder.", "I'll be more careful."]
       }
-    } catch {
-      // ignore
-    } finally { setLlmBusy(false); }
-  }, [ensureLlm, llmBusy, showMessage]);
+    };
+
+    const actionMessages = messages[personality]?.[action] || messages.Cheerful[action];
+    const message = actionMessages[Math.floor(Math.random() * actionMessages.length)];
+    showMessage(`${next.name} says`, message, 'blue', 6000);
+  }, [showMessage]);
 
   // Actions
   const setTempAnim = useCallback((anim: AnimationState, durationMs = 1800) => {
@@ -787,170 +746,62 @@ Examples:
 
 
 
-  // Enhanced LLM message generation with personality-driven requests
-  const requestPetMessage = useCallback(async () => {
-    if (llmBusy) return;
-    setLlmBusy(true);
-    const ok = await ensureLlm();
-    if (!ok || !llmRef.current) { setLlmBusy(false); return; }
-    const s = state;
-    const ageStr = `${Math.floor(s.ageHours)}h ${Math.floor((s.ageHours % 1) * 60)}m`;
-    
-    // Enhanced system prompt with more personality and context
-    const system = `You are ${s.name}, a wholesome retro virtual pet (age: ${ageStr}, personality: ${s.personality}). 
-
-Personality traits:
-- Cheerful: Always positive, loves activities, very social
-- Lazy: Prefers rest, gentle requests, appreciates comfort
-- Hyper: Energetic, wants action, very playful
-- Moody: Emotional, needs reassurance, sensitive
-- Shy: Gentle, quiet requests, appreciates patience
-
-Style: playful, caring, concise, personality-driven. 
-Constraints: exactly one sentence under 20 words. 
-Never be manipulative; encourage healthy care and breaks.`;
-
-    // More specific and engaging user prompt
-    const user = `Current stats — hunger ${Math.round(s.hunger)}, energy ${Math.round(s.energy)}, happiness ${Math.round(s.happiness)}, health ${Math.round(s.health)}. 
-
-Based on your personality and current needs, compose a friendly, specific request or message to your human. Be creative and engaging!
-
-Examples:
-- If hungry: "I'm craving some delicious food! Can you feed me?"
-- If tired: "I'm getting sleepy and would love a cozy nap time"
-- If sad: "I'm feeling a bit down and could use some playtime to cheer up"
-- If happy: "I'm so happy you're here! Let's do something fun together"`;
-
-    try {
-      const reply = await llmRef.current.chat.completions.create({
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ] as any,
-      });
-      const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
-      if (text) {
-        showMessage(`${s.name} says`, text, 'blue', 6000);
-      }
-    } catch {
-      // ignore
-    } finally { setLlmBusy(false); }
-  }, [ensureLlm, state, llmBusy, showMessage]);
 
   
-
   // Generate proactive messages when Akotchi needs something
-  const generateProactiveMessage = useCallback(async (reason: string) => {
-    if (llmBusy) return;
-    setLlmBusy(true);
-    const ok = await ensureLlm();
-    if (!ok || !llmRef.current) { setLlmBusy(false); return; }
-    
+  const generateProactiveMessage = useCallback((reason: string) => {
     const s = state;
-    const ageStr = `${Math.floor(s.ageHours)}h ${Math.floor((s.ageHours % 1) * 60)}m`;
+    const personality = s.personality;
     
-    const system = `You are ${s.name}, a wholesome retro virtual pet (age: ${ageStr}, personality: ${s.personality}). 
-
-Personality traits:
-- Cheerful: Very positive, asks enthusiastically, very social
-- Lazy: Gentle requests, appreciates comfort, prefers calm
-- Hyper: Energetic requests, wants action, very playful
-- Moody: Emotional requests, needs reassurance, sensitive
-- Shy: Gentle, quiet requests, appreciates patience
-
-Style: playful, caring, concise, personality-driven, polite.
-Constraints: exactly one sentence under 20 words.
-Ask for what you need in a friendly, personality-appropriate way.`;
-
-    const user = `You need: ${reason}. Current stats — hunger ${Math.round(s.hunger)}, energy ${Math.round(s.energy)}, happiness ${Math.round(s.happiness)}, health ${Math.round(s.health)}.
-
-Based on your personality, ask your human for what you need in a friendly, engaging way. Be specific and creative!
-
-Examples:
-- Hungry: "I'm getting hungry! Can you feed me something yummy?"
-- Tired: "I'm feeling sleepy and would love a cozy nap"
-- Sad: "I'm feeling a bit lonely, can we play together?"
-- Sick: "I'm not feeling well, could you help me feel better?"`;
-
-    try {
-      const reply = await llmRef.current.chat.completions.create({
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ] as any,
-      });
-      const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
-      if (text) {
-        showMessage(`${s.name} needs something!`, text, 'yellow', 7000);
-        // Show thought bubble briefly
-        setShowThoughtBubble(true);
-        setThoughtBubbleUntil(Date.now() + 4000);
+    const messages: Record<string, Record<string, string[]>> = {
+      Cheerful: {
+        hungry: ["I'm getting hungry! Can you feed me something yummy?", "My tummy is rumbling! Can you feed me?", "I'd love some food if you have time!"],
+        tired: ["I'm feeling sleepy and would love a cozy nap!", "I'm getting tired, could I rest a bit?", "A nap sounds perfect right now!"],
+        sick: ["I'm not feeling well, could you help me feel better?", "I don't feel great, could you heal me?", "I need some medical attention, please!"],
+        sad: ["I'm feeling a bit lonely, can we play together?", "I'm sad, could you play with me?", "I'd love some attention right now!"]
+      },
+      Lazy: {
+        hungry: ["I could use some food when you have a chance.", "I'm getting a bit hungry.", "Food would be nice."],
+        tired: ["I'm feeling sleepy, a nap would be nice.", "I could use some rest.", "I'm getting tired."],
+        sick: ["I'm not feeling well, could you help?", "I need some healing.", "I don't feel good."],
+        sad: ["I'm feeling a bit down, could we play?", "I'm sad, some attention would help.", "I'd like some company."]
+      },
+      Hyper: {
+        hungry: ["I'M HUNGRY! Can you feed me RIGHT NOW?", "I need food ASAP! Feed me please!", "Hungry hungry hungry! Feed me!"],
+        tired: ["I'm getting tired but I want to keep going!", "I could use rest but I don't want to stop!", "Sleepy but energized!"],
+        sick: ["I DON'T FEEL GOOD! Please help me!", "I need healing NOW!", "Something's wrong, please help!"],
+        sad: ["I'M SAD! Let's play RIGHT NOW!", "I need attention! Play with me!", "I'm down, let's do something fun!"]
+      },
+      Moody: {
+        hungry: ["I'm hungry... could you feed me?", "I need food, please.", "I'm getting hungry."],
+        tired: ["I'm tired... could I rest?", "I need some sleep.", "I'm getting sleepy."],
+        sick: ["I don't feel well... could you help?", "I need healing, please.", "I'm not feeling good."],
+        sad: ["I'm sad... could we play?", "I need attention.", "I'm feeling down."]
+      },
+      Shy: {
+        hungry: ["I'm getting hungry... if you could feed me?", "I could use some food.", "I'm a bit hungry."],
+        tired: ["I'm getting sleepy... could I rest?", "I'm feeling tired.", "I could use a nap."],
+        sick: ["I'm not feeling well... could you help?", "I need some healing.", "I don't feel good."],
+        sad: ["I'm feeling sad... could we play?", "I'd like some attention.", "I'm a bit down."]
       }
-    } catch {
-      // ignore
-    } finally { setLlmBusy(false); }
-  }, [ensureLlm, state, llmBusy, showMessage]);
+    };
 
-  // Generate periodic thoughts based on pet status
-  const generatePeriodicThought = useCallback(async () => {
-    if (llmBusy || state.isDead) return;
+    const reasonKey = reason.toLowerCase().includes('hungry') ? 'hungry' :
+                     reason.toLowerCase().includes('tired') ? 'tired' :
+                     reason.toLowerCase().includes('sick') || reason.toLowerCase().includes('unwell') ? 'sick' :
+                     reason.toLowerCase().includes('sad') || reason.toLowerCase().includes('lonely') ? 'sad' : 'hungry';
     
-    const now = Date.now();
-    if (now - lastThoughtTimeRef.current < 2 * 60 * 1000) return; // 2 minutes
-    
-    lastThoughtTimeRef.current = now;
-    
-    setLlmBusy(true);
-    try {
-      const ok = await ensureLlm();
-      if (!ok || !llmRef.current) { setLlmBusy(false); return; }
+    const reasonMessages = messages[personality]?.[reasonKey] || messages.Cheerful[reasonKey];
+    const message = reasonMessages[Math.floor(Math.random() * reasonMessages.length)];
+    showMessage(`${s.name} needs something!`, message, 'yellow', 7000);
+    setShowThoughtBubble(true);
+    setThoughtBubbleUntil(Date.now() + 4000);
+  }, [state, showMessage]);
 
-      // Create a status summary for the LLM
-      const statusSummary = [];
-      if (state.hunger < 30) statusSummary.push('hungry');
-      if (state.energy < 30) statusSummary.push('tired');
-      if (state.health < 30) statusSummary.push('unwell');
-      if (state.happiness < 30) statusSummary.push('sad');
-      if (state.hunger > 80 && state.energy > 80 && state.health > 80 && state.happiness > 80) {
-        statusSummary.push('very content');
-      }
-      
-      const statusText = statusSummary.length > 0 
-        ? `Currently feeling ${statusSummary.join(', ')}`
-        : 'Feeling okay overall';
-
-      const system = `You are ${state.name}, a virtual pet. Generate a brief, natural thought about what you're thinking or feeling right now. Keep it under 50 words. Be expressive and show personality. ${statusText}. Stage: ${state.stage}. Personality: ${state.personality}.`;
-      
-      const user = 'What are you thinking about right now?';
-
-      const reply = await llmRef.current.chat.completions.create({
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ] as any,
-      });
-      
-      const text = (reply as any)?.choices?.[0]?.message?.content?.toString?.() || '';
-      if (text) {
-        showMessage(`${state.name} thinks`, text, 'cyan', 8000);
-        
-        // Show thought bubble
-        setShowThoughtBubble(true);
-        setThoughtBubbleUntil(Date.now() + 5000);
-      }
-    } catch {
-      // ignore
-    } finally { setLlmBusy(false); }
-  }, [ensureLlm, llmBusy, state, showMessage]);
-
-  // Timer for periodic thoughts
+  // Update ref when generateProactiveMessage changes
   useEffect(() => {
-    const timer = setInterval(() => {
-      generatePeriodicThought();
-    }, 30000); // Check every 30 seconds (function has its own 2-minute cooldown)
-    
-    return () => clearInterval(timer);
-  }, [generatePeriodicThought]);
+    generateProactiveMessageRef.current = generateProactiveMessage;
+  }, [generateProactiveMessage]);
 
   const handlePetClick = useCallback(() => {
     const now = Date.now();
@@ -1017,11 +868,10 @@ Examples:
     const now = Date.now();
     // Only show once within a few seconds of update
     if (now - state.lastStageUpAt < 5000) {
-      console.log(`${state.name} advanced to ${state.lastStageUpStage}!`);
       ensureSfx();
       sfxRef.current?.play?.play();
     }
-  }, [state.lastStageUpAt, state.lastStageUpStage, state.name, ensureSfx]);
+  }, [state.lastStageUpAt, state.lastStageUpStage, ensureSfx]);
 
   const hoursStr = useMemo(() => `${Math.floor(state.ageHours)}h ${Math.floor((state.ageHours % 1) * 60)}m`, [state.ageHours]);
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -1077,9 +927,8 @@ Examples:
         document.execCommand('copy');
         document.body.removeChild(textarea);
       }
-      console.log('Link copied to clipboard');
     } catch {
-      console.log('Failed to copy URL');
+      // Silently fail if clipboard copy fails
     }
   }, [shareUrlFrozen, shareableUrl]);
 
@@ -1128,11 +977,9 @@ Examples:
       const sanitized = sanitizeImportedPet(parsed, state.id);
       if (sanitized) {
         setState(() => ({ ...sanitized, id: state.id, lastUpdated: Date.now() }));
-        console.log('Imported from URL: Akotchi state loaded from shared link.');
       }
-    } catch (error) {
-      console.error('Failed to import pet from URL:', error);
-      console.log('Import failed: Could not parse pet data from URL.');
+    } catch {
+      // Silently fail if import fails
     } finally {
       // Clear the URL parameter and replace history to avoid loops
       try { setSearchParams({}, { replace: true }); } catch { /* ignore */ }

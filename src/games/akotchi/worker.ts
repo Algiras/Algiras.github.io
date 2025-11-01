@@ -23,7 +23,6 @@ type IncomingMessage =
 
 type OutgoingMessage =
   | { type: 'REQUEST'; petId: string; request: 'FEED' | 'SLEEP' | 'HEAL'; reason: string; at: number }
-  | { type: 'SUGGEST_MESSAGE'; petId: string; reason: string; at: number }
   | { type: 'CRYING'; petId: string; reason: string; at: number };
 
 const CHECK_INTERVAL_MS = 60 * 1000; // evaluate once per minute
@@ -51,15 +50,12 @@ setInterval(() => {
   // Simple thresholds; main thread owns precise decay & state
   if (latest.hunger < 25) {
     maybeSend('FEED', 'Hunger is low');
-    postMessage({ type: 'SUGGEST_MESSAGE', petId: latest.petId, reason: 'hungry', at: Date.now() } as OutgoingMessage);
   }
   if (latest.energy < 20) {
     maybeSend('SLEEP', 'Energy is low');
-    postMessage({ type: 'SUGGEST_MESSAGE', petId: latest.petId, reason: 'tired', at: Date.now() } as OutgoingMessage);
   }
   if (latest.health < 35) {
     maybeSend('HEAL', 'Health is low');
-    postMessage({ type: 'SUGGEST_MESSAGE', petId: latest.petId, reason: 'sick', at: Date.now() } as OutgoingMessage);
   }
   
   // Crying logic with age-based frequency

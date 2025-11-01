@@ -1,4 +1,4 @@
-import { Anchor, AppShell, Box, Container, Group, Text } from '@mantine/core';
+import { Anchor, AppShell, Box, Container, Group, Stack, Text } from '@mantine/core';
 import React from 'react';
 import CookieConsent from './CookieConsent';
 import Navbar from './Navbar';
@@ -25,7 +25,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <AppShell
       header={{ height: 60 }}
-      footer={{ height: 100 }}
+      footer={{ height: { base: 120, sm: 100 } }}
       padding="md"
     >
       <AppShell.Header>
@@ -38,52 +38,50 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </AppShell.Main>
 
       <AppShell.Footer>
-        <Container size="lg" h="100%">
-          <Group h="100%" justify="center" align="center">
-            <Box>
-              <Text size="sm" ta="center" mb="xs">
-                © {currentYear} Algimantas Krasnauskas | All rights reserved
+        <Container size="lg" h="100%" py={{ base: 'md', sm: 'md' }}>
+          <Stack h="100%" justify="center" align="center" gap={{ base: 'xs', sm: 'xs' }}>
+            <Text size={{ base: 'xs', sm: 'sm' }} ta="center">
+              © {currentYear} Algimantas Krasnauskas | All rights reserved
+            </Text>
+            <Group justify="center" gap={{ base: 'xs', sm: 'xs' }} wrap="wrap">
+              <Anchor
+                href="https://github.com/Algiras"
+                target="_blank"
+                rel="noopener noreferrer"
+                size={{ base: 'xs', sm: 'sm' }}
+              >
+                GitHub
+              </Anchor>
+              <Text size={{ base: 'xs', sm: 'sm' }} c="dimmed" display={{ base: 'none', sm: 'block' }}>
+                |
               </Text>
-              <Group justify="center" gap="xs">
-                <Anchor
-                  href="https://github.com/Algiras"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="sm"
-                >
-                  GitHub
-                </Anchor>
-                <Text size="sm" c="dimmed">
-                  |
-                </Text>
-                <Anchor
-                  href="https://www.linkedin.com/in/asimplek"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="sm"
-                >
-                  LinkedIn
-                </Anchor>
-                <Text size="sm" c="dimmed">
-                  |
-                </Text>
-                <Anchor
-                  href="https://algiras.github.io/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="sm"
-                >
-                  algiras.github.io
-                </Anchor>
-                <Text size="sm" c="dimmed">
-                  |
-                </Text>
-                <Text size="sm" c="dimmed">
-                  Built with React & Mantine
-                </Text>
-              </Group>
-            </Box>
-          </Group>
+              <Anchor
+                href="https://www.linkedin.com/in/asimplek"
+                target="_blank"
+                rel="noopener noreferrer"
+                size={{ base: 'xs', sm: 'sm' }}
+              >
+                LinkedIn
+              </Anchor>
+              <Text size={{ base: 'xs', sm: 'sm' }} c="dimmed" display={{ base: 'none', sm: 'block' }}>
+                |
+              </Text>
+              <Anchor
+                href="https://algiras.github.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+                size={{ base: 'xs', sm: 'sm' }}
+              >
+                algiras.github.io
+              </Anchor>
+              <Text size={{ base: 'xs', sm: 'sm' }} c="dimmed" display={{ base: 'none', sm: 'block' }}>
+                |
+              </Text>
+              <Text size={{ base: 'xs', sm: 'sm' }} c="dimmed">
+                Built with React & Mantine
+              </Text>
+            </Group>
+          </Stack>
         </Container>
       </AppShell.Footer>
 
