@@ -1,7 +1,7 @@
 import {
     Badge, Box, Button, Card, Container, Group, SimpleGrid, Stack, Text, ThemeIcon, Title
 } from '@mantine/core';
-import { Calculator, Clock, Home, PiggyBank, Target, TrendingUp, BarChart3 } from 'lucide-react';
+import { Calculator, Clock, Home, PiggyBank, Target, TrendingUp, BarChart3, CreditCard, RefreshCw } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -101,6 +101,38 @@ const Finance: React.FC = () => {
         'Performance visualization',
         'Risk and diversification scoring',
         'Investment lessons & strategy',
+      ],
+    },
+    {
+      id: 'debt-payoff',
+      path: '/finance/debt-payoff',
+      title: 'Debt Payoff Calculator',
+      description: 'Compare debt snowball vs avalanche strategies with visual timeline and savings analysis',
+      icon: CreditCard,
+      color: 'red',
+      tags: ['Debt', 'Strategy', 'Planning'],
+      features: [
+        'Snowball vs avalanche comparison',
+        'Visual payoff timeline',
+        'Interest savings analysis',
+        'Multiple debt management',
+        'Break-even calculations',
+      ],
+    },
+    {
+      id: 'refinance',
+      path: '/finance/refinance',
+      title: 'Refinance Calculator',
+      description: 'Analyze mortgage refinancing options with break-even analysis and savings projections',
+      icon: RefreshCw,
+      color: 'teal',
+      tags: ['Refinance', 'Mortgage', 'Savings'],
+      features: [
+        'Current vs new loan comparison',
+        'Break-even point calculation',
+        'Interest savings analysis',
+        'Closing costs consideration',
+        'Visual balance comparison',
       ],
     },
   ];

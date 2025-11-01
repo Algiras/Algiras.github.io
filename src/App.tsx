@@ -19,6 +19,8 @@ import DocumentToolWrapper from './components/DocumentToolWrapper';
 import Games from './pages/Games';
 import GameToolWrapper from './components/GameToolWrapper';
 import Akotchi from './games/akotchi/Akotchi';
+import DebtPayoffCalculator from './components/projects/DebtPayoffCalculator';
+import RefinanceCalculator from './components/projects/RefinanceCalculator';
 
 function App() {
   return (
@@ -48,6 +50,12 @@ function App() {
             <Route path="/finance/roi-calculator" element={
               <FinanceToolWrapper><ROICalculator /></FinanceToolWrapper>
             } />
+            <Route path="/finance/debt-payoff" element={
+              <FinanceToolWrapper><DebtPayoffCalculator /></FinanceToolWrapper>
+            } />
+            <Route path="/finance/refinance" element={
+              <FinanceToolWrapper><RefinanceCalculator /></FinanceToolWrapper>
+            } />
             <Route path="/documents" element={<Documents />} />
             <Route path="/documents/markdown-to-pdf" element={
               <DocumentToolWrapper><MarkdownToPDF /></DocumentToolWrapper>
@@ -73,7 +81,7 @@ function App() {
                 <h1 style={{ fontSize: '4rem', margin: '0 0 1rem 0', color: 'var(--mantine-color-red-6)' }}>404</h1>
                 <h2 style={{ margin: '0 0 1rem 0' }}>Page Not Found</h2>
                 <p style={{ margin: '0 0 2rem 0', color: 'var(--mantine-color-dimmed)' }}>
-                  The page you're looking for doesn't exist.
+                  The page you&apos;re looking for doesn&apos;t exist.
                 </p>
                 <Link 
                   to="/" 
