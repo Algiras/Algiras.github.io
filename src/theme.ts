@@ -194,6 +194,13 @@ export const theme = createTheme({
       },
     },
 
+    ActionIcon: {
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+      },
+    },
+
     Card: {
       defaultProps: {
         radius: 'md',
