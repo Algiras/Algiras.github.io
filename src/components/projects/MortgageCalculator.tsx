@@ -1,8 +1,9 @@
-import { Badge, Card, Divider, Grid, Group, NumberInput, Progress, Slider, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
-import { Calculator, DollarSign, Home, Percent, PiggyBank, TrendingUp } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Badge, Card, Divider, Grid, Group, NumberInput, Progress, Slider, Stack, Tabs, Text, Title, useMantineColorScheme, ActionIcon } from '@mantine/core';
+import { Calculator, DollarSign, Home, Percent, PiggyBank, TrendingUp, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
 
 import { Area, AreaChart, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface MortgageInput {
   homePrice: number;
@@ -57,7 +58,7 @@ const MortgageCalculator: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [inputs, setInputs] = useState<MortgageInput>({
+  const defaultInputs: MortgageInput = {
     homePrice: 400000,
     downPayment: 80000,
     downPaymentPercent: 20,
@@ -71,9 +72,19 @@ const MortgageCalculator: React.FC = () => {
     mortgageType: 'fixed',
     armInitialRate: 5.5,
     armAdjustmentPeriod: 5
-  });
+  };
 
-  const [monthlyIncome, setMonthlyIncome] = useState(8000);
+  const [inputsStorage, setInputs] = useLocalStorage<MortgageInput>('mortgage-calculator-inputs', defaultInputs);
+  const [monthlyIncomeStorage, setMonthlyIncome] = useLocalStorage<number>('mortgage-calculator-monthly-income', 8000);
+
+  // Ensure non-null values (hook always returns initialValue if null)
+  const inputs = inputsStorage ?? defaultInputs;
+  const monthlyIncome = monthlyIncomeStorage ?? 8000;
+
+  const resetToDefaults = () => {
+    setInputs(defaultInputs);
+    setMonthlyIncome(8000);
+  };
 
   const updateDownPayment = (value: number, isPercent: boolean) => {
     if (isPercent) {
@@ -324,7 +335,17 @@ const MortgageCalculator: React.FC = () => {
             <Home size={24} />
             Mortgage Calculator
           </Title>
-          <Badge variant="light" color="blue">Home Financing</Badge>
+          <Group gap="xs">
+            <ActionIcon 
+              variant="light" 
+              color="gray" 
+              onClick={resetToDefaults}
+              title="Reset to defaults"
+            >
+              <RotateCcw size={18} />
+            </ActionIcon>
+            <Badge variant="light" color="blue">Home Financing</Badge>
+          </Group>
         </Group>
 
         <Grid>

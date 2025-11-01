@@ -1,10 +1,11 @@
-import { Badge, Card, Grid, Group, NumberInput, Select, Slider, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
-import { Calculator, DollarSign, PiggyBank, Target, TrendingUp } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Badge, Card, Grid, Group, NumberInput, Select, Slider, Stack, Tabs, Text, Title, useMantineColorScheme, ActionIcon } from '@mantine/core';
+import { Calculator, DollarSign, PiggyBank, Target, TrendingUp, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
 
 import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { calculateInvestmentGrowth } from '../../utils/financialCalculations';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface InvestmentInput {
   initialAmount: number;
@@ -21,7 +22,7 @@ const InvestmentCalculator: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [inputs, setInputs] = useState<InvestmentInput>({
+  const defaultInputs: InvestmentInput = {
     initialAmount: 5000,
     monthlyContribution: 500,
     annualInterestRate: 7,
@@ -30,7 +31,16 @@ const InvestmentCalculator: React.FC = () => {
     inflationRate: 2.5,
     taxRate: 15,
     targetAmount: 1000000
-  });
+  };
+
+  const [inputsStorage, setInputs] = useLocalStorage<InvestmentInput>('investment-calculator-inputs', defaultInputs);
+
+  // Ensure non-null value (hook always returns initialValue if null)
+  const inputs = inputsStorage ?? defaultInputs;
+
+  const resetToDefaults = () => {
+    setInputs(defaultInputs);
+  };
 
   const results = useMemo(() => {
     const {
@@ -219,7 +229,17 @@ const InvestmentCalculator: React.FC = () => {
             <PiggyBank size={24} />
             Investment Calculator
           </Title>
-          <Badge variant="light" color="green">Compound Interest</Badge>
+          <Group gap="xs">
+            <ActionIcon 
+              variant="light" 
+              color="gray" 
+              onClick={resetToDefaults}
+              title="Reset to defaults"
+            >
+              <RotateCcw size={18} />
+            </ActionIcon>
+            <Badge variant="light" color="green">Compound Interest</Badge>
+          </Group>
         </Group>
 
         <Grid>

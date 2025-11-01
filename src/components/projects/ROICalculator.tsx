@@ -1,8 +1,9 @@
-import { Badge, Card, Grid, Group, NumberInput, Select, Stack, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
-import { Calculator, DollarSign, Percent, TrendingUp } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Badge, Card, Grid, Group, NumberInput, Select, Stack, Tabs, Text, Title, useMantineColorScheme, ActionIcon } from '@mantine/core';
+import { Calculator, DollarSign, Percent, TrendingUp, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
 
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface ROIInput {
   initialInvestment: number;
@@ -29,14 +30,23 @@ const ROICalculator: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [inputs, setInputs] = useState<ROIInput>({
+  const defaultInputs: ROIInput = {
     initialInvestment: 10000,
     finalValue: 15000,
     additionalInvestments: 2000,
     timeframe: 2,
     timeframeUnit: 'years',
     calculationType: 'simple'
-  });
+  };
+
+  const [inputsStorage, setInputs] = useLocalStorage<ROIInput>('roi-calculator-inputs', defaultInputs);
+
+  // Ensure non-null value (hook always returns initialValue if null)
+  const inputs = inputsStorage ?? defaultInputs;
+
+  const resetToDefaults = () => {
+    setInputs(defaultInputs);
+  };
 
   const results = useMemo(() => {
     const { initialInvestment, finalValue, additionalInvestments, timeframe, timeframeUnit } = inputs;
@@ -142,7 +152,17 @@ const ROICalculator: React.FC = () => {
             <TrendingUp size={24} />
             ROI Calculator
           </Title>
-          <Badge variant="light" color="blue">Return on Investment</Badge>
+          <Group gap="xs">
+            <ActionIcon 
+              variant="light" 
+              color="gray" 
+              onClick={resetToDefaults}
+              title="Reset to defaults"
+            >
+              <RotateCcw size={18} />
+            </ActionIcon>
+            <Badge variant="light" color="blue">Return on Investment</Badge>
+          </Group>
         </Group>
 
         <Grid>

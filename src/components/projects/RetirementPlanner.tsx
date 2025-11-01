@@ -1,8 +1,9 @@
-import { Badge, Card, Divider, Grid, Group, NumberInput, Slider, Stack, Switch, Tabs, Text, Title, useMantineColorScheme } from '@mantine/core';
-import { Calculator, Calendar, Clock, DollarSign, PiggyBank, Target, TrendingUp, Users } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { Badge, Card, Divider, Grid, Group, NumberInput, Slider, Stack, Switch, Tabs, Text, Title, useMantineColorScheme, ActionIcon } from '@mantine/core';
+import { Calculator, Calendar, Clock, DollarSign, PiggyBank, Target, TrendingUp, Users, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
 
 import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface RetirementInput {
   currentAge: number;
@@ -57,7 +58,7 @@ const RetirementPlanner: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [inputs, setInputs] = useState<RetirementInput>({
+  const defaultInputs: RetirementInput = {
     currentAge: 30,
     retirementAge: 65,
     currentSavings: 50000,
@@ -75,7 +76,16 @@ const RetirementPlanner: React.FC = () => {
     rothContribution: 500,
     taxRate: 22,
     retirementTaxRate: 18
-  });
+  };
+
+  const [inputsStorage, setInputs] = useLocalStorage<RetirementInput>('retirement-planner-inputs', defaultInputs);
+
+  // Ensure non-null value (hook always returns initialValue if null)
+  const inputs = inputsStorage ?? defaultInputs;
+
+  const resetToDefaults = () => {
+    setInputs(defaultInputs);
+  };
 
   const results = useMemo(() => {
     const {
@@ -324,7 +334,17 @@ const RetirementPlanner: React.FC = () => {
             <PiggyBank size={24} />
             Retirement Planner
           </Title>
-          <Badge variant="light" color="purple">Financial Planning</Badge>
+          <Group gap="xs">
+            <ActionIcon 
+              variant="light" 
+              color="gray" 
+              onClick={resetToDefaults}
+              title="Reset to defaults"
+            >
+              <RotateCcw size={18} />
+            </ActionIcon>
+            <Badge variant="light" color="purple">Financial Planning</Badge>
+          </Group>
         </Group>
 
         <Grid>
