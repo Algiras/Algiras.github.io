@@ -269,8 +269,13 @@ const RetirementPlanner: React.FC = () => {
     }
     
     // Contribution optimization
-    const currentSavingsRate = ((inputs.monthlyContribution + inputs.rothContribution) * 12) / (inputs.monthlyContribution * 12 / 0.15); // Estimate income
-    if (currentSavingsRate < 0.15) {
+    // Estimate savings rate: if contributing $1000/month, estimate income ~$667/month (or $8k/year)
+    // This is a rough heuristic - actual income would be needed for precise calculation
+    const estimatedMonthlyIncome = inputs.monthlyContribution > 0 ? inputs.monthlyContribution / 0.15 : 0;
+    const currentSavingsRate = estimatedMonthlyIncome > 0 
+      ? ((inputs.monthlyContribution + inputs.rothContribution) * 12) / (estimatedMonthlyIncome * 12)
+      : 0;
+    if (currentSavingsRate > 0 && currentSavingsRate < 0.15) {
       recs.push({
         type: 'info',
         text: `Consider increasing your savings rate to 15-20% of income for better retirement security.`
