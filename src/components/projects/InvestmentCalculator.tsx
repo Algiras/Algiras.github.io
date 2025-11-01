@@ -233,6 +233,7 @@ const InvestmentCalculator: React.FC = () => {
             <ActionIcon 
               variant="light" 
               color="gray" 
+              size="md"
               onClick={resetToDefaults}
               title="Reset to defaults"
             >
