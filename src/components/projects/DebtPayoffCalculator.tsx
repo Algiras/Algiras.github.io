@@ -291,7 +291,7 @@ const DebtPayoffCalculator: React.FC = () => {
             >
               <RotateCcw size={18} />
             </ActionIcon>
-            <Badge variant="light" color="red">Debt Management</Badge>
+            <Badge variant="light" color="red" size="md">Debt Management</Badge>
           </Group>
         </Group>
 

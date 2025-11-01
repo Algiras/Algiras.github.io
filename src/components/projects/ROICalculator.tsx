@@ -162,7 +162,7 @@ const ROICalculator: React.FC = () => {
             >
               <RotateCcw size={18} />
             </ActionIcon>
-            <Badge variant="light" color="blue">Return on Investment</Badge>
+            <Badge variant="light" color="blue" size="md">Return on Investment</Badge>
           </Group>
         </Group>
 

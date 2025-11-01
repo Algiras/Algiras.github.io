@@ -344,7 +344,7 @@ const RetirementPlanner: React.FC = () => {
             >
               <RotateCcw size={18} />
             </ActionIcon>
-            <Badge variant="light" color="purple">Financial Planning</Badge>
+            <Badge variant="light" color="purple" size="md">Financial Planning</Badge>
           </Group>
         </Group>
 

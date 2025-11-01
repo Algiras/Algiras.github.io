@@ -595,7 +595,7 @@ function greet(name) {
             <FileText size={24} />
             Markdown to PDF Converter
           </Title>
-          <Badge variant="light" color="blue">Browser-based</Badge>
+          <Badge variant="light" color="blue" size="md">Browser-based</Badge>
         </Group>
 
         {/* Instructions for ChatGPT */}
@@ -714,6 +714,7 @@ console.log('Hello, world!');
                   variant="light" 
                   color={isContentEmpty ? "gray" : "green"} 
                   leftSection={<Eye size={12} />}
+                  size="md"
                 >
                   {isContentEmpty ? "No Content" : "Live Preview"}
                 </Badge>

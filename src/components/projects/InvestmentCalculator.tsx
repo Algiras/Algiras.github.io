@@ -239,7 +239,7 @@ const InvestmentCalculator: React.FC = () => {
             >
               <RotateCcw size={18} />
             </ActionIcon>
-            <Badge variant="light" color="green">Compound Interest</Badge>
+            <Badge variant="light" color="green" size="md">Compound Interest</Badge>
           </Group>
         </Group>
 

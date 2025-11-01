@@ -94,7 +94,7 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ platforms, onChangePlatforms,
             const inUse = usedPlatformIds.includes(p.id);
             return (
               <Table.Tr key={p.id}>
-                <Table.Td><Badge variant="light">{p.id}</Badge></Table.Td>
+                <Table.Td><Badge variant="light" size="md">{p.id}</Badge></Table.Td>
                 <Table.Td><TextInput value={p.name} onChange={(e) => updatePlatform(idx, { name: e.currentTarget.value })} /></Table.Td>
                 <Table.Td><TextInput value={p.country || ''} onChange={(e) => updatePlatform(idx, { country: e.currentTarget.value })} w={80} /></Table.Td>
                 <Table.Td>
@@ -114,7 +114,7 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({ platforms, onChangePlatforms,
                 <Table.Td><TextInput value={p.website || ''} onChange={(e) => updatePlatform(idx, { website: e.currentTarget.value })} /></Table.Td>
                 <Table.Td>
                   <Group gap="xs">
-                    {inUse && <Badge color="yellow" variant="light">In use</Badge>}
+                    {inUse && <Badge color="yellow" variant="light" size="md">In use</Badge>}
                     <Tooltip label={inUse ? 'This platform is in use' : 'Remove platform'}>
                       <ActionIcon color="red" variant="light" size="md" onClick={() => removePlatform(idx)} disabled={inUse}>
                         <Trash2 size={16} />

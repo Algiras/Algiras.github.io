@@ -325,7 +325,7 @@ const RefinanceCalculator: React.FC = () => {
             >
               <RotateCcw size={18} />
             </ActionIcon>
-            <Badge variant="light" color="blue">Mortgage Analysis</Badge>
+            <Badge variant="light" color="blue" size="md">Mortgage Analysis</Badge>
           </Group>
         </Group>
 

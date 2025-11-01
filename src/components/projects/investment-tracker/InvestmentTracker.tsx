@@ -1054,7 +1054,7 @@ const DashboardView: React.FC<{
               <Card key={investment.id} withBorder p="md">
                 <Stack gap="sm">
                   <Group justify="space-between">
-                    <Badge color={INVESTMENT_CATEGORIES[investment.type]?.color || 'blue'} variant="light">
+                    <Badge color={INVESTMENT_CATEGORIES[investment.type]?.color || 'blue'} variant="light" size="md">
                       {investment.type}
                     </Badge>
                     <Group gap="xs">
