@@ -9,13 +9,13 @@ export const useDocumentTitle = (title: string) => {
 
 export const useRouteBasedTitle = () => {
   const location = useLocation();
-  
+
   useEffect(() => {
     const pathname = location.pathname;
-    
+
     // Generate title based on current route
     let title = 'Algimantas Krasnauskas';
-    
+
     if (pathname === '/') {
       title = 'Algimantas Krasnauskas - Software Engineer';
     } else if (pathname.startsWith('/finance')) {
@@ -49,7 +49,7 @@ export const useRouteBasedTitle = () => {
     } else if (pathname.startsWith('/ai')) {
       title = 'AI Voice Assistant - Algimantas Krasnauskas';
     }
-    
+
     document.title = title;
   }, [location.pathname]);
 };

@@ -1,26 +1,24 @@
 // React import removed - not needed in this file
-import { HashRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { HashRouter as Router, Link, Route, Routes } from 'react-router-dom';
+import MarkdownToPDF from './components/documents/MarkdownToPDF';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Layout from './components/Layout';
-import ScrollToTop from './components/ScrollToTop';
-import RouteTransition from './components/RouteTransition';
-import Documents from './pages/Documents';
-import Finance from './pages/Finance';
-import Home from './pages/Home';
-import InvestmentCalculator from './components/projects/InvestmentCalculator';
+import DebtPayoffCalculator from './components/projects/DebtPayoffCalculator';
 import { InvestmentTracker } from './components/projects/investment-tracker';
+import InvestmentCalculator from './components/projects/InvestmentCalculator';
 import LoanComparison from './components/projects/LoanComparison';
 import MortgageCalculator from './components/projects/MortgageCalculator';
+import RefinanceCalculator from './components/projects/RefinanceCalculator';
 import RetirementPlanner from './components/projects/RetirementPlanner';
 import ROICalculator from './components/projects/ROICalculator';
-import FinanceToolWrapper from './components/FinanceToolWrapper';
-import MarkdownToPDF from './components/documents/MarkdownToPDF';
-import DocumentToolWrapper from './components/DocumentToolWrapper';
-import Games from './pages/Games';
-import GameToolWrapper from './components/GameToolWrapper';
+import RouteTransition from './components/RouteTransition';
+import ScrollToTop from './components/ScrollToTop';
+import ToolWrapper from './components/ToolWrapper';
 import Akotchi from './games/akotchi/Akotchi';
-import DebtPayoffCalculator from './components/projects/DebtPayoffCalculator';
-import RefinanceCalculator from './components/projects/RefinanceCalculator';
+import Documents from './pages/Documents';
+import Finance from './pages/Finance';
+import Games from './pages/Games';
+import Home from './pages/Home';
 
 function App() {
   return (
@@ -32,79 +30,154 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/finance" element={<Finance />} />
-            <Route path="/finance/investment-calculator" element={
-              <FinanceToolWrapper><InvestmentCalculator /></FinanceToolWrapper>
-            } />
-            <Route path="/finance/investment-tracker" element={
-              <FinanceToolWrapper useContainer={false}><InvestmentTracker /></FinanceToolWrapper>
-            } />
-            <Route path="/finance/loan-comparison" element={
-              <FinanceToolWrapper useContainer={false}><LoanComparison /></FinanceToolWrapper>
-            } />
-            <Route path="/finance/mortgage-calculator" element={
-              <FinanceToolWrapper><MortgageCalculator /></FinanceToolWrapper>
-            } />
-            <Route path="/finance/retirement-planner" element={
-              <FinanceToolWrapper><RetirementPlanner /></FinanceToolWrapper>
-            } />
-            <Route path="/finance/roi-calculator" element={
-              <FinanceToolWrapper><ROICalculator /></FinanceToolWrapper>
-            } />
-            <Route path="/finance/debt-payoff" element={
-              <FinanceToolWrapper><DebtPayoffCalculator /></FinanceToolWrapper>
-            } />
-            <Route path="/finance/refinance" element={
-              <FinanceToolWrapper><RefinanceCalculator /></FinanceToolWrapper>
-            } />
+            <Route
+              path="/finance/investment-calculator"
+              element={
+                <ToolWrapper category="finance">
+                  <InvestmentCalculator />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/finance/investment-tracker"
+              element={
+                <ToolWrapper category="finance" useContainer={false}>
+                  <InvestmentTracker />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/finance/loan-comparison"
+              element={
+                <ToolWrapper category="finance" useContainer={false}>
+                  <LoanComparison />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/finance/mortgage-calculator"
+              element={
+                <ToolWrapper category="finance">
+                  <MortgageCalculator />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/finance/retirement-planner"
+              element={
+                <ToolWrapper category="finance">
+                  <RetirementPlanner />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/finance/roi-calculator"
+              element={
+                <ToolWrapper category="finance">
+                  <ROICalculator />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/finance/debt-payoff"
+              element={
+                <ToolWrapper category="finance">
+                  <DebtPayoffCalculator />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/finance/refinance"
+              element={
+                <ToolWrapper category="finance">
+                  <RefinanceCalculator />
+                </ToolWrapper>
+              }
+            />
             <Route path="/documents" element={<Documents />} />
-            <Route path="/documents/markdown-to-pdf" element={
-              <DocumentToolWrapper><MarkdownToPDF /></DocumentToolWrapper>
-            } />
+            <Route
+              path="/documents/markdown-to-pdf"
+              element={
+                <ToolWrapper category="documents">
+                  <MarkdownToPDF />
+                </ToolWrapper>
+              }
+            />
             <Route path="/games" element={<Games />} />
-            <Route path="/games/akotchi" element={
-              <GameToolWrapper><Akotchi /></GameToolWrapper>
-            } />
-            <Route path="/games/akotchi/share" element={
-              <GameToolWrapper><Akotchi /></GameToolWrapper>
-            } />
+            <Route
+              path="/games/akotchi"
+              element={
+                <ToolWrapper category="games">
+                  <Akotchi />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/games/akotchi/share"
+              element={
+                <ToolWrapper category="games">
+                  <Akotchi />
+                </ToolWrapper>
+              }
+            />
             {/* 404 Route - Catch all invalid URLs */}
-            <Route path="*" element={
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                minHeight: '60vh',
-                textAlign: 'center',
-                padding: '2rem'
-              }}>
-                <h1 style={{ fontSize: '4rem', margin: '0 0 1rem 0', color: 'var(--mantine-color-red-6)' }}>404</h1>
-                <h2 style={{ margin: '0 0 1rem 0' }}>Page Not Found</h2>
-                <p style={{ margin: '0 0 2rem 0', color: 'var(--mantine-color-dimmed)' }}>
-                  The page you&apos;re looking for doesn&apos;t exist.
-                </p>
-                <Link 
-                  to="/" 
-                  style={{ 
-                    textDecoration: 'none',
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: 'var(--mantine-color-blue-6)',
-                    color: 'white',
-                    borderRadius: '8px',
-                    fontWeight: 500,
-                    transition: 'background-color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-blue-7)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--mantine-color-blue-6)';
+            <Route
+              path="*"
+              element={
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '60vh',
+                    textAlign: 'center',
+                    padding: '2rem',
                   }}
                 >
-                  Go Home
-                </Link>
-              </div>
-            } />
+                  <h1
+                    style={{
+                      fontSize: '4rem',
+                      margin: '0 0 1rem 0',
+                      color: 'var(--mantine-color-red-6)',
+                    }}
+                  >
+                    404
+                  </h1>
+                  <h2 style={{ margin: '0 0 1rem 0' }}>Page Not Found</h2>
+                  <p
+                    style={{
+                      margin: '0 0 2rem 0',
+                      color: 'var(--mantine-color-dimmed)',
+                    }}
+                  >
+                    The page you&apos;re looking for doesn&apos;t exist.
+                  </p>
+                  <Link
+                    to="/"
+                    style={{
+                      textDecoration: 'none',
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: 'var(--mantine-color-blue-6)',
+                      color: 'white',
+                      borderRadius: '8px',
+                      fontWeight: 500,
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.backgroundColor =
+                        'var(--mantine-color-blue-7)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.backgroundColor =
+                        'var(--mantine-color-blue-6)';
+                    }}
+                  >
+                    Go Home
+                  </Link>
+                </div>
+              }
+            />
           </Routes>
         </Layout>
       </Router>

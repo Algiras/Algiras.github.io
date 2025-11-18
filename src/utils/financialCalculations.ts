@@ -101,22 +101,25 @@ export interface RetirementCalculationResult {
 /**
  * Calculate loan payment details
  */
-export const calculateLoanPayment = (input: LoanCalculationInput): LoanCalculationResult => {
+export const calculateLoanPayment = (
+  input: LoanCalculationInput
+): LoanCalculationResult => {
   const { principal, interestRate, termYears, extraPayment = 0 } = input;
-  
+
   if (principal <= 0 || interestRate < 0 || termYears <= 0) {
     throw new Error('Invalid input parameters');
   }
 
   const monthlyRate = interestRate / 100 / 12;
   const totalPayments = termYears * 12;
-  
+
   // Calculate monthly payment using amortization formula
   // Handle zero interest rate case
-  const monthlyPayment = monthlyRate === 0 
-    ? principal / totalPayments
-    : principal * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / 
-      (Math.pow(1 + monthlyRate, totalPayments) - 1);
+  const monthlyPayment =
+    monthlyRate === 0
+      ? principal / totalPayments
+      : (principal * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments))) /
+        (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
   // Generate amortization schedule
   const amortizationSchedule = [];
@@ -126,8 +129,11 @@ export const calculateLoanPayment = (input: LoanCalculationInput): LoanCalculati
 
   while (remainingBalance > 0.01 && paymentNumber < totalPayments * 2) {
     const interestPayment = remainingBalance * monthlyRate;
-    const principalPayment = Math.min(monthlyPayment - interestPayment + extraPayment, remainingBalance);
-    
+    const principalPayment = Math.min(
+      monthlyPayment - interestPayment + extraPayment,
+      remainingBalance
+    );
+
     remainingBalance -= principalPayment;
     totalInterest += interestPayment;
     paymentNumber++;
@@ -136,7 +142,7 @@ export const calculateLoanPayment = (input: LoanCalculationInput): LoanCalculati
       payment: paymentNumber,
       principal: principalPayment,
       interest: interestPayment,
-      balance: Math.max(0, remainingBalance)
+      balance: Math.max(0, remainingBalance),
     });
   }
 
@@ -145,16 +151,24 @@ export const calculateLoanPayment = (input: LoanCalculationInput): LoanCalculati
     totalInterest,
     totalPayment: principal + totalInterest,
     payoffTime: paymentNumber / 12,
-    amortizationSchedule
+    amortizationSchedule,
   };
 };
 
 /**
  * Calculate ROI metrics
  */
-export const calculateROI = (input: ROICalculationInput): ROICalculationResult => {
-  const { initialInvestment, finalValue, additionalInvestments, timeframe, timeframeUnit } = input;
-  
+export const calculateROI = (
+  input: ROICalculationInput
+): ROICalculationResult => {
+  const {
+    initialInvestment,
+    finalValue,
+    additionalInvestments,
+    timeframe,
+    timeframeUnit,
+  } = input;
+
   if (initialInvestment <= 0 || finalValue <= 0 || timeframe <= 0) {
     throw new Error('Invalid input parameters');
   }
@@ -162,36 +176,49 @@ export const calculateROI = (input: ROICalculationInput): ROICalculationResult =
   const totalInvested = initialInvestment + additionalInvestments;
   const netProfit = finalValue - totalInvested;
   const simpleROI = (netProfit / totalInvested) * 100;
-  
+
   // Convert timeframe to years for annualized calculation
   let timeInYears = timeframe;
   if (timeframeUnit === 'months') timeInYears = timeframe / 12;
   if (timeframeUnit === 'days') timeInYears = timeframe / 365;
-  
-  const annualizedROI = ((Math.pow(finalValue / totalInvested, 1 / timeInYears) - 1) * 100);
+
+  const annualizedROI =
+    (Math.pow(finalValue / totalInvested, 1 / timeInYears) - 1) * 100;
 
   return {
     simpleROI,
     annualizedROI,
     totalReturn: finalValue,
     totalInvested,
-    netProfit
+    netProfit,
   };
 };
 
 /**
  * Calculate investment growth with compound interest
  */
-export const calculateInvestmentGrowth = (input: InvestmentCalculationInput): InvestmentCalculationResult => {
-  const { initialAmount, monthlyContribution, annualInterestRate, investmentPeriod } = input;
-  
-  if (initialAmount < 0 || monthlyContribution < 0 || annualInterestRate < 0 || investmentPeriod <= 0) {
+export const calculateInvestmentGrowth = (
+  input: InvestmentCalculationInput
+): InvestmentCalculationResult => {
+  const {
+    initialAmount,
+    monthlyContribution,
+    annualInterestRate,
+    investmentPeriod,
+  } = input;
+
+  if (
+    initialAmount < 0 ||
+    monthlyContribution < 0 ||
+    annualInterestRate < 0 ||
+    investmentPeriod <= 0
+  ) {
     throw new Error('Invalid input parameters');
   }
 
   const monthlyRate = annualInterestRate / 100 / 12;
   const totalMonths = investmentPeriod * 12;
-  
+
   let futureValue = initialAmount;
   let totalContributions = initialAmount;
 
@@ -202,24 +229,38 @@ export const calculateInvestmentGrowth = (input: InvestmentCalculationInput): In
   }
 
   const totalInterest = futureValue - totalContributions;
-  const realValue = futureValue / Math.pow(1 + (input.inflationRate || 0) / 100, investmentPeriod);
-  const afterTaxValue = futureValue - (totalInterest * (input.taxRate || 0) / 100);
+  const realValue =
+    futureValue /
+    Math.pow(1 + (input.inflationRate || 0) / 100, investmentPeriod);
+  const afterTaxValue =
+    futureValue - (totalInterest * (input.taxRate || 0)) / 100;
 
   return {
     futureValue: Math.round(futureValue),
     totalContributions: Math.round(totalContributions),
     totalInterest: Math.round(totalInterest),
     realValue: Math.round(realValue),
-    afterTaxValue: Math.round(afterTaxValue)
+    afterTaxValue: Math.round(afterTaxValue),
   };
 };
 
 /**
  * Calculate mortgage payment details
  */
-export const calculateMortgagePayment = (input: MortgageCalculationInput): MortgageCalculationResult => {
-  const { homePrice, downPayment, loanTerm, interestRate, propertyTax, homeInsurance, pmiRate, hoaFees } = input;
-  
+export const calculateMortgagePayment = (
+  input: MortgageCalculationInput
+): MortgageCalculationResult => {
+  const {
+    homePrice,
+    downPayment,
+    loanTerm,
+    interestRate,
+    propertyTax,
+    homeInsurance,
+    pmiRate,
+    hoaFees,
+  } = input;
+
   if (homePrice <= 0 || downPayment < 0 || loanTerm <= 0 || interestRate < 0) {
     throw new Error('Invalid input parameters');
   }
@@ -229,20 +270,25 @@ export const calculateMortgagePayment = (input: MortgageCalculationInput): Mortg
   const totalPayments = loanTerm * 12;
 
   // Calculate monthly principal and interest
-  const monthlyPrincipalInterest = loanAmount * 
-    (monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / 
+  const monthlyPrincipalInterest =
+    (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalPayments))) /
     (Math.pow(1 + monthlyRate, totalPayments) - 1);
 
   // Calculate other monthly costs
   const monthlyPropertyTax = propertyTax / 12;
   const monthlyInsurance = homeInsurance / 12;
-  const monthlyPMI = (downPayment / homePrice) < 0.2 ? (loanAmount * pmiRate / 100) / 12 : 0;
+  const monthlyPMI =
+    downPayment / homePrice < 0.2 ? (loanAmount * pmiRate) / 100 / 12 : 0;
 
-  const totalMonthlyPayment = monthlyPrincipalInterest + monthlyPropertyTax + 
-                             monthlyInsurance + monthlyPMI + hoaFees;
+  const totalMonthlyPayment =
+    monthlyPrincipalInterest +
+    monthlyPropertyTax +
+    monthlyInsurance +
+    monthlyPMI +
+    hoaFees;
 
   // Calculate total interest over loan term
-  const totalInterest = (monthlyPrincipalInterest * totalPayments) - loanAmount;
+  const totalInterest = monthlyPrincipalInterest * totalPayments - loanAmount;
 
   return {
     monthlyPrincipalInterest,
@@ -251,50 +297,60 @@ export const calculateMortgagePayment = (input: MortgageCalculationInput): Mortg
     monthlyPMI,
     totalMonthlyPayment,
     totalInterest,
-    loanAmount
+    loanAmount,
   };
 };
 
 /**
  * Calculate retirement savings projection
  */
-export const calculateRetirementSavings = (input: RetirementCalculationInput): RetirementCalculationResult => {
-  const { 
-    currentAge, 
-    retirementAge, 
-    currentSavings, 
-    monthlyContribution, 
-    employerMatch, 
-    annualReturn, 
-    withdrawalRate, 
-    lifeExpectancy
+export const calculateRetirementSavings = (
+  input: RetirementCalculationInput
+): RetirementCalculationResult => {
+  const {
+    currentAge,
+    retirementAge,
+    currentSavings,
+    monthlyContribution,
+    employerMatch,
+    annualReturn,
+    withdrawalRate,
+    lifeExpectancy,
   } = input;
-  
-  if (currentAge < 0 || retirementAge <= currentAge || annualReturn < 0 || monthlyContribution < 0) {
+
+  if (
+    currentAge < 0 ||
+    retirementAge <= currentAge ||
+    annualReturn < 0 ||
+    monthlyContribution < 0
+  ) {
     throw new Error('Invalid input parameters');
   }
 
   const yearsToRetirement = retirementAge - currentAge;
   const monthlyRate = annualReturn / 100 / 12;
   const totalMonths = yearsToRetirement * 12;
-  
+
   let projectedSavings = currentSavings;
   let totalContributions = currentSavings;
   const totalMonthlyContribution = monthlyContribution + employerMatch;
 
   // Calculate growth with contributions
   for (let month = 1; month <= totalMonths; month++) {
-    projectedSavings = projectedSavings * (1 + monthlyRate) + totalMonthlyContribution;
+    projectedSavings =
+      projectedSavings * (1 + monthlyRate) + totalMonthlyContribution;
     totalContributions += totalMonthlyContribution;
   }
 
   const totalInterest = projectedSavings - totalContributions;
   const yearsOfRetirement = lifeExpectancy - retirementAge;
-  const monthlyRetirementIncome = (projectedSavings * withdrawalRate / 100) / 12;
-  
+  const monthlyRetirementIncome =
+    (projectedSavings * withdrawalRate) / 100 / 12;
+
   // Calculate replacement ratio (simplified)
   const preRetirementIncome = monthlyContribution * 4; // Rough estimate
-  const replacementRatio = (monthlyRetirementIncome / preRetirementIncome) * 100;
+  const replacementRatio =
+    (monthlyRetirementIncome / preRetirementIncome) * 100;
 
   return {
     projectedSavings: Math.round(projectedSavings),
@@ -302,6 +358,6 @@ export const calculateRetirementSavings = (input: RetirementCalculationInput): R
     totalContributions: Math.round(totalContributions),
     totalInterest: Math.round(totalInterest),
     yearsOfRetirement,
-    replacementRatio: Math.round(replacementRatio)
+    replacementRatio: Math.round(replacementRatio),
   };
-}; 
+};

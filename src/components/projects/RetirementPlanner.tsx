@@ -1,8 +1,46 @@
-import { Badge, Card, Divider, Grid, Group, NumberInput, Slider, Stack, Switch, Tabs, Text, Title, useMantineColorScheme, ActionIcon } from '@mantine/core';
-import { Calculator, Calendar, Clock, DollarSign, PiggyBank, Target, TrendingUp, Users, RotateCcw } from 'lucide-react';
+import {
+  ActionIcon,
+  Badge,
+  Card,
+  Divider,
+  Grid,
+  Group,
+  NumberInput,
+  Slider,
+  Stack,
+  Switch,
+  Tabs,
+  Text,
+  Title,
+  useMantineColorScheme,
+} from '@mantine/core';
+import {
+  Calculator,
+  Calendar,
+  Clock,
+  DollarSign,
+  PiggyBank,
+  RotateCcw,
+  Target,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import React, { useMemo } from 'react';
 
-import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 interface RetirementInput {
@@ -75,10 +113,13 @@ const RetirementPlanner: React.FC = () => {
     includeRothIRA: true,
     rothContribution: 500,
     taxRate: 22,
-    retirementTaxRate: 18
+    retirementTaxRate: 18,
   };
 
-  const [inputsStorage, setInputs] = useLocalStorage<RetirementInput>('retirement-planner-inputs', defaultInputs);
+  const [inputsStorage, setInputs] = useLocalStorage<RetirementInput>(
+    'retirement-planner-inputs',
+    defaultInputs
+  );
 
   // Ensure non-null value (hook always returns initialValue if null)
   const inputs = inputsStorage ?? defaultInputs;
@@ -102,7 +143,7 @@ const RetirementPlanner: React.FC = () => {
       lifeExpectancy,
       rothContribution,
       taxRate: _taxRate,
-      retirementTaxRate: _retirementTaxRate
+      retirementTaxRate: _retirementTaxRate,
     } = inputs;
 
     if (currentAge >= retirementAge || retirementAge >= lifeExpectancy) {
@@ -124,15 +165,20 @@ const RetirementPlanner: React.FC = () => {
     // Accumulation phase
     for (let year = 0; year < yearsToRetirement; year++) {
       const startBalance = balance;
-      const yearContributions = (monthlyContribution + employerMatch + rothContribution) * 12;
-      
+      const yearContributions =
+        (monthlyContribution + employerMatch + rothContribution) * 12;
+
       // Monthly growth calculation
       for (let month = 0; month < 12; month++) {
         const monthlyGrowth = balance * monthlyReturn;
-        balance += monthlyGrowth + monthlyContribution + employerMatch + rothContribution;
+        balance +=
+          monthlyGrowth +
+          monthlyContribution +
+          employerMatch +
+          rothContribution;
         totalGrowth += monthlyGrowth;
       }
-      
+
       totalContributions += (monthlyContribution + rothContribution) * 12;
       totalEmployerMatch += employerMatch * 12;
 
@@ -143,16 +189,20 @@ const RetirementPlanner: React.FC = () => {
         contributions: Math.round(yearContributions),
         growth: Math.round(balance - startBalance - yearContributions),
         withdrawals: 0,
-        isRetired: false
+        isRetired: false,
       });
     }
 
     const totalSavingsAtRetirement = balance;
 
     // Calculate required retirement income (inflation-adjusted)
-    const inflationAdjustedIncome = retirementIncome * Math.pow(1 + inflationRate / 100, yearsToRetirement);
+    const inflationAdjustedIncome =
+      retirementIncome * Math.pow(1 + inflationRate / 100, yearsToRetirement);
     const monthlyRetirementIncome = inflationAdjustedIncome;
-    const netIncomeNeeded = Math.max(0, monthlyRetirementIncome - socialSecurityBenefit);
+    const netIncomeNeeded = Math.max(
+      0,
+      monthlyRetirementIncome - socialSecurityBenefit
+    );
     const annualIncomeNeeded = netIncomeNeeded * 12;
 
     // Calculate total needed using withdrawal rate
@@ -165,8 +215,11 @@ const RetirementPlanner: React.FC = () => {
 
     for (let year = 0; year < retirementDuration; year++) {
       // const startBalance = retirementBalance;
-      const annualWithdrawal = Math.min(annualIncomeNeeded, retirementBalance * (withdrawalRate / 100));
-      
+      const annualWithdrawal = Math.min(
+        annualIncomeNeeded,
+        retirementBalance * (withdrawalRate / 100)
+      );
+
       // Apply growth and withdrawals
       const annualGrowth = retirementBalance * (annualReturn / 100);
       retirementBalance = retirementBalance + annualGrowth - annualWithdrawal;
@@ -182,7 +235,7 @@ const RetirementPlanner: React.FC = () => {
         contributions: 0,
         growth: Math.round(annualGrowth),
         withdrawals: Math.round(annualWithdrawal),
-        isRetired: true
+        isRetired: true,
       });
 
       if (retirementBalance <= 0) break;
@@ -192,21 +245,28 @@ const RetirementPlanner: React.FC = () => {
     const scenarios = {
       conservative: 5,
       moderate: 7,
-      aggressive: 10
+      aggressive: 10,
     };
 
-    const scenarioAnalysis = Object.entries(scenarios).reduce((acc, [key, rate]) => {
-      let scenarioBalance = currentSavings;
-      const scenarioMonthlyReturn = rate / 100 / 12;
-      
-      for (let month = 0; month < yearsToRetirement * 12; month++) {
-        const monthlyGrowth = scenarioBalance * scenarioMonthlyReturn;
-        scenarioBalance += monthlyGrowth + monthlyContribution + employerMatch + rothContribution;
-      }
-      
-      acc[key as keyof typeof scenarios] = Math.round(scenarioBalance);
-      return acc;
-    }, {} as Record<string, number>);
+    const scenarioAnalysis = Object.entries(scenarios).reduce(
+      (acc, [key, rate]) => {
+        let scenarioBalance = currentSavings;
+        const scenarioMonthlyReturn = rate / 100 / 12;
+
+        for (let month = 0; month < yearsToRetirement * 12; month++) {
+          const monthlyGrowth = scenarioBalance * scenarioMonthlyReturn;
+          scenarioBalance +=
+            monthlyGrowth +
+            monthlyContribution +
+            employerMatch +
+            rothContribution;
+        }
+
+        acc[key as keyof typeof scenarios] = Math.round(scenarioBalance);
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return {
       yearsToRetirement,
@@ -220,7 +280,7 @@ const RetirementPlanner: React.FC = () => {
       shortfall: Math.round(shortfall),
       surplusYears,
       yearlyProjection,
-      scenarioAnalysis
+      scenarioAnalysis,
     };
   }, [inputs]);
 
@@ -229,93 +289,103 @@ const RetirementPlanner: React.FC = () => {
     return results.yearlyProjection.map(item => ({
       ...item,
       netGrowth: item.growth - item.withdrawals,
-      phase: item.isRetired ? 'Retirement' : 'Accumulation'
+      phase: item.isRetired ? 'Retirement' : 'Accumulation',
     }));
   }, [results]);
 
   const contributionBreakdown = useMemo(() => {
     if (!results) return [];
-    
-    const monthlyTotal = inputs.monthlyContribution + inputs.employerMatch + inputs.rothContribution;
-    
+
+    const monthlyTotal =
+      inputs.monthlyContribution +
+      inputs.employerMatch +
+      inputs.rothContribution;
+
     return [
-      { 
-        name: 'Personal Contributions', 
-        value: inputs.monthlyContribution, 
+      {
+        name: 'Personal Contributions',
+        value: inputs.monthlyContribution,
         color: '#8884d8',
-        percentage: (inputs.monthlyContribution / monthlyTotal) * 100
+        percentage: (inputs.monthlyContribution / monthlyTotal) * 100,
       },
-      { 
-        name: 'Employer Match', 
-        value: inputs.employerMatch, 
+      {
+        name: 'Employer Match',
+        value: inputs.employerMatch,
         color: '#82ca9d',
-        percentage: (inputs.employerMatch / monthlyTotal) * 100
+        percentage: (inputs.employerMatch / monthlyTotal) * 100,
       },
-      ...(inputs.includeRothIRA && inputs.rothContribution > 0 ? [{
-        name: 'Roth IRA', 
-        value: inputs.rothContribution, 
-        color: '#ffc658',
-        percentage: (inputs.rothContribution / monthlyTotal) * 100
-      }] : [])
+      ...(inputs.includeRothIRA && inputs.rothContribution > 0
+        ? [
+            {
+              name: 'Roth IRA',
+              value: inputs.rothContribution,
+              color: '#ffc658',
+              percentage: (inputs.rothContribution / monthlyTotal) * 100,
+            },
+          ]
+        : []),
     ];
   }, [results, inputs]);
 
   const recommendations = useMemo(() => {
     if (!results) return [];
-    
+
     const recs = [];
-    
+
     // Retirement readiness
     if (results.shortfall > 0) {
       recs.push({
         type: 'warning',
-        text: `You may have a shortfall of $${results.shortfall.toLocaleString()}. Consider increasing contributions or working longer.`
+        text: `You may have a shortfall of $${results.shortfall.toLocaleString()}. Consider increasing contributions or working longer.`,
       });
     } else {
       recs.push({
         type: 'success',
-        text: `Great! You're on track for retirement with ${results.surplusYears} years of financial security.`
+        text: `Great! You're on track for retirement with ${results.surplusYears} years of financial security.`,
       });
     }
-    
+
     // Contribution optimization
     // Estimate savings rate: if contributing $1000/month, estimate income ~$667/month (or $8k/year)
     // This is a rough heuristic - actual income would be needed for precise calculation
-    const estimatedMonthlyIncome = inputs.monthlyContribution > 0 ? inputs.monthlyContribution / 0.15 : 0;
-    const currentSavingsRate = estimatedMonthlyIncome > 0 
-      ? ((inputs.monthlyContribution + inputs.rothContribution) * 12) / (estimatedMonthlyIncome * 12)
-      : 0;
+    const estimatedMonthlyIncome =
+      inputs.monthlyContribution > 0 ? inputs.monthlyContribution / 0.15 : 0;
+    const currentSavingsRate =
+      estimatedMonthlyIncome > 0
+        ? ((inputs.monthlyContribution + inputs.rothContribution) * 12) /
+          (estimatedMonthlyIncome * 12)
+        : 0;
     if (currentSavingsRate > 0 && currentSavingsRate < 0.15) {
       recs.push({
         type: 'info',
-        text: `Consider increasing your savings rate to 15-20% of income for better retirement security.`
+        text: `Consider increasing your savings rate to 15-20% of income for better retirement security.`,
       });
     }
-    
+
     // Employer match optimization
     if (inputs.employerMatch < inputs.monthlyContribution * 0.5) {
       recs.push({
         type: 'info',
-        text: `Make sure you're maximizing your employer match - it's free money!`
+        text: `Make sure you're maximizing your employer match - it's free money!`,
       });
     }
-    
+
     // Diversification
     if (inputs.annualReturn > 8) {
       recs.push({
         type: 'warning',
-        text: `Your expected return of ${inputs.annualReturn}% is optimistic. Consider a more conservative estimate.`
+        text: `Your expected return of ${inputs.annualReturn}% is optimistic. Consider a more conservative estimate.`,
       });
     }
-    
+
     // Time horizon
     if (results.yearsToRetirement < 10) {
       recs.push({
         type: 'warning',
-        text: `With ${results.yearsToRetirement} years to retirement, consider a more conservative investment strategy.`
+        text: `With ${results.yearsToRetirement} years to retirement, consider a more conservative investment strategy.`,
       });
     }
-    
+
     return recs;
   }, [results, inputs]);
 
@@ -323,7 +393,7 @@ const RetirementPlanner: React.FC = () => {
     primary: isDark ? '#8884d8' : '#6366f1',
     secondary: isDark ? '#82ca9d' : '#10b981',
     accent: isDark ? '#ffc658' : '#f59e0b',
-    danger: isDark ? '#ff7300' : '#ef4444'
+    danger: isDark ? '#ff7300' : '#ef4444',
   };
 
   return (
@@ -335,16 +405,18 @@ const RetirementPlanner: React.FC = () => {
             Retirement Planner
           </Title>
           <Group gap="xs">
-            <ActionIcon 
-              variant="light" 
-              color="gray" 
+            <ActionIcon
+              variant="light"
+              color="gray"
               size="md"
               onClick={resetToDefaults}
               title="Reset to defaults"
             >
               <RotateCcw size={18} />
             </ActionIcon>
-            <Badge variant="light" color="purple" size="md">Financial Planning</Badge>
+            <Badge variant="light" color="purple" size="md">
+              Financial Planning
+            </Badge>
           </Group>
         </Group>
 
@@ -355,7 +427,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Current Age"
                   value={inputs.currentAge}
-                  onChange={(value) => setInputs(prev => ({ ...prev, currentAge: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      currentAge: Number(value) || 0,
+                    }))
+                  }
                   min={18}
                   max={80}
                   leftSection={<Calendar size={16} />}
@@ -363,7 +440,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Retirement Age"
                   value={inputs.retirementAge}
-                  onChange={(value) => setInputs(prev => ({ ...prev, retirementAge: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      retirementAge: Number(value) || 0,
+                    }))
+                  }
                   min={50}
                   max={80}
                   leftSection={<Target size={16} />}
@@ -373,7 +455,12 @@ const RetirementPlanner: React.FC = () => {
               <NumberInput
                 label="Current Retirement Savings ($)"
                 value={inputs.currentSavings}
-                onChange={(value) => setInputs(prev => ({ ...prev, currentSavings: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    currentSavings: Number(value) || 0,
+                  }))
+                }
                 min={0}
                 step={1000}
                 thousandSeparator=","
@@ -384,7 +471,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Monthly Contribution ($)"
                   value={inputs.monthlyContribution}
-                  onChange={(value) => setInputs(prev => ({ ...prev, monthlyContribution: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      monthlyContribution: Number(value) || 0,
+                    }))
+                  }
                   min={0}
                   step={50}
                   leftSection={<DollarSign size={16} />}
@@ -392,7 +484,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Employer Match ($)"
                   value={inputs.employerMatch}
-                  onChange={(value) => setInputs(prev => ({ ...prev, employerMatch: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      employerMatch: Number(value) || 0,
+                    }))
+                  }
                   min={0}
                   step={50}
                   leftSection={<DollarSign size={16} />}
@@ -403,13 +500,23 @@ const RetirementPlanner: React.FC = () => {
                 <Switch
                   label="Include Roth IRA"
                   checked={inputs.includeRothIRA}
-                  onChange={(event) => setInputs(prev => ({ ...prev, includeRothIRA: event.currentTarget.checked }))}
+                  onChange={event =>
+                    setInputs(prev => ({
+                      ...prev,
+                      includeRothIRA: event.currentTarget.checked,
+                    }))
+                  }
                 />
                 {inputs.includeRothIRA && (
                   <NumberInput
                     label="Roth IRA Contribution ($)"
                     value={inputs.rothContribution}
-                    onChange={(value) => setInputs(prev => ({ ...prev, rothContribution: Number(value) || 0 }))}
+                    onChange={value =>
+                      setInputs(prev => ({
+                        ...prev,
+                        rothContribution: Number(value) || 0,
+                      }))
+                    }
                     min={0}
                     step={50}
                     leftSection={<DollarSign size={16} />}
@@ -419,10 +526,14 @@ const RetirementPlanner: React.FC = () => {
               </Group>
 
               <div>
-                <Text size="sm" fw={500} mb="xs">Expected Annual Return (%)</Text>
+                <Text size="sm" fw={500} mb="xs">
+                  Expected Annual Return (%)
+                </Text>
                 <Slider
                   value={inputs.annualReturn}
-                  onChange={(value) => setInputs(prev => ({ ...prev, annualReturn: value }))}
+                  onChange={value =>
+                    setInputs(prev => ({ ...prev, annualReturn: value }))
+                  }
                   min={3}
                   max={12}
                   step={0.5}
@@ -430,7 +541,7 @@ const RetirementPlanner: React.FC = () => {
                     { value: 4, label: '4%' },
                     { value: 7, label: '7%' },
                     { value: 10, label: '10%' },
-                    { value: 12, label: '12%' }
+                    { value: 12, label: '12%' },
                   ]}
                   mb="md"
                 />
@@ -443,7 +554,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Inflation Rate (%)"
                   value={inputs.inflationRate}
-                  onChange={(value) => setInputs(prev => ({ ...prev, inflationRate: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      inflationRate: Number(value) || 0,
+                    }))
+                  }
                   min={0}
                   max={10}
                   step={0.1}
@@ -452,7 +568,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Life Expectancy"
                   value={inputs.lifeExpectancy}
-                  onChange={(value) => setInputs(prev => ({ ...prev, lifeExpectancy: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      lifeExpectancy: Number(value) || 0,
+                    }))
+                  }
                   min={70}
                   max={100}
                   leftSection={<Clock size={16} />}
@@ -466,7 +587,12 @@ const RetirementPlanner: React.FC = () => {
               <NumberInput
                 label="Desired Monthly Retirement Income ($)"
                 value={inputs.retirementIncome}
-                onChange={(value) => setInputs(prev => ({ ...prev, retirementIncome: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    retirementIncome: Number(value) || 0,
+                  }))
+                }
                 min={0}
                 step={100}
                 thousandSeparator=","
@@ -476,7 +602,12 @@ const RetirementPlanner: React.FC = () => {
               <NumberInput
                 label="Expected Social Security Benefit ($)"
                 value={inputs.socialSecurityBenefit}
-                onChange={(value) => setInputs(prev => ({ ...prev, socialSecurityBenefit: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    socialSecurityBenefit: Number(value) || 0,
+                  }))
+                }
                 min={0}
                 step={100}
                 thousandSeparator=","
@@ -484,10 +615,14 @@ const RetirementPlanner: React.FC = () => {
               />
 
               <div>
-                <Text size="sm" fw={500} mb="xs">Withdrawal Rate (%)</Text>
+                <Text size="sm" fw={500} mb="xs">
+                  Withdrawal Rate (%)
+                </Text>
                 <Slider
                   value={inputs.withdrawalRate}
-                  onChange={(value) => setInputs(prev => ({ ...prev, withdrawalRate: value }))}
+                  onChange={value =>
+                    setInputs(prev => ({ ...prev, withdrawalRate: value }))
+                  }
                   min={3}
                   max={6}
                   step={0.1}
@@ -495,12 +630,13 @@ const RetirementPlanner: React.FC = () => {
                     { value: 3, label: '3%' },
                     { value: 4, label: '4%' },
                     { value: 5, label: '5%' },
-                    { value: 6, label: '6%' }
+                    { value: 6, label: '6%' },
                   ]}
                   mb="md"
                 />
                 <Text size="sm" c="dimmed" ta="center">
-                  Current: {inputs.withdrawalRate}% (4% is traditional safe rate)
+                  Current: {inputs.withdrawalRate}% (4% is traditional safe
+                  rate)
                 </Text>
               </div>
 
@@ -508,7 +644,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Current Tax Rate (%)"
                   value={inputs.taxRate}
-                  onChange={(value) => setInputs(prev => ({ ...prev, taxRate: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      taxRate: Number(value) || 0,
+                    }))
+                  }
                   min={0}
                   max={50}
                   step={1}
@@ -516,7 +657,12 @@ const RetirementPlanner: React.FC = () => {
                 <NumberInput
                   label="Retirement Tax Rate (%)"
                   value={inputs.retirementTaxRate}
-                  onChange={(value) => setInputs(prev => ({ ...prev, retirementTaxRate: Number(value) || 0 }))}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      retirementTaxRate: Number(value) || 0,
+                    }))
+                  }
                   min={0}
                   max={50}
                   step={1}
@@ -525,42 +671,68 @@ const RetirementPlanner: React.FC = () => {
 
               {results && (
                 <Stack gap="md" mt="md">
-                  <Card withBorder p="md" className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+                  <Card
+                    withBorder
+                    p="md"
+                    className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
+                  >
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Retirement Savings</Text>
+                      <Text size="sm" c="dimmed">
+                        Retirement Savings
+                      </Text>
                       <Text size="xl" fw={700} c="purple">
                         ${results.totalSavingsAtRetirement.toLocaleString()}
                       </Text>
                     </Group>
                   </Card>
 
-                  <Card withBorder p="md" className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                  <Card
+                    withBorder
+                    p="md"
+                    className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
+                  >
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Years to Retirement</Text>
+                      <Text size="sm" c="dimmed">
+                        Years to Retirement
+                      </Text>
                       <Text size="xl" fw={700} c="green">
                         {results.yearsToRetirement}
                       </Text>
                     </Group>
                   </Card>
 
-                  <Card withBorder p="md" className={`bg-gradient-to-r ${
-                    results.shortfall > 0 
-                      ? 'from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20' 
-                      : 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20'
-                  }`}>
+                  <Card
+                    withBorder
+                    p="md"
+                    className={`bg-gradient-to-r ${
+                      results.shortfall > 0
+                        ? 'from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20'
+                        : 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20'
+                    }`}
+                  >
                     <Group justify="space-between">
                       <Text size="sm" c="dimmed">
                         {results.shortfall > 0 ? 'Shortfall' : 'Surplus'}
                       </Text>
-                      <Text size="lg" fw={600} c={results.shortfall > 0 ? 'red' : 'green'}>
+                      <Text
+                        size="lg"
+                        fw={600}
+                        c={results.shortfall > 0 ? 'red' : 'green'}
+                      >
                         ${Math.abs(results.shortfall).toLocaleString()}
                       </Text>
                     </Group>
                   </Card>
 
-                  <Card withBorder p="md" className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
+                  <Card
+                    withBorder
+                    p="md"
+                    className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20"
+                  >
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Retirement Duration</Text>
+                      <Text size="sm" c="dimmed">
+                        Retirement Duration
+                      </Text>
                       <Text size="lg" fw={600} c="blue">
                         {results.retirementDuration} years
                       </Text>
@@ -577,10 +749,16 @@ const RetirementPlanner: React.FC = () => {
         <Card shadow="sm" padding="lg" radius="md" withBorder>
           <Tabs defaultValue="projection" className="w-full">
             <Tabs.List>
-              <Tabs.Tab value="projection" leftSection={<TrendingUp size={16} />}>
+              <Tabs.Tab
+                value="projection"
+                leftSection={<TrendingUp size={16} />}
+              >
                 Projection
               </Tabs.Tab>
-              <Tabs.Tab value="contributions" leftSection={<PiggyBank size={16} />}>
+              <Tabs.Tab
+                value="contributions"
+                leftSection={<PiggyBank size={16} />}
+              >
                 Contributions
               </Tabs.Tab>
               <Tabs.Tab value="scenarios" leftSection={<Target size={16} />}>
@@ -592,21 +770,35 @@ const RetirementPlanner: React.FC = () => {
             </Tabs.List>
 
             <Tabs.Panel value="projection" pt="md">
-              <Title order={4} mb="md">Retirement Savings Projection</Title>
+              <Title order={4} mb="md">
+                Retirement Savings Projection
+              </Title>
               <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
                   <ComposedChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#e5e7eb'} />
-                    <XAxis dataKey="age" stroke={isDark ? '#9ca3af' : '#6b7280'} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={isDark ? '#374151' : '#e5e7eb'}
+                    />
+                    <XAxis
+                      dataKey="age"
+                      stroke={isDark ? '#9ca3af' : '#6b7280'}
+                    />
                     <YAxis stroke={isDark ? '#9ca3af' : '#6b7280'} />
-                    <Tooltip 
-                      contentStyle={{ 
+                    <Tooltip
+                      contentStyle={{
                         backgroundColor: isDark ? '#1f2937' : '#ffffff',
                         border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
-                        borderRadius: '8px'
+                        borderRadius: '8px',
                       }}
                     />
-                    <Area type="monotone" dataKey="balance" stroke={chartColors.primary} fill={chartColors.primary} fillOpacity={0.3} />
+                    <Area
+                      type="monotone"
+                      dataKey="balance"
+                      stroke={chartColors.primary}
+                      fill={chartColors.primary}
+                      fillOpacity={0.3}
+                    />
                     <Bar dataKey="contributions" fill={chartColors.secondary} />
                     <Bar dataKey="withdrawals" fill={chartColors.danger} />
                   </ComposedChart>
@@ -617,7 +809,9 @@ const RetirementPlanner: React.FC = () => {
             <Tabs.Panel value="contributions" pt="md">
               <Grid>
                 <Grid.Col span={{ base: 12, md: 8 }}>
-                  <Title order={4} mb="md">Monthly Contribution Breakdown</Title>
+                  <Title order={4} mb="md">
+                    Monthly Contribution Breakdown
+                  </Title>
                   <div style={{ width: '100%', height: 300 }}>
                     <ResponsiveContainer>
                       <PieChart>
@@ -628,17 +822,19 @@ const RetirementPlanner: React.FC = () => {
                           outerRadius={100}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percentage }) => `${name} ${percentage.toFixed(0)}%`}
+                          label={({ name, percentage }) =>
+                            `${name} ${percentage.toFixed(0)}%`
+                          }
                         >
                           {contributionBreakdown.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip 
-                          contentStyle={{ 
+                        <Tooltip
+                          contentStyle={{
                             backgroundColor: isDark ? '#1f2937' : '#ffffff',
                             border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
-                            borderRadius: '8px'
+                            borderRadius: '8px',
                           }}
                         />
                       </PieChart>
@@ -646,24 +842,34 @@ const RetirementPlanner: React.FC = () => {
                   </div>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 4 }}>
-                  <Title order={4} mb="md">Contribution Summary</Title>
+                  <Title order={4} mb="md">
+                    Contribution Summary
+                  </Title>
                   <Stack gap="sm">
                     <Group justify="space-between">
                       <Text>Total Contributions:</Text>
-                      <Text fw={600}>${results.totalContributions.toLocaleString()}</Text>
+                      <Text fw={600}>
+                        ${results.totalContributions.toLocaleString()}
+                      </Text>
                     </Group>
                     <Group justify="space-between">
                       <Text>Employer Match:</Text>
-                      <Text fw={600} c="green">${results.totalEmployerMatch.toLocaleString()}</Text>
+                      <Text fw={600} c="green">
+                        ${results.totalEmployerMatch.toLocaleString()}
+                      </Text>
                     </Group>
                     <Group justify="space-between">
                       <Text>Investment Growth:</Text>
-                      <Text fw={600} c="blue">${results.totalGrowth.toLocaleString()}</Text>
+                      <Text fw={600} c="blue">
+                        ${results.totalGrowth.toLocaleString()}
+                      </Text>
                     </Group>
                     <Divider />
                     <Group justify="space-between">
                       <Text fw={600}>Total at Retirement:</Text>
-                      <Text fw={700} size="lg">${results.totalSavingsAtRetirement.toLocaleString()}</Text>
+                      <Text fw={700} size="lg">
+                        ${results.totalSavingsAtRetirement.toLocaleString()}
+                      </Text>
                     </Group>
                   </Stack>
                 </Grid.Col>
@@ -671,39 +877,72 @@ const RetirementPlanner: React.FC = () => {
             </Tabs.Panel>
 
             <Tabs.Panel value="scenarios" pt="md">
-              <Title order={4} mb="md">Return Scenarios</Title>
+              <Title order={4} mb="md">
+                Return Scenarios
+              </Title>
               <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
-                  <BarChart data={[
-                    { name: 'Conservative (5%)', value: results.scenarioAnalysis.conservative, color: '#8884d8' },
-                    { name: 'Moderate (7%)', value: results.scenarioAnalysis.moderate, color: '#82ca9d' },
-                    { name: 'Aggressive (10%)', value: results.scenarioAnalysis.aggressive, color: '#ffc658' }
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#e5e7eb'} />
-                    <XAxis dataKey="name" stroke={isDark ? '#9ca3af' : '#6b7280'} />
+                  <BarChart
+                    data={[
+                      {
+                        name: 'Conservative (5%)',
+                        value: results.scenarioAnalysis.conservative,
+                        color: '#8884d8',
+                      },
+                      {
+                        name: 'Moderate (7%)',
+                        value: results.scenarioAnalysis.moderate,
+                        color: '#82ca9d',
+                      },
+                      {
+                        name: 'Aggressive (10%)',
+                        value: results.scenarioAnalysis.aggressive,
+                        color: '#ffc658',
+                      },
+                    ]}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={isDark ? '#374151' : '#e5e7eb'}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke={isDark ? '#9ca3af' : '#6b7280'}
+                    />
                     <YAxis stroke={isDark ? '#9ca3af' : '#6b7280'} />
-                    <Tooltip 
-                      contentStyle={{ 
+                    <Tooltip
+                      contentStyle={{
                         backgroundColor: isDark ? '#1f2937' : '#ffffff',
                         border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
-                        borderRadius: '8px'
+                        borderRadius: '8px',
                       }}
                     />
-                    <Bar dataKey="value" fill={chartColors.primary} radius={[4, 4, 0, 0]} />
+                    <Bar
+                      dataKey="value"
+                      fill={chartColors.primary}
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </Tabs.Panel>
 
             <Tabs.Panel value="analysis" pt="md">
-              <Title order={4} mb="md">Retirement Analysis & Recommendations</Title>
+              <Title order={4} mb="md">
+                Retirement Analysis & Recommendations
+              </Title>
               <Stack gap="md">
                 {recommendations.map((rec, index) => (
-                  <Card key={index} withBorder p="md" className={`
+                  <Card
+                    key={index}
+                    withBorder
+                    p="md"
+                    className={`
                     ${rec.type === 'success' ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : ''}
                     ${rec.type === 'warning' ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' : ''}
                     ${rec.type === 'info' ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' : ''}
-                  `}>
+                  `}
+                  >
                     <Text size="sm">{rec.text}</Text>
                   </Card>
                 ))}
@@ -716,4 +955,4 @@ const RetirementPlanner: React.FC = () => {
   );
 };
 
-export default RetirementPlanner; 
+export default RetirementPlanner;

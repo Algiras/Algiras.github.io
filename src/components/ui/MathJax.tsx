@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
 import { useMantineColorScheme } from '@mantine/core';
+import React, { useEffect, useRef } from 'react';
 
 interface MathJaxProps {
   children: string;
@@ -7,7 +7,11 @@ interface MathJaxProps {
   className?: string;
 }
 
-const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className = '' }) => {
+const MathJax: React.FC<MathJaxProps> = ({
+  children,
+  display = false,
+  className = '',
+}) => {
   const mathRef = useRef<HTMLDivElement>(null);
   const { colorScheme } = useMantineColorScheme();
 
@@ -19,18 +23,31 @@ const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className 
           // Configure MathJax with theme-aware colors
           const isDark = colorScheme === 'dark';
           const textColor = isDark ? '#c1c2c5' : '#212529';
-          
+
           (window as any).MathJax = {
             tex: {
-              inlineMath: [['$', '$'], ['\\(', '\\)']],
-              displayMath: [['$$', '$$'], ['\\[', '\\]']],
+              inlineMath: [
+                ['$', '$'],
+                ['\\(', '\\)'],
+              ],
+              displayMath: [
+                ['$$', '$$'],
+                ['\\[', '\\]'],
+              ],
               processEscapes: true,
-              processEnvironments: true
+              processEnvironments: true,
             },
             options: {
-              skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+              skipHtmlTags: [
+                'script',
+                'noscript',
+                'style',
+                'textarea',
+                'pre',
+                'code',
+              ],
               ignoreHtmlClass: 'tex2jax_ignore',
-              processHtmlClass: 'tex2jax_process'
+              processHtmlClass: 'tex2jax_process',
             },
             svg: {
               fontCache: 'global',
@@ -43,7 +60,8 @@ const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className 
               exFactor: 0.5,
               displayAlign: 'center',
               displayIndent: '0',
-              fontURL: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/svg/fonts/tex-woff-v2'
+              fontURL:
+                'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/svg/fonts/tex-woff-v2',
             },
             startup: {
               ready: () => {
@@ -67,8 +85,8 @@ const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className 
                   }
                 `;
                 document.head.appendChild(style);
-              }
-            }
+              },
+            },
           };
 
           // Load MathJax script
@@ -87,10 +105,16 @@ const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className 
     };
 
     const typesetMath = () => {
-      if ((window as any).MathJax && (window as any).MathJax.typesetPromise && mathRef.current) {
-        (window as any).MathJax.typesetPromise([mathRef.current]).catch((err: any) => {
-          console.error('MathJax typeset error:', err);
-        });
+      if (
+        (window as any).MathJax &&
+        (window as any).MathJax.typesetPromise &&
+        mathRef.current
+      ) {
+        (window as any).MathJax.typesetPromise([mathRef.current]).catch(
+          (err: any) => {
+            console.error('MathJax typeset error:', err);
+          }
+        );
       }
     };
 
@@ -102,11 +126,13 @@ const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className 
     if ((window as any).MathJax && (window as any).MathJax.startup) {
       const isDark = colorScheme === 'dark';
       const textColor = isDark ? '#c1c2c5' : '#212529';
-      
+
       // Remove existing theme styles
-      const existingStyles = document.querySelectorAll('style[data-mathjax-theme]');
+      const existingStyles = document.querySelectorAll(
+        'style[data-mathjax-theme]'
+      );
       existingStyles.forEach(style => style.remove());
-      
+
       // Apply new theme colors
       const style = document.createElement('style');
       style.setAttribute('data-mathjax-theme', 'true');
@@ -138,7 +164,7 @@ const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className 
         }
       `;
       document.head.appendChild(style);
-      
+
       // Re-render existing MathJax elements
       if ((window as any).MathJax.typesetPromise) {
         (window as any).MathJax.typesetPromise().catch((err: any) => {
@@ -151,8 +177,8 @@ const MathJax: React.FC<MathJaxProps> = ({ children, display = false, className 
   const mathContent = display ? `$$${children}$$` : `$${children}$`;
 
   return (
-    <div 
-      ref={mathRef} 
+    <div
+      ref={mathRef}
       className={`mathjax-container ${className}`}
       dangerouslySetInnerHTML={{ __html: mathContent }}
     />

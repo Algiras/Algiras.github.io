@@ -1,5 +1,28 @@
-import { Badge, Button, Card, Divider, Grid, Group, NumberInput, Select, Stack, Switch, Text, Textarea, Title, useMantineColorScheme, useMantineTheme } from '@mantine/core';
-import { Download, Eye, FileText, Palette, RotateCcw, Save } from 'lucide-react';
+import {
+  Badge,
+  Button,
+  Card,
+  Divider,
+  Grid,
+  Group,
+  NumberInput,
+  Select,
+  Stack,
+  Switch,
+  Text,
+  Textarea,
+  Title,
+  useMantineColorScheme,
+  useMantineTheme,
+} from '@mantine/core';
+import {
+  Download,
+  Eye,
+  FileText,
+  Palette,
+  RotateCcw,
+  Save,
+} from 'lucide-react';
 import { marked } from 'marked';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMarkdownDocumentPersistence } from '../../hooks/useCalculatorPersistence';
@@ -34,7 +57,12 @@ const MarkdownToPDF: React.FC = () => {
   const previewRef = useRef<HTMLDivElement>(null);
 
   // Use persistence hook
-  const { data: persistedData, saveData, clearAllData, getLastUpdated } = useMarkdownDocumentPersistence();
+  const {
+    data: persistedData,
+    saveData,
+    clearAllData,
+    getLastUpdated,
+  } = useMarkdownDocumentPersistence();
 
   // Initialize with persisted data or default sample content
   const [markdown, setMarkdown] = useState(() => {
@@ -91,7 +119,9 @@ function greet(name) {
 `;
   });
 
-  const [selectedTemplate, setSelectedTemplate] = useState(() => persistedData?.template || 'professional');
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    () => persistedData?.template || 'professional'
+  );
   const [customSettings, setCustomSettings] = useState(() => ({
     fontSize: persistedData?.settings?.fontSize || 12,
     lineHeight: persistedData?.settings?.lineHeight || 1.6,
@@ -100,13 +130,13 @@ function greet(name) {
     headerText: persistedData?.settings?.headerText || '',
     includeFooter: persistedData?.settings?.includeFooter || false,
     footerText: persistedData?.settings?.footerText || '',
-         pageSize: persistedData?.settings?.pageSize || 'a4',
+    pageSize: persistedData?.settings?.pageSize || 'a4',
     pageMargins: {
       top: persistedData?.settings?.marginTop || 25,
       right: persistedData?.settings?.marginRight || 25,
       bottom: persistedData?.settings?.marginBottom || 25,
-      left: persistedData?.settings?.marginLeft || 25
-    }
+      left: persistedData?.settings?.marginLeft || 25,
+    },
   }));
 
   // Auto-save data when it changes
@@ -128,7 +158,7 @@ function greet(name) {
           marginRight: customSettings.pageMargins.right,
           marginBottom: customSettings.pageMargins.bottom,
           marginLeft: customSettings.pageMargins.left,
-        }
+        },
       });
     }, 1000); // Debounce saves by 1 second
 
@@ -137,7 +167,7 @@ function greet(name) {
 
   // Document templates with industry-standard margins
   // 25mm (0.98 inches) margins follow professional document standards:
-  // - Microsoft Word default: 1 inch (25.4mm) 
+  // - Microsoft Word default: 1 inch (25.4mm)
   // - Academic papers: 1 inch all around
   // - Business documents: 1 inch all around
   // - Chicago Manual of Style: 1 inch margins recommended
@@ -155,9 +185,9 @@ function greet(name) {
           primary: '#2563eb',
           secondary: '#64748b',
           text: '#1e293b',
-          background: '#ffffff'
-        }
-      }
+          background: '#ffffff',
+        },
+      },
     },
     {
       id: 'academic',
@@ -172,9 +202,9 @@ function greet(name) {
           primary: '#1f2937',
           secondary: '#6b7280',
           text: '#111827',
-          background: '#ffffff'
-        }
-      }
+          background: '#ffffff',
+        },
+      },
     },
     {
       id: 'modern',
@@ -189,9 +219,9 @@ function greet(name) {
           primary: '#7c3aed',
           secondary: '#a78bfa',
           text: '#374151',
-          background: '#ffffff'
-        }
-      }
+          background: '#ffffff',
+        },
+      },
     },
     {
       id: 'minimal',
@@ -206,13 +236,14 @@ function greet(name) {
           primary: '#000000',
           secondary: '#666666',
           text: '#333333',
-          background: '#ffffff'
-        }
-      }
-    }
+          background: '#ffffff',
+        },
+      },
+    },
   ];
 
-  const currentTemplate = templates.find(t => t.id === selectedTemplate) || templates[0];
+  const currentTemplate =
+    templates.find(t => t.id === selectedTemplate) || templates[0];
 
   // Check if content is empty or only whitespace
   const trimmedMarkdown = markdown.trim();
@@ -224,7 +255,9 @@ function greet(name) {
     // Always try to render the actual content, even if empty
     try {
       const result = marked(trimmedMarkdown || '');
-      return typeof result === 'string' ? result : '<p>Error parsing markdown</p>';
+      return typeof result === 'string'
+        ? result
+        : '<p>Error parsing markdown</p>';
     } catch (_error) {
       return '<p style="color: #ef4444;">Error parsing markdown. Please check your syntax.</p>';
     }
@@ -233,7 +266,9 @@ function greet(name) {
   const generatePDF = () => {
     // Check for empty content
     if (isContentEmpty) {
-      alert('Cannot generate PDF: No content to export. Please add some markdown content first.');
+      alert(
+        'Cannot generate PDF: No content to export. Please add some markdown content first.'
+      );
       return;
     }
 
@@ -241,18 +276,23 @@ function greet(name) {
       // Create a new window for printing
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
-        alert('Pop-up blocked! Please allow pop-ups for this site to generate PDFs.');
+        alert(
+          'Pop-up blocked! Please allow pop-ups for this site to generate PDFs.'
+        );
         return;
       }
 
       // Page size configurations for CSS
       const pageSize = customSettings.pageSize === 'a4' ? 'A4' : 'Letter';
       const margins = customSettings.pageMargins;
-      
+
       // Prepare safe font family for CSS with comprehensive fallbacks
-      const cleanFontFamily = currentTemplate.styles.fontFamily.replace(/"/g, '');
-      const safeFontFamily = currentTemplate.styles.fontFamily.includes(',') 
-        ? currentTemplate.styles.fontFamily 
+      const cleanFontFamily = currentTemplate.styles.fontFamily.replace(
+        /"/g,
+        ''
+      );
+      const safeFontFamily = currentTemplate.styles.fontFamily.includes(',')
+        ? currentTemplate.styles.fontFamily
         : `"${cleanFontFamily}", "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif`;
 
       // Create the HTML content with embedded styles
@@ -520,22 +560,27 @@ function greet(name) {
           </style>
         </head>
         <body>
-          ${customSettings.includeHeader && customSettings.headerText ? `
+          ${
+            customSettings.includeHeader && customSettings.headerText
+              ? `
             <div class="header">${customSettings.headerText}</div>
-          ` : ''}
+          `
+              : ''
+          }
           
           <div class="content">
             ${htmlContent}
           </div>
           
-          ${customSettings.includeFooter && customSettings.footerText ? `
+          ${
+            customSettings.includeFooter && customSettings.footerText
+              ? `
             <div class="footer">${customSettings.footerText}</div>
-          ` : ''}
+          `
+              : ''
+          }
           
-          <script>
             window.onload = function() {
-              // Add debug indicator
-              console.log('Print window loaded with font:', getComputedStyle(document.body).fontFamily);
               
               // Small delay to ensure everything is loaded
               setTimeout(function() {
@@ -560,16 +605,18 @@ function greet(name) {
       // Write the HTML to the new window
       printWindow.document.write(printHTML);
       printWindow.document.close();
-      
     } catch (error) {
       console.error('Error generating print page:', error);
-      alert('Error generating print page: ' + (error instanceof Error ? error.message : 'Unknown error occurred'));
+      alert(
+        'Error generating print page: ' +
+          (error instanceof Error ? error.message : 'Unknown error occurred')
+      );
     }
   };
 
   const pageWidths = {
     a4: '210mm',
-    letter: '216mm'
+    letter: '216mm',
   };
 
   const previewStyles = {
@@ -584,7 +631,7 @@ function greet(name) {
     margin: '0 auto',
     boxShadow: isDark ? '0 0 10px rgba(0,0,0,0.3)' : '0 0 10px rgba(0,0,0,0.1)',
     borderRadius: '4px',
-    border: `1px solid ${isDark ? theme.colors.dark[4] : theme.colors.gray[3]}`
+    border: `1px solid ${isDark ? theme.colors.dark[4] : theme.colors.gray[3]}`,
   };
 
   return (
@@ -595,42 +642,53 @@ function greet(name) {
             <FileText size={24} />
             Markdown to PDF Converter
           </Title>
-          <Badge variant="light" color="blue" size="md">Browser-based</Badge>
+          <Badge variant="light" color="blue" size="md">
+            Browser-based
+          </Badge>
         </Group>
 
         {/* Instructions for ChatGPT */}
-        <Card 
-          shadow="xs" 
-          padding="md" 
-          radius="md" 
-          withBorder 
-          mb="lg" 
-          style={{ 
-            backgroundColor: isDark ? theme.colors.dark[7] : theme.colors.gray[0]
+        <Card
+          shadow="xs"
+          padding="md"
+          radius="md"
+          withBorder
+          mb="lg"
+          style={{
+            backgroundColor: isDark
+              ? theme.colors.dark[7]
+              : theme.colors.gray[0],
           }}
         >
           <Stack gap="sm">
             <Group gap="xs">
-              <Text size="sm" fw={600} c={theme.primaryColor}>💡 Pro Tip: Generate content with ChatGPT</Text>
+              <Text size="sm" fw={600} c={theme.primaryColor}>
+                💡 Pro Tip: Generate content with ChatGPT
+              </Text>
             </Group>
             <Text size="sm" c="dimmed">
               Copy this prompt to ChatGPT to generate markdown-ready documents:
             </Text>
-            <Card 
-              shadow="xs" 
-              padding="sm" 
-              radius="sm" 
-              style={{ 
+            <Card
+              shadow="xs"
+              padding="sm"
+              radius="sm"
+              style={{
                 backgroundColor: isDark ? theme.colors.dark[6] : theme.white,
-                border: `1px solid ${isDark ? theme.colors.dark[4] : theme.colors.gray[3]}`
+                border: `1px solid ${isDark ? theme.colors.dark[4] : theme.colors.gray[3]}`,
               }}
             >
               <Text size="xs" style={{ fontFamily: theme.fontFamilyMonospace }}>
-                "Please create a [document type] in markdown format. Use proper markdown syntax including # for headings, ** for bold, * for italic, - for bullet points, numbered lists, code blocks with ```, tables with | separators, and {'>'} for blockquotes. Format it so I can copy and paste directly into a markdown editor."
+                "Please create a [document type] in markdown format. Use proper
+                markdown syntax including # for headings, ** for bold, * for
+                italic, - for bullet points, numbered lists, code blocks with
+                ```, tables with | separators, and {'>'} for blockquotes. Format
+                it so I can copy and paste directly into a markdown editor."
               </Text>
             </Card>
             <Text size="xs" c="dimmed">
-              Replace [document type] with: report, resume, proposal, article, documentation, etc.
+              Replace [document type] with: report, resume, proposal, article,
+              documentation, etc.
             </Text>
           </Stack>
         </Card>
@@ -640,7 +698,9 @@ function greet(name) {
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Stack gap="md" h="100%">
               <Group justify="space-between">
-                <Text size="lg" fw={600}>Editor</Text>
+                <Text size="lg" fw={600}>
+                  Editor
+                </Text>
                 <Group gap="xs">
                   <Button
                     onClick={() => setMarkdown('')}
@@ -669,7 +729,11 @@ function greet(name) {
                     variant="filled"
                     color="blue"
                     disabled={isContentEmpty}
-                    title={isContentEmpty ? 'Add some content to print/save as PDF' : 'Open print dialog to save as PDF'}
+                    title={
+                      isContentEmpty
+                        ? 'Add some content to print/save as PDF'
+                        : 'Open print dialog to save as PDF'
+                    }
                   >
                     Print/Save PDF
                   </Button>
@@ -678,7 +742,7 @@ function greet(name) {
 
               <Textarea
                 value={markdown}
-                onChange={(event) => setMarkdown(event.currentTarget.value)}
+                onChange={event => setMarkdown(event.currentTarget.value)}
                 placeholder="Enter your markdown content here...
 
 Try typing:
@@ -692,15 +756,15 @@ This is a **bold** and *italic* text example.
 > This is a blockquote
 
 ```javascript
-console.log('Hello, world!');
+
 ```"
                 styles={{
                   input: {
                     fontFamily: 'Monaco, Menlo, monospace',
                     fontSize: '14px',
                     height: '800px',
-                    resize: 'vertical'
-                  }
+                    resize: 'vertical',
+                  },
                 }}
               />
             </Stack>
@@ -709,14 +773,16 @@ console.log('Hello, world!');
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Stack gap="md" h="100%">
               <Group justify="space-between">
-                <Text size="lg" fw={600}>Preview</Text>
-                <Badge 
-                  variant="light" 
-                  color={isContentEmpty ? "gray" : "green"} 
+                <Text size="lg" fw={600}>
+                  Preview
+                </Text>
+                <Badge
+                  variant="light"
+                  color={isContentEmpty ? 'gray' : 'green'}
                   leftSection={<Eye size={12} />}
                   size="md"
                 >
-                  {isContentEmpty ? "No Content" : "Live Preview"}
+                  {isContentEmpty ? 'No Content' : 'Live Preview'}
                 </Badge>
               </Group>
 
@@ -725,39 +791,47 @@ console.log('Hello, world!');
                 style={{
                   ...previewStyles,
                   height: '800px',
-                  overflow: 'auto'
+                  overflow: 'auto',
                 }}
                 className="preview-content"
               >
                 {/* Header Preview */}
                 {customSettings.includeHeader && customSettings.headerText && (
-                  <div style={{
-                    borderBottom: '1px solid #e5e7eb',
-                    paddingBottom: '10px',
-                    marginBottom: '20px',
-                    fontSize: '10px',
-                    color: '#6b7280',
-                    fontStyle: 'italic'
-                  }}>
+                  <div
+                    style={{
+                      borderBottom: '1px solid #e5e7eb',
+                      paddingBottom: '10px',
+                      marginBottom: '20px',
+                      fontSize: '10px',
+                      color: '#6b7280',
+                      fontStyle: 'italic',
+                    }}
+                  >
                     {customSettings.headerText}
                   </div>
                 )}
 
                 {isContentEmpty ? (
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '200px',
-                    color: '#9ca3af',
-                    textAlign: 'center',
-                    border: '2px dashed #e5e7eb',
-                    borderRadius: '8px',
-                    margin: '20px 0'
-                  }}>
-                    <div style={{ fontSize: '2em', marginBottom: '0.5em' }}>📝</div>
-                    <p style={{ color: '#6b7280', margin: 0 }}>Start typing to see your document preview</p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '200px',
+                      color: '#9ca3af',
+                      textAlign: 'center',
+                      border: '2px dashed #e5e7eb',
+                      borderRadius: '8px',
+                      margin: '20px 0',
+                    }}
+                  >
+                    <div style={{ fontSize: '2em', marginBottom: '0.5em' }}>
+                      📝
+                    </div>
+                    <p style={{ color: '#6b7280', margin: 0 }}>
+                      Start typing to see your document preview
+                    </p>
                   </div>
                 ) : (
                   <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
@@ -765,27 +839,31 @@ console.log('Hello, world!');
 
                 {/* Footer Preview */}
                 {customSettings.includeFooter && customSettings.footerText && (
-                  <div style={{
-                    borderTop: '1px solid #e5e7eb',
-                    paddingTop: '10px',
-                    marginTop: '20px',
-                    fontSize: '10px',
-                    color: '#6b7280',
-                    fontStyle: 'italic'
-                  }}>
+                  <div
+                    style={{
+                      borderTop: '1px solid #e5e7eb',
+                      paddingTop: '10px',
+                      marginTop: '20px',
+                      fontSize: '10px',
+                      color: '#6b7280',
+                      fontStyle: 'italic',
+                    }}
+                  >
                     {customSettings.footerText}
                   </div>
                 )}
 
                 {/* Page Number Preview */}
                 {customSettings.includePageNumbers && (
-                  <div style={{
-                    textAlign: 'center',
-                    marginTop: '10px',
-                    fontSize: '10px',
-                    color: '#6b7280',
-                    fontStyle: 'italic'
-                  }}>
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      marginTop: '10px',
+                      fontSize: '10px',
+                      color: '#6b7280',
+                      fontStyle: 'italic',
+                    }}
+                  >
                     Page 1 of 1
                   </div>
                 )}
@@ -798,16 +876,25 @@ console.log('Hello, world!');
         <Stack gap="sm" mt="md">
           <Group justify="space-between">
             <Text size="sm" c="dimmed">
-              <strong>Template:</strong> {currentTemplate.name} - {currentTemplate.description}
+              <strong>Template:</strong> {currentTemplate.name} -{' '}
+              {currentTemplate.description}
             </Text>
             <Text size="sm" c="dimmed">
-              {trimmedMarkdown.length} characters • {trimmedMarkdown.split(/\s+/).filter(word => word.length > 0).length} words
+              {trimmedMarkdown.length} characters •{' '}
+              {
+                trimmedMarkdown.split(/\s+/).filter(word => word.length > 0)
+                  .length
+              }{' '}
+              words
             </Text>
           </Group>
-          
+
           {getLastUpdated() && (
             <Text size="xs" c="dimmed" ta="center">
-              <Save size={12} style={{ display: 'inline', marginRight: '4px' }} />
+              <Save
+                size={12}
+                style={{ display: 'inline', marginRight: '4px' }}
+              />
               Auto-saved {getLastUpdated()?.toLocaleString()}
             </Text>
           )}
@@ -818,10 +905,12 @@ console.log('Hello, world!');
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Stack gap="md">
           <Group justify="space-between">
-            <Text size="lg" fw={600}>Document Settings</Text>
+            <Text size="lg" fw={600}>
+              Document Settings
+            </Text>
             <Select
               value={selectedTemplate}
-              onChange={(value) => setSelectedTemplate(value || 'professional')}
+              onChange={value => setSelectedTemplate(value || 'professional')}
               data={templates.map(t => ({ value: t.id, label: t.name }))}
               leftSection={<Palette size={16} />}
               size="sm"
@@ -835,7 +924,12 @@ console.log('Hello, world!');
             <NumberInput
               label="Font Size"
               value={customSettings.fontSize}
-              onChange={(value) => setCustomSettings(prev => ({ ...prev, fontSize: Number(value) || 12 }))}
+              onChange={value =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  fontSize: Number(value) || 12,
+                }))
+              }
               min={8}
               max={24}
               step={1}
@@ -843,7 +937,12 @@ console.log('Hello, world!');
             <NumberInput
               label="Line Height"
               value={customSettings.lineHeight}
-              onChange={(value) => setCustomSettings(prev => ({ ...prev, lineHeight: Number(value) || 1.6 }))}
+              onChange={value =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  lineHeight: Number(value) || 1.6,
+                }))
+              }
               min={1}
               max={3}
               step={0.1}
@@ -855,19 +954,29 @@ console.log('Hello, world!');
             <Select
               label="Page Size"
               value={customSettings.pageSize}
-              onChange={(value) => setCustomSettings(prev => ({ ...prev, pageSize: (value as 'a4' | 'letter') || 'a4' }))}
+              onChange={value =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  pageSize: (value as 'a4' | 'letter') || 'a4',
+                }))
+              }
               data={[
                 { value: 'a4', label: 'A4 (210 × 297 mm)' },
-                { value: 'letter', label: 'Letter (8.5 × 11 in)' }
+                { value: 'letter', label: 'Letter (8.5 × 11 in)' },
               ]}
             />
             <NumberInput
               label="Top Margin (mm)"
               value={customSettings.pageMargins.top}
-              onChange={(value) => setCustomSettings(prev => ({ 
-                ...prev, 
-                pageMargins: { ...prev.pageMargins, top: Number(value) || 20 }
-              }))}
+              onChange={value =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  pageMargins: {
+                    ...prev.pageMargins,
+                    top: Number(value) || 20,
+                  },
+                }))
+              }
               min={5}
               max={50}
               step={1}
@@ -878,10 +987,15 @@ console.log('Hello, world!');
             <NumberInput
               label="Left Margin (mm)"
               value={customSettings.pageMargins.left}
-              onChange={(value) => setCustomSettings(prev => ({ 
-                ...prev, 
-                pageMargins: { ...prev.pageMargins, left: Number(value) || 20 }
-              }))}
+              onChange={value =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  pageMargins: {
+                    ...prev.pageMargins,
+                    left: Number(value) || 20,
+                  },
+                }))
+              }
               min={5}
               max={50}
               step={1}
@@ -889,10 +1003,15 @@ console.log('Hello, world!');
             <NumberInput
               label="Right Margin (mm)"
               value={customSettings.pageMargins.right}
-              onChange={(value) => setCustomSettings(prev => ({ 
-                ...prev, 
-                pageMargins: { ...prev.pageMargins, right: Number(value) || 20 }
-              }))}
+              onChange={value =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  pageMargins: {
+                    ...prev.pageMargins,
+                    right: Number(value) || 20,
+                  },
+                }))
+              }
               min={5}
               max={50}
               step={1}
@@ -900,10 +1019,15 @@ console.log('Hello, world!');
             <NumberInput
               label="Bottom Margin (mm)"
               value={customSettings.pageMargins.bottom}
-              onChange={(value) => setCustomSettings(prev => ({ 
-                ...prev, 
-                pageMargins: { ...prev.pageMargins, bottom: Number(value) || 20 }
-              }))}
+              onChange={value =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  pageMargins: {
+                    ...prev.pageMargins,
+                    bottom: Number(value) || 20,
+                  },
+                }))
+              }
               min={5}
               max={50}
               step={1}
@@ -914,7 +1038,12 @@ console.log('Hello, world!');
             <Switch
               label="Include Page Numbers"
               checked={customSettings.includePageNumbers}
-              onChange={(event) => setCustomSettings(prev => ({ ...prev, includePageNumbers: event.currentTarget.checked }))}
+              onChange={event =>
+                setCustomSettings(prev => ({
+                  ...prev,
+                  includePageNumbers: event.currentTarget.checked,
+                }))
+              }
             />
             <div></div>
           </Group>
@@ -922,39 +1051,59 @@ console.log('Hello, world!');
           <Switch
             label="Include Header"
             checked={customSettings.includeHeader}
-            onChange={(event) => setCustomSettings(prev => ({ ...prev, includeHeader: event.currentTarget.checked }))}
+            onChange={event =>
+              setCustomSettings(prev => ({
+                ...prev,
+                includeHeader: event.currentTarget.checked,
+              }))
+            }
           />
 
           <Textarea
             label="Header Text"
             value={customSettings.headerText}
-            onChange={(event) => setCustomSettings(prev => ({ ...prev, headerText: event.currentTarget.value }))}
+            onChange={event =>
+              setCustomSettings(prev => ({
+                ...prev,
+                headerText: event.currentTarget.value,
+              }))
+            }
             placeholder="Enter header text..."
             rows={2}
             disabled={!customSettings.includeHeader}
-            style={{ 
+            style={{
               height: '100%',
               opacity: customSettings.includeHeader ? 1 : 0.5,
-              transition: 'opacity 0.2s ease'
+              transition: 'opacity 0.2s ease',
             }}
           />
 
           <Switch
             label="Include Footer"
             checked={customSettings.includeFooter}
-            onChange={(event) => setCustomSettings(prev => ({ ...prev, includeFooter: event.currentTarget.checked }))}
+            onChange={event =>
+              setCustomSettings(prev => ({
+                ...prev,
+                includeFooter: event.currentTarget.checked,
+              }))
+            }
           />
 
           <Textarea
             label="Footer Text"
             value={customSettings.footerText}
-            onChange={(event) => setCustomSettings(prev => ({ ...prev, footerText: event.currentTarget.value }))}
+            onChange={event =>
+              setCustomSettings(prev => ({
+                ...prev,
+                footerText: event.currentTarget.value,
+              }))
+            }
             placeholder="Enter footer text..."
             rows={2}
             disabled={!customSettings.includeFooter}
-            style={{ 
+            style={{
               opacity: customSettings.includeFooter ? 1 : 0.5,
-              transition: 'opacity 0.2s ease'
+              transition: 'opacity 0.2s ease',
             }}
           />
         </Stack>
@@ -1048,4 +1197,4 @@ console.log('Hello, world!');
   );
 };
 
-export default MarkdownToPDF; 
+export default MarkdownToPDF;

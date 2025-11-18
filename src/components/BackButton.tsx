@@ -3,23 +3,25 @@ import { ChevronLeft } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-interface BackToFinanceButtonProps {
+interface BackButtonProps {
+  to: string;
+  label: string;
   mb?: string;
 }
 
-const BackToFinanceButton: React.FC<BackToFinanceButtonProps> = ({ mb = "md" }) => {
+const BackButton: React.FC<BackButtonProps> = ({ to, label, mb = 'md' }) => {
   return (
-    <Button 
-      component={Link} 
-      to="/finance" 
-      mb={mb} 
+    <Button
+      component={Link}
+      to={to}
+      mb={mb}
       variant="light"
       leftSection={<ChevronLeft size={16} />}
       className="custom-button-hover"
     >
-      Back to Finance
+      {label}
     </Button>
   );
 };
 
-export default BackToFinanceButton;
+export default BackButton;

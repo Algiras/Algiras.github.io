@@ -5,12 +5,28 @@ export const theme = createTheme({
   // Custom color palettes (10 shades each)
   colors: {
     corporate: [
-      '#eef6ff', '#d9eaff', '#b7d6ff', '#8bbcff', '#5ea2ff',
-      '#3e8dff', '#1f78ff', '#0f64e6', '#0a54bf', '#08479f'
+      '#eef6ff',
+      '#d9eaff',
+      '#b7d6ff',
+      '#8bbcff',
+      '#5ea2ff',
+      '#3e8dff',
+      '#1f78ff',
+      '#0f64e6',
+      '#0a54bf',
+      '#08479f',
     ],
     accent: [
-      '#e9fffb', '#ccfff6', '#9cfced', '#66f3e1', '#3be6d3',
-      '#1fd2c1', '#12b3a6', '#0d9188', '#0b796f', '#096459'
+      '#e9fffb',
+      '#ccfff6',
+      '#9cfced',
+      '#66f3e1',
+      '#3be6d3',
+      '#1fd2c1',
+      '#12b3a6',
+      '#0d9188',
+      '#0b796f',
+      '#096459',
     ],
   },
   // Font configuration
@@ -236,5 +252,3 @@ export const theme = createTheme({
     },
   },
 });
-
- 

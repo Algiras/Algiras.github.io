@@ -1,10 +1,8 @@
 // Investment Tracker Module
-export { default as InvestmentTracker } from './InvestmentTracker';
-export { default as InvestmentForm } from './InvestmentForm';
-export { default as ConfigPanel } from './ConfigPanel';
-
-// Types
-export * from './types';
-
 // Utilities
 export * from './calculations';
+export { default as ConfigPanel } from './ConfigPanel';
+export { default as InvestmentForm } from './InvestmentForm';
+export { default as InvestmentTracker } from './InvestmentTracker';
+// Types
+export * from './types';

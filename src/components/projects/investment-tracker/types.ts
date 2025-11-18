@@ -1,10 +1,10 @@
 // Investment Tracker Types
-export type InvestmentType = 
-  | 'P2P' 
-  | 'Stock' 
-  | 'Fund' 
-  | 'Crypto' 
-  | 'RealEstate' 
+export type InvestmentType =
+  | 'P2P'
+  | 'Stock'
+  | 'Fund'
+  | 'Crypto'
+  | 'RealEstate'
   | 'Alternative'
   | 'CFD'
   | 'Lending';
@@ -99,148 +99,184 @@ export interface InvestmentFilters {
 // Predefined platforms based on your experience
 export const PLATFORMS: Platform[] = [
   // P2P Platforms - Success Stories
-  { 
-    id: 'finbee', 
-    name: 'Finbee', 
-    type: ['P2P'], 
-    country: 'LT', 
+  {
+    id: 'finbee',
+    name: 'Finbee',
+    type: ['P2P'],
+    country: 'LT',
     status: 'Active',
-    fees: { management: 1, transaction: 0 }
+    fees: { management: 1, transaction: 0 },
   },
-  { 
-    id: 'iuventus', 
-    name: 'Iuventus', 
-    type: ['P2P'], 
-    country: 'LT', 
+  {
+    id: 'iuventus',
+    name: 'Iuventus',
+    type: ['P2P'],
+    country: 'LT',
     status: 'Active',
-    fees: { management: 1, transaction: 0 }
+    fees: { management: 1, transaction: 0 },
   },
-  { 
-    id: 'finomark', 
-    name: 'Finomark', 
-    type: ['P2P'], 
-    country: 'LT', 
+  {
+    id: 'finomark',
+    name: 'Finomark',
+    type: ['P2P'],
+    country: 'LT',
     status: 'Active',
-    fees: { management: 1, transaction: 0 }
+    fees: { management: 1, transaction: 0 },
   },
-  { 
-    id: 'letsinvest', 
-    name: 'LetsInvest', 
-    type: ['P2P'], 
-    country: 'LV', 
+  {
+    id: 'letsinvest',
+    name: 'LetsInvest',
+    type: ['P2P'],
+    country: 'LV',
     status: 'Active',
-    fees: { management: 1, transaction: 0 }
+    fees: { management: 1, transaction: 0 },
   },
-  { 
-    id: 'estateguru', 
-    name: 'EstateGuru', 
-    type: ['P2P'], 
-    country: 'EE', 
+  {
+    id: 'estateguru',
+    name: 'EstateGuru',
+    type: ['P2P'],
+    country: 'EE',
     status: 'Active',
-    fees: { management: 1, transaction: 0 }
+    fees: { management: 1, transaction: 0 },
   },
-  
+
   // P2P Platforms - Lessons Learned
-  { 
-    id: 'heavyfinance', 
-    name: 'Heavy Finance', 
-    type: ['P2P'], 
-    country: 'LT', 
+  {
+    id: 'heavyfinance',
+    name: 'Heavy Finance',
+    type: ['P2P'],
+    country: 'LT',
     status: 'Avoiding',
     fees: { management: 2, transaction: 0 },
-    notes: 'Farmer bankruptcies - avoid agricultural loans'
+    notes: 'Farmer bankruptcies - avoid agricultural loans',
   },
-  { 
-    id: 'nordstreet', 
-    name: 'Nordstreet', 
-    type: ['P2P'], 
-    country: 'LT', 
+  {
+    id: 'nordstreet',
+    name: 'Nordstreet',
+    type: ['P2P'],
+    country: 'LT',
     status: 'Closed',
     fees: { management: 1.5, transaction: 0 },
-    notes: 'Closed due to illiquid loans'
+    notes: 'Closed due to illiquid loans',
   },
-  { 
-    id: 'debitum', 
-    name: 'Debitum', 
-    type: ['P2P'], 
-    country: 'LT', 
+  {
+    id: 'debitum',
+    name: 'Debitum',
+    type: ['P2P'],
+    country: 'LT',
     status: 'Closed',
     fees: { management: 2, transaction: 0 },
-    notes: 'Platform closed'
+    notes: 'Platform closed',
   },
-  
+
   // Stock/Fund Platforms
-  { 
-    id: 'siauliu_bankas', 
-    name: 'Šiaulių Bankas', 
-    type: ['Stock', 'Fund'], 
-    country: 'LT', 
+  {
+    id: 'siauliu_bankas',
+    name: 'Šiaulių Bankas',
+    type: ['Stock', 'Fund'],
+    country: 'LT',
     status: 'Active',
-    fees: { management: 0.5, transaction: 5 }
+    fees: { management: 0.5, transaction: 5 },
   },
-  { 
-    id: 'swedbank', 
-    name: 'Swedbank', 
-    type: ['Stock', 'Fund'], 
-    country: 'LT', 
+  {
+    id: 'swedbank',
+    name: 'Swedbank',
+    type: ['Stock', 'Fund'],
+    country: 'LT',
     status: 'Active',
-    fees: { management: 0.5, transaction: 8 }
+    fees: { management: 0.5, transaction: 8 },
   },
-  { 
-    id: 'revolut', 
-    name: 'Revolut', 
-    type: ['Stock', 'Fund', 'Crypto', 'CFD'], 
-    country: 'UK', 
+  {
+    id: 'revolut',
+    name: 'Revolut',
+    type: ['Stock', 'Fund', 'Crypto', 'CFD'],
+    country: 'UK',
     status: 'Active',
-    fees: { management: 0, transaction: 1 }
+    fees: { management: 0, transaction: 1 },
   },
-  { 
-    id: 'seb', 
-    name: 'SEB', 
-    type: ['Stock', 'Fund'], 
-    country: 'LT', 
+  {
+    id: 'seb',
+    name: 'SEB',
+    type: ['Stock', 'Fund'],
+    country: 'LT',
     status: 'Active',
-    fees: { management: 0.5, transaction: 10 }
+    fees: { management: 0.5, transaction: 10 },
   },
-  
+
   // Avoiding
-  { 
-    id: 'etoro', 
-    name: 'eToro', 
-    type: ['Stock', 'CFD'], 
-    country: 'CY', 
+  {
+    id: 'etoro',
+    name: 'eToro',
+    type: ['Stock', 'CFD'],
+    country: 'CY',
     status: 'Avoiding',
     fees: { management: 0, transaction: 0, withdrawal: 5 },
-    notes: 'Day trading not suitable for long-term strategy'
+    notes: 'Day trading not suitable for long-term strategy',
   },
 ];
 
 // Investment categories for better organization
 export const INVESTMENT_CATEGORIES = {
-  'P2P': { color: 'blue', label: 'P2P Lending' },
-  'Stock': { color: 'green', label: 'Stocks' },
-  'Fund': { color: 'purple', label: 'Funds' },
-  'Crypto': { color: 'orange', label: 'Cryptocurrency' },
-  'RealEstate': { color: 'teal', label: 'Real Estate' },
-  'Alternative': { color: 'pink', label: 'Alternative' },
-  'CFD': { color: 'red', label: 'CFDs' },
-  'Lending': { color: 'cyan', label: 'Direct Lending' },
+  P2P: { color: 'blue', label: 'P2P Lending' },
+  Stock: { color: 'green', label: 'Stocks' },
+  Fund: { color: 'purple', label: 'Funds' },
+  Crypto: { color: 'orange', label: 'Cryptocurrency' },
+  RealEstate: { color: 'teal', label: 'Real Estate' },
+  Alternative: { color: 'pink', label: 'Alternative' },
+  CFD: { color: 'red', label: 'CFDs' },
+  Lending: { color: 'cyan', label: 'Direct Lending' },
 } as const;
 
 // Success stories and lessons learned
 export const INVESTMENT_LESSONS = {
   successes: [
-    { name: 'INVL Real Estate', return: 100, period: '3 years', note: 'Real estate funds work well' },
-    { name: 'SWED Tech Fund', return: 56, period: '1 year', note: 'Technology sector growth' },
-    { name: 'Grigeo', return: 25, period: '6 months', note: 'Sold before scandal - good timing' },
-    { name: 'Saulės Parkas', return: 25, period: '25 years expected', note: 'Solar energy investment' },
+    {
+      name: 'INVL Real Estate',
+      return: 100,
+      period: '3 years',
+      note: 'Real estate funds work well',
+    },
+    {
+      name: 'SWED Tech Fund',
+      return: 56,
+      period: '1 year',
+      note: 'Technology sector growth',
+    },
+    {
+      name: 'Grigeo',
+      return: 25,
+      period: '6 months',
+      note: 'Sold before scandal - good timing',
+    },
+    {
+      name: 'Saulės Parkas',
+      return: 25,
+      period: '25 years expected',
+      note: 'Solar energy investment',
+    },
   ],
   lessons: [
-    { name: 'Russian Funds (INVL)', loss: 200, reason: 'Ukraine conflict - geopolitical risk' },
+    {
+      name: 'Russian Funds (INVL)',
+      loss: 200,
+      reason: 'Ukraine conflict - geopolitical risk',
+    },
     { name: 'Nordstreet', loss: 300, reason: 'Illiquid loans - platform risk' },
-    { name: 'Heavy Finance', loss: 500, reason: 'Farmer bankruptcies - sector risk' },
-    { name: 'Etoro Scalping', loss: 150, reason: 'Day trading not suitable for strategy' },
-    { name: 'Forex Trading', loss: 100, reason: 'Currency speculation - avoid' },
+    {
+      name: 'Heavy Finance',
+      loss: 500,
+      reason: 'Farmer bankruptcies - sector risk',
+    },
+    {
+      name: 'Etoro Scalping',
+      loss: 150,
+      reason: 'Day trading not suitable for strategy',
+    },
+    {
+      name: 'Forex Trading',
+      loss: 100,
+      reason: 'Currency speculation - avoid',
+    },
   ],
   rules: [
     'Diversification is key - never put all eggs in one basket',

@@ -1,4 +1,4 @@
-import { AkotchiState, Personality, GrowthStage } from './types';
+import { AkotchiState, GrowthStage, Personality } from './types';
 
 export const STORAGE_KEY = 'akotchi_state_v1'; // legacy
 export const PETS_KEY = 'akotchi_pets_v1';
@@ -30,10 +30,19 @@ export function createNewAkotchi(name?: string): AkotchiState {
     wings: randomInt(0, 2),
     line: randomInt(1, 3),
   };
-  const personality: Personality = pick(['Cheerful', 'Lazy', 'Hyper', 'Moody', 'Shy']);
+  const personality: Personality = pick([
+    'Cheerful',
+    'Lazy',
+    'Hyper',
+    'Moody',
+    'Shy',
+  ]);
   return {
     id: crypto.randomUUID?.() ?? String(now),
-    name: name && name.trim().length > 0 ? name.trim() : `Akotchi-${String(now).slice(-4)}`,
+    name:
+      name && name.trim().length > 0
+        ? name.trim()
+        : `Akotchi-${String(now).slice(-4)}`,
     dna,
     personality,
     createdAt: now,
@@ -75,7 +84,10 @@ function logistic(x: number, k = 1, x0 = 0): number {
   return 1 / (1 + Math.exp(-k * (x - x0)));
 }
 
-export function updateByElapsed(state: AkotchiState, elapsedMs: number): AkotchiState {
+export function updateByElapsed(
+  state: AkotchiState,
+  elapsedMs: number
+): AkotchiState {
   if (state.isDead) return state;
   const hours = elapsedMs / (1000 * 60 * 60);
   if (hours <= 0) return state;
@@ -83,13 +95,19 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
 
   // Neglect multiplier (if no interaction > 6h)
   const now = Date.now();
-  const neglectHours = state.lastInteractionAt ? (now - state.lastInteractionAt) / (1000 * 60 * 60) : 0;
-  const neglectMult = neglectHours > 6 ? Math.min(1.5, 1 + (neglectHours - 6) * 0.05) : 1; // up to +50%
+  const neglectHours = state.lastInteractionAt
+    ? (now - state.lastInteractionAt) / (1000 * 60 * 60)
+    : 0;
+  const neglectMult =
+    neglectHours > 6 ? Math.min(1.5, 1 + (neglectHours - 6) * 0.05) : 1; // up to +50%
 
   // Base decays
   let hunger = state.hunger - 8 * m.hunger * hours * neglectMult;
-  let happiness = state.happiness - 6 * m.happiness * hours * (state.sick ? 1.2 : 1);
-  let energy = state.energy - 7 * m.energy * hours * (state.petState === 'Playing' ? 1.2 : 1);
+  let happiness =
+    state.happiness - 6 * m.happiness * hours * (state.sick ? 1.2 : 1);
+  let energy =
+    state.energy -
+    7 * m.energy * hours * (state.petState === 'Playing' ? 1.2 : 1);
 
   // Sleep recovery (logistic towards 100)
   if (state.petState === 'Sleeping') {
@@ -107,39 +125,50 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
 
   // Pooping mechanics
   let messCount = state.messCount || 0;
-  let lastPoopAt = state.lastPoopAt || (state.createdAt || now - 30 * 60 * 1000); // Default to 30 mins ago if not set
-  
+  let lastPoopAt = state.lastPoopAt || state.createdAt || now - 30 * 60 * 1000; // Default to 30 mins ago if not set
+
   // Check if it's time to poop (based on hunger consumption and personality)
   const timeSinceLastPoop = now - lastPoopAt;
   const minTimeBetweenPoops = 15 * 60 * 1000; // Minimum 15 minutes between poops
   const maxTimeBetweenPoops = 45 * 60 * 1000; // Maximum 45 minutes between poops
-  
+
   // Personality affects pooping frequency
   let poopFrequencyMultiplier = 1.0;
   switch (state.personality) {
-    case 'Hyper': poopFrequencyMultiplier = 1.3; break; // Poops more often
-    case 'Lazy': poopFrequencyMultiplier = 0.7; break; // Poops less often
-    case 'Moody': poopFrequencyMultiplier = 1.1; break; // Slightly more often
-    default: poopFrequencyMultiplier = 1.0; break;
+    case 'Hyper':
+      poopFrequencyMultiplier = 1.3;
+      break; // Poops more often
+    case 'Lazy':
+      poopFrequencyMultiplier = 0.7;
+      break; // Poops less often
+    case 'Moody':
+      poopFrequencyMultiplier = 1.1;
+      break; // Slightly more often
+    default:
+      poopFrequencyMultiplier = 1.0;
+      break;
   }
-  
+
   // Higher hunger consumption = more likely to poop
-  const hungerBasedPoopChance = Math.max(0, (state.hunger - hunger)) / 20; // 0-1 based on hunger consumed
-  const timeBasedPoopChance = Math.min(1, timeSinceLastPoop / (maxTimeBetweenPoops * poopFrequencyMultiplier));
+  const hungerBasedPoopChance = Math.max(0, state.hunger - hunger) / 20; // 0-1 based on hunger consumed
+  const timeBasedPoopChance = Math.min(
+    1,
+    timeSinceLastPoop / (maxTimeBetweenPoops * poopFrequencyMultiplier)
+  );
   const totalPoopChance = (hungerBasedPoopChance + timeBasedPoopChance) / 2;
-  
+
   // Random chance to poop (higher with time and food consumption)
-  const shouldPoop = timeSinceLastPoop > minTimeBetweenPoops && Math.random() < totalPoopChance * hours;
+  const shouldPoop =
+    timeSinceLastPoop > minTimeBetweenPoops &&
+    Math.random() < totalPoopChance * hours;
   if (shouldPoop) {
     messCount = Math.min(3, messCount + 1); // Max 3 poops at once
     lastPoopAt = now;
-    
+
     // Pooping affects happiness slightly (embarrassment)
     happiness = Math.max(0, happiness - 3);
-    
-
   }
-  
+
   // Having mess affects happiness over time
   if (messCount > 0) {
     happiness -= messCount * 2 * hours; // -2 happiness per hour per mess
@@ -173,15 +202,16 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
   const nextAge = state.ageHours + hours;
 
   // Growth stage thresholds (tweakable)
-  const stage: GrowthStage = nextAge < 24
-    ? 'Baby'
-    : nextAge < 72
-      ? 'Child'
-      : nextAge < 168
-        ? 'Teen'
-        : nextAge < 360
-          ? 'Adult'
-          : 'Elder';
+  const stage: GrowthStage =
+    nextAge < 24
+      ? 'Baby'
+      : nextAge < 72
+        ? 'Child'
+        : nextAge < 168
+          ? 'Teen'
+          : nextAge < 360
+            ? 'Adult'
+            : 'Elder';
 
   return {
     ...state,
@@ -192,11 +222,10 @@ export function updateByElapsed(state: AkotchiState, elapsedMs: number): Akotchi
     sick,
     ageHours: nextAge,
     lastUpdated: state.lastUpdated + elapsedMs,
-    petState: state.petState && state.petState !== 'Dead' ? state.petState : 'Idle',
+    petState:
+      state.petState && state.petState !== 'Dead' ? state.petState : 'Idle',
     stage,
     messCount,
     lastPoopAt,
   };
 }
-
-

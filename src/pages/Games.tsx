@@ -26,7 +26,12 @@ const Games: React.FC = () => {
       icon: Gamepad2,
       color: 'grape',
       tags: ['Retro', 'Canvas', 'LocalStorage'],
-      features: ['Persistent pet state', 'Pixel animations', 'Simple actions', 'No backend required'],
+      features: [
+        'Persistent pet state',
+        'Pixel animations',
+        'Simple actions',
+        'No backend required',
+      ],
     },
   ];
 
@@ -37,19 +42,42 @@ const Games: React.FC = () => {
           <Title order={1} size="h1" mb="md" className="mobile-title">
             Games
           </Title>
-          <Text size="lg" c="dimmed" maw={700} mx="auto" className="mobile-description">
-            Play small, delightful browser games built with web technologies. No downloads, no accounts.
+          <Text
+            size="lg"
+            c="dimmed"
+            maw={700}
+            mx="auto"
+            className="mobile-description"
+          >
+            Play small, delightful browser games built with web technologies. No
+            downloads, no accounts.
           </Text>
         </Box>
 
-        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="xl" className="mobile-grid">
-          {games.map((game) => {
+        <SimpleGrid
+          cols={{ base: 1, md: 2, lg: 3 }}
+          spacing="xl"
+          className="mobile-grid"
+        >
+          {games.map(game => {
             const IconComponent = game.icon;
             return (
-              <Card key={game.id} padding="xl" radius="md" withBorder className="animate-card-glow mobile-card">
+              <Card
+                key={game.id}
+                padding="xl"
+                radius="md"
+                withBorder
+                className="animate-card-glow mobile-card"
+              >
                 <Stack gap="md" className="mobile-card-stack">
                   <Group gap="md" className="mobile-card-header">
-                    <ThemeIcon size="xl" radius="md" variant="light" color={game.color} className="mobile-icon">
+                    <ThemeIcon
+                      size="xl"
+                      radius="md"
+                      variant="light"
+                      color={game.color}
+                      className="mobile-icon"
+                    >
                       <IconComponent size={24} className="mobile-icon-svg" />
                     </ThemeIcon>
                     <Box style={{ flex: 1 }}>
@@ -59,13 +87,24 @@ const Games: React.FC = () => {
                     </Box>
                   </Group>
 
-                  <Text size="sm" c="dimmed" style={{ flex: 1 }} className="mobile-card-description">
+                  <Text
+                    size="sm"
+                    c="dimmed"
+                    style={{ flex: 1 }}
+                    className="mobile-card-description"
+                  >
                     {game.description}
                   </Text>
 
                   <Group gap="xs" mb="md" className="mobile-tags">
-                    {game.tags.map((tag) => (
-                      <Badge key={tag} size="sm" variant="light" color={game.color} className="mobile-badge">
+                    {game.tags.map(tag => (
+                      <Badge
+                        key={tag}
+                        size="sm"
+                        variant="light"
+                        color={game.color}
+                        className="mobile-badge"
+                      >
                         {tag}
                       </Badge>
                     ))}
@@ -76,17 +115,33 @@ const Games: React.FC = () => {
                       Key Features:
                     </Text>
                     {game.features.map((feature, index) => (
-                      <Text key={index} size="xs" c="dimmed" className="mobile-feature-item">
+                      <Text
+                        key={index}
+                        size="xs"
+                        c="dimmed"
+                        className="mobile-feature-item"
+                      >
                         • {feature}
                       </Text>
                     ))}
                   </Stack>
 
                   <Group justify="space-between" wrap="wrap">
-                    <Button component={Link} to={game.path} variant="light" color={game.color} rightSection={<Rocket size={16} />}>
+                    <Button
+                      component={Link}
+                      to={game.path}
+                      variant="light"
+                      color={game.color}
+                      rightSection={<Rocket size={16} />}
+                    >
                       Play
                     </Button>
-                    <Button component={Link} to={game.path} variant="subtle" rightSection={<Sparkles size={16} />}>
+                    <Button
+                      component={Link}
+                      to={game.path}
+                      variant="subtle"
+                      rightSection={<Sparkles size={16} />}
+                    >
                       Learn more
                     </Button>
                   </Group>
@@ -101,5 +156,3 @@ const Games: React.FC = () => {
 };
 
 export default Games;
-
-

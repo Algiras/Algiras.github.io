@@ -11,5 +11,3 @@ export function formatSeconds(ms: number): string {
   if (m > 0) return `${m}:${String(r).padStart(2, '0')}`;
   return `${r}s`;
 }
-
-

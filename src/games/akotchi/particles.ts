@@ -1,25 +1,45 @@
-export type Particle = { x: number; y: number; vx: number; vy: number; life: number; color: string };
+export type Particle = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  color: string;
+};
 
 const MAX_PARTICLES = 60;
 const particles: Particle[] = [];
 
-export function spawnParticles(kind: 'crumbs' | 'sparkle' | 'dust', originX: number, originY: number) {
+export function spawnParticles(
+  kind: 'crumbs' | 'sparkle' | 'dust',
+  originX: number,
+  originY: number
+) {
   const n = kind === 'sparkle' ? 12 : 8;
   for (let i = 0; i < n && particles.length < MAX_PARTICLES; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = kind === 'sparkle' ? 1.6 + Math.random() * 1.2 : 0.8 + Math.random();
+    const speed =
+      kind === 'sparkle' ? 1.6 + Math.random() * 1.2 : 0.8 + Math.random();
     particles.push({
       x: originX,
       y: originY,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed - (kind === 'dust' ? 0.2 : 0),
       life: 800 + Math.random() * 600,
-      color: kind === 'crumbs' ? '#c8a15a' : kind === 'dust' ? 'rgba(255,255,255,0.25)' : 'rgba(255,215,0,0.9)'
+      color:
+        kind === 'crumbs'
+          ? '#c8a15a'
+          : kind === 'dust'
+            ? 'rgba(255,255,255,0.25)'
+            : 'rgba(255,215,0,0.9)',
     });
   }
 }
 
-export function updateAndDrawParticles(ctx: CanvasRenderingContext2D, anim: string) {
+export function updateAndDrawParticles(
+  ctx: CanvasRenderingContext2D,
+  anim: string
+) {
   const dt = 16;
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
@@ -36,5 +56,3 @@ export function updateAndDrawParticles(ctx: CanvasRenderingContext2D, anim: stri
     ctx.fillRect(p.x, p.y, size, size);
   }
 }
-
-

@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
-import { 
-  Card, Stack, Text, Title, Button, Collapse, Group, 
-  ThemeIcon, Badge, Divider, Alert, useMantineColorScheme
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Collapse,
+  Divider,
+  Group,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+  useMantineColorScheme,
 } from '@mantine/core';
-import { 
-  ChevronDown, ChevronUp, BookOpen, Calculator, 
-  TrendingUp, Shield, Target, Activity 
+import {
+  Activity,
+  BookOpen,
+  Calculator,
+  ChevronDown,
+  ChevronUp,
+  Shield,
+  Target,
+  TrendingUp,
 } from 'lucide-react';
+import React, { useState } from 'react';
 
 import MathJax from '../../ui/MathJax';
 
@@ -14,22 +30,20 @@ interface StatisticalExplanationsProps {
   portfolioStats: any; // We'll use the actual type from calculations
 }
 
-const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portfolioStats }) => {
+const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({
+  portfolioStats,
+}) => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
-
-
-
-
 
   const explanations = [
     {
@@ -38,7 +52,8 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
       icon: <Activity size={18} />,
       color: 'blue',
       value: `${(portfolioStats.volatility * 100).toFixed(2)}%`,
-      formula: '\\sigma = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(R_i - \\bar{R})^2} \\times \\sqrt{12}',
+      formula:
+        '\\sigma = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(R_i - \\bar{R})^2} \\times \\sqrt{12}',
       explanation: `
         <strong>What it measures:</strong> The degree of variation in portfolio returns over time.<br/><br/>
         
@@ -62,7 +77,7 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         1. Average return = (2 - 1 + 3 + 1) / 4 = 1.25%<br/>
         2. Variance = [(2-1.25)² + (-1-1.25)² + (3-1.25)² + (1-1.25)²] / 4<br/>
         3. Standard deviation = √variance × √12 (annualized)
-      `
+      `,
     },
     {
       id: 'sharpe',
@@ -93,7 +108,7 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         If your portfolio returns 12% annually with 18% volatility, and risk-free rate is 2%:<br/>
         Sharpe Ratio = (12% - 2%) / 18% = 0.56<br/>
         This means you get 0.56 units of excess return for each unit of risk taken.
-      `
+      `,
     },
     {
       id: 'maxdrawdown',
@@ -101,7 +116,8 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
       icon: <TrendingUp size={18} />,
       color: 'red',
       value: `${portfolioStats.maxDrawdown.maxDrawdown.toFixed(1)}%`,
-      formula: 'MDD = \\frac{\\text{Peak Value} - \\text{Trough Value}}{\\text{Peak Value}} \\times 100\\%',
+      formula:
+        'MDD = \\frac{\\text{Peak Value} - \\text{Trough Value}}{\\text{Peak Value}} \\times 100\\%',
       explanation: `
         <strong>What it measures:</strong> The largest peak-to-trough decline in portfolio value during a specific period.<br/><br/>
         
@@ -124,7 +140,7 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         If your portfolio peaked at $100,000 and then dropped to $85,000:<br/>
         Maximum Drawdown = ($100,000 - $85,000) / $100,000 = 15%<br/>
         This means you experienced a 15% decline from your peak value.
-      `
+      `,
     },
     {
       id: 'var',
@@ -153,7 +169,7 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         If your VaR is 8.5% monthly:<br/>
         • On a $100,000 portfolio, you have a 5% chance of losing more than $8,500 in any month<br/>
         • 95% of months should see losses smaller than $8,500 (or gains)
-      `
+      `,
     },
     {
       id: 'beta',
@@ -177,11 +193,12 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         • <strong>β > 1:</strong> More volatile than market (aggressive)<br/><br/>
         
         <strong>Your beta of ${portfolioStats.beta.toFixed(2)} means:</strong><br/>
-        ${portfolioStats.beta > 1 
-          ? `Your portfolio is ${((portfolioStats.beta - 1) * 100).toFixed(0)}% more volatile than the market`
-          : portfolioStats.beta < 1 
-          ? `Your portfolio is ${((1 - portfolioStats.beta) * 100).toFixed(0)}% less volatile than the market`
-          : 'Your portfolio moves in line with the market'
+        ${
+          portfolioStats.beta > 1
+            ? `Your portfolio is ${((portfolioStats.beta - 1) * 100).toFixed(0)}% more volatile than the market`
+            : portfolioStats.beta < 1
+              ? `Your portfolio is ${((1 - portfolioStats.beta) * 100).toFixed(0)}% less volatile than the market`
+              : 'Your portfolio moves in line with the market'
         }<br/><br/>
         
         <strong>Why it matters:</strong> Helps understand systematic risk and how your portfolio 
@@ -192,7 +209,7 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         Expected portfolio return = 1.2 × 10% = 12%<br/>
         If market goes down 10%:<br/>
         Expected portfolio return = 1.2 × (-10%) = -12%
-      `
+      `,
     },
     {
       id: 'correlation',
@@ -200,7 +217,8 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
       icon: <Activity size={18} />,
       color: 'cyan',
       value: portfolioStats.correlation.toFixed(2),
-      formula: '\\rho = \\frac{\\sum(R_p - \\bar{R_p})(R_m - \\bar{R_m})}{\\sqrt{\\sum(R_p - \\bar{R_p})^2 \\sum(R_m - \\bar{R_m})^2}}',
+      formula:
+        '\\rho = \\frac{\\sum(R_p - \\bar{R_p})(R_m - \\bar{R_m})}{\\sqrt{\\sum(R_p - \\bar{R_p})^2 \\sum(R_m - \\bar{R_m})^2}}',
       explanation: `
         <strong>What it measures:</strong> The degree to which your portfolio moves in relation to the market.<br/><br/>
         
@@ -216,11 +234,12 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         • <strong>-1.0:</strong> Perfect negative correlation (moves opposite to market)<br/><br/>
         
         <strong>Your correlation of ${portfolioStats.correlation.toFixed(2)} means:</strong><br/>
-        ${Math.abs(portfolioStats.correlation) > 0.7 
-          ? 'Strong correlation - your portfolio closely follows market movements'
-          : Math.abs(portfolioStats.correlation) > 0.3
-          ? 'Moderate correlation - some independence from market movements'
-          : 'Weak correlation - largely independent of market movements'
+        ${
+          Math.abs(portfolioStats.correlation) > 0.7
+            ? 'Strong correlation - your portfolio closely follows market movements'
+            : Math.abs(portfolioStats.correlation) > 0.3
+              ? 'Moderate correlation - some independence from market movements'
+              : 'Weak correlation - largely independent of market movements'
         }<br/><br/>
         
         <strong>Why it matters:</strong> Lower correlation can provide diversification benefits 
@@ -230,7 +249,7 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         Correlation of 0.65 means:<br/>
         • When market goes up, your portfolio tends to go up too (65% of the variation explained)<br/>
         • But you have some independence (35% of movement is unique to your portfolio)
-      `
+      `,
     },
     {
       id: 'concentration',
@@ -260,7 +279,7 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         With 5 equal investments: HHI = 5 × (20%)² = 20%<br/>
         With one 60% position and four 10% positions: HHI = (60%)² + 4×(10%)² = 40%<br/>
         The second portfolio is more concentrated and riskier.
-      `
+      `,
     },
     {
       id: 'information',
@@ -291,8 +310,8 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
         If your portfolio returns 12%, benchmark returns 8%, and tracking error is 6%:<br/>
         Information Ratio = (12% - 8%) / 6% = 0.67<br/>
         This indicates good active management skill.
-      `
-    }
+      `,
+    },
   ];
 
   return (
@@ -302,7 +321,9 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
           <ThemeIcon color="blue" variant="light" size="lg">
             <BookOpen size={20} />
           </ThemeIcon>
-          <Title order={3} size="h4">Mathematical Explanations</Title>
+          <Title order={3} size="h4">
+            Mathematical Explanations
+          </Title>
         </Group>
         <Badge variant="light" color="blue" size="lg">
           {explanations.length} Metrics Explained
@@ -311,13 +332,14 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
 
       <Alert color="blue" variant="light">
         <Text size="sm">
-          <strong>📚 Educational Note:</strong> Click on any metric below to see the mathematical formula, 
-          interpretation guidelines, and practical examples. These calculations follow industry-standard 
-          financial mathematics used by professional portfolio managers.
+          <strong>📚 Educational Note:</strong> Click on any metric below to see
+          the mathematical formula, interpretation guidelines, and practical
+          examples. These calculations follow industry-standard financial
+          mathematics used by professional portfolio managers.
         </Text>
       </Alert>
 
-      {explanations.map((item) => (
+      {explanations.map(item => (
         <Card key={item.id} withBorder p="md">
           <Button
             variant="subtle"
@@ -335,46 +357,78 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
               </Group>
             }
             rightSection={
-              openSections[item.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+              openSections[item.id] ? (
+                <ChevronUp size={16} />
+              ) : (
+                <ChevronDown size={16} />
+              )
             }
             onClick={() => toggleSection(item.id)}
-          >
-          </Button>
+          ></Button>
 
           <Collapse in={openSections[item.id]}>
             <Stack gap="md" mt="md">
               <Divider />
-              
+
               {/* Mathematical Formula */}
-              <Card bg={isDark ? "var(--mantine-color-dark-6)" : "var(--mantine-color-gray-0)"} p="md">
-                <Text fw={600} mb="sm" c="blue">📐 Mathematical Formula:</Text>
-                <div style={{ 
-                  textAlign: 'center', 
-                  padding: '10px', 
-                  backgroundColor: isDark ? 'var(--mantine-color-dark-7)' : 'white', 
-                  borderRadius: '4px',
-                  border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : '#e9ecef'}`
-                }}>
+              <Card
+                bg={
+                  isDark
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-gray-0)'
+                }
+                p="md"
+              >
+                <Text fw={600} mb="sm" c="blue">
+                  📐 Mathematical Formula:
+                </Text>
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: '10px',
+                    backgroundColor: isDark
+                      ? 'var(--mantine-color-dark-7)'
+                      : 'white',
+                    borderRadius: '4px',
+                    border: `1px solid ${isDark ? 'var(--mantine-color-dark-4)' : '#e9ecef'}`,
+                  }}
+                >
                   <MathJax display={true}>{item.formula}</MathJax>
                 </div>
               </Card>
 
-
-
               {/* Detailed Explanation */}
-              <Card bg={isDark ? "var(--mantine-color-dark-6)" : "var(--mantine-color-blue-0)"} p="md">
-                <Text fw={600} mb="sm" c="blue">📖 Detailed Explanation:</Text>
-                <Text 
-                  size="sm" 
+              <Card
+                bg={
+                  isDark
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-blue-0)'
+                }
+                p="md"
+              >
+                <Text fw={600} mb="sm" c="blue">
+                  📖 Detailed Explanation:
+                </Text>
+                <Text
+                  size="sm"
                   dangerouslySetInnerHTML={{ __html: item.explanation }}
                 />
               </Card>
 
               {/* Practical Example */}
-              <Card bg={isDark ? "var(--mantine-color-dark-6)" : "var(--mantine-color-green-0)"} p="md">
-                <Text fw={600} mb="sm" c="green">💡 Practical Example:</Text>
-                <Text 
-                  size="sm" 
+              <Card
+                bg={
+                  isDark
+                    ? 'var(--mantine-color-dark-6)'
+                    : 'var(--mantine-color-green-0)'
+                }
+                p="md"
+              >
+                <Text fw={600} mb="sm" c="green">
+                  💡 Practical Example:
+                </Text>
+                <Text
+                  size="sm"
                   dangerouslySetInnerHTML={{ __html: item.example }}
                 />
               </Card>
@@ -385,9 +439,10 @@ const StatisticalExplanations: React.FC<StatisticalExplanationsProps> = ({ portf
 
       <Alert color="orange" variant="light">
         <Text size="sm">
-          <strong>⚠️ Important Disclaimer:</strong> These calculations are based on historical data and 
-          mathematical models. Past performance does not guarantee future results. Always consult with 
-          a qualified financial advisor before making investment decisions.
+          <strong>⚠️ Important Disclaimer:</strong> These calculations are based
+          on historical data and mathematical models. Past performance does not
+          guarantee future results. Always consult with a qualified financial
+          advisor before making investment decisions.
         </Text>
       </Alert>
     </Stack>

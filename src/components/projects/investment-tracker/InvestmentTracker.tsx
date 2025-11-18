@@ -1,39 +1,76 @@
 import {
-  Badge, Box, Button, Card, Container, Grid, Group, Progress,
-  SimpleGrid, Stack, Tabs, Text, ThemeIcon, Title, useMantineColorScheme
+  Badge,
+  Box,
+  Button,
+  Card,
+  Container,
+  Grid,
+  Group,
+  Progress,
+  SimpleGrid,
+  Stack,
+  Tabs,
+  Text,
+  ThemeIcon,
+  Title,
+  useMantineColorScheme,
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import {
-  ArrowUpRight, ArrowDownRight, 
-  PieChart, BarChart3, Shield, DollarSign,
-  Plus, Edit, Eye, Trash2, Download,
-  TrendingUp, Activity, Target, AlertTriangle
+  Activity,
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart3,
+  DollarSign,
+  Download,
+  Edit,
+  Eye,
+  PieChart,
+  Plus,
+  Shield,
+  Target,
+  Trash2,
+  TrendingUp,
 } from 'lucide-react';
-import React, { useState, useMemo } from 'react';
-import InvestmentForm from './InvestmentForm';
+import React, { useMemo, useState } from 'react';
 import ConfigPanel from './ConfigPanel';
+import InvestmentForm from './InvestmentForm';
 import StatisticalExplanations from './StatisticalExplanations';
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
-         ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts';
 import { notifications } from '@mantine/notifications';
-import { PLATFORMS, Platform } from './types';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart as RechartsPieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { Platform, PLATFORMS } from './types';
 
-import { 
-  Investment, 
-  PortfolioSummary, 
-  InvestmentType,
-  INVESTMENT_CATEGORIES,
-  PerformancePoint
-} from './types';
-import { 
-  calculatePortfolioSummary, 
-  formatCurrency, 
+import {
+  calculatePortfolioStatistics,
+  calculatePortfolioSummary,
+  formatCurrency,
   formatPercentage,
   generateSampleInvestments,
-  calculatePortfolioStatistics,
-  PortfolioStatistics
+  PortfolioStatistics,
 } from './calculations';
+import {
+  Investment,
+  InvestmentType,
+  INVESTMENT_CATEGORIES,
+  PerformancePoint,
+  PortfolioSummary,
+} from './types';
 
 const InvestmentTracker: React.FC = () => {
   const [investments, setInvestments] = useLocalStorage<Investment[]>({
@@ -42,15 +79,26 @@ const InvestmentTracker: React.FC = () => {
   });
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-  const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
+  const [selectedInvestment, setSelectedInvestment] =
+    useState<Investment | null>(null);
   const [formMode, setFormMode] = useState<'add' | 'edit' | 'view'>('add');
   const [formOpened, setFormOpened] = useState(false);
 
   // Configurable platforms store (seed from defaults)
-  const [platforms, setPlatforms] = useLocalStorage<Platform[]>({ key: 'config-platforms', defaultValue: PLATFORMS });
+  const [platforms, setPlatforms] = useLocalStorage<Platform[]>({
+    key: 'config-platforms',
+    defaultValue: PLATFORMS,
+  });
 
-  const portfolio = useMemo(() => calculatePortfolioSummary(investments), [investments]);
-  const portfolioStats = useMemo(() => calculatePortfolioStatistics(investments, portfolio.monthlyPerformance), [investments, portfolio.monthlyPerformance]);
+  const portfolio = useMemo(
+    () => calculatePortfolioSummary(investments),
+    [investments]
+  );
+  const portfolioStats = useMemo(
+    () =>
+      calculatePortfolioStatistics(investments, portfolio.monthlyPerformance),
+    [investments, portfolio.monthlyPerformance]
+  );
 
   const handleAddInvestment = () => {
     setSelectedInvestment(null);
@@ -70,7 +118,9 @@ const InvestmentTracker: React.FC = () => {
     setFormOpened(true);
   };
 
-  const handleSaveInvestment = (investmentData: Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSaveInvestment = (
+    investmentData: Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>
+  ) => {
     if (formMode === 'add') {
       const newInvestment: Investment = {
         ...investmentData,
@@ -80,11 +130,18 @@ const InvestmentTracker: React.FC = () => {
       };
       setInvestments(prev => [...prev, newInvestment]);
     } else if (formMode === 'edit' && selectedInvestment) {
-      setInvestments(prev => prev.map(inv => 
-        inv.id === selectedInvestment.id 
-          ? { ...investmentData, id: inv.id, createdAt: inv.createdAt, updatedAt: new Date() }
-          : inv
-      ));
+      setInvestments(prev =>
+        prev.map(inv =>
+          inv.id === selectedInvestment.id
+            ? {
+                ...investmentData,
+                id: inv.id,
+                createdAt: inv.createdAt,
+                updatedAt: new Date(),
+              }
+            : inv
+        )
+      );
     }
   };
 
@@ -98,17 +155,21 @@ const InvestmentTracker: React.FC = () => {
     notifications.show({
       title: 'Demo data loaded',
       message: `Loaded ${demoData.length} sample investments to help you get started`,
-      color: 'green'
+      color: 'green',
     });
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear all investments? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to clear all investments? This action cannot be undone.'
+      )
+    ) {
       setInvestments([]);
       notifications.show({
         title: 'All investments cleared',
         message: 'Your investment data has been cleared',
-        color: 'orange'
+        color: 'orange',
       });
     }
   };
@@ -121,21 +182,32 @@ const InvestmentTracker: React.FC = () => {
   // Export/Import handlers
   const handleExportInvestments = () => {
     try {
-      const investmentPayload = investments.map((inv) => ({
+      const investmentPayload = investments.map(inv => ({
         ...inv,
-        createdAt: inv.createdAt instanceof Date ? inv.createdAt.toISOString() : inv.createdAt,
-        updatedAt: inv.updatedAt instanceof Date ? inv.updatedAt.toISOString() : inv.updatedAt,
-        purchaseDate: inv.purchaseDate instanceof Date ? inv.purchaseDate.toISOString() : inv.purchaseDate,
+        createdAt:
+          inv.createdAt instanceof Date
+            ? inv.createdAt.toISOString()
+            : inv.createdAt,
+        updatedAt:
+          inv.updatedAt instanceof Date
+            ? inv.updatedAt.toISOString()
+            : inv.updatedAt,
+        purchaseDate:
+          inv.purchaseDate instanceof Date
+            ? inv.purchaseDate.toISOString()
+            : inv.purchaseDate,
       }));
-      
+
       const payload = {
         version: '1.0',
         exportDate: new Date().toISOString(),
         investments: investmentPayload,
-        platforms: platforms
+        platforms: platforms,
       };
-      
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: 'application/json',
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       const today = new Date().toISOString().slice(0, 10);
@@ -145,13 +217,17 @@ const InvestmentTracker: React.FC = () => {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      notifications.show({ 
-        title: 'Exported', 
-        message: `Exported ${investments.length} investments and ${platforms.length} platforms`, 
-        color: 'green' 
+      notifications.show({
+        title: 'Exported',
+        message: `Exported ${investments.length} investments and ${platforms.length} platforms`,
+        color: 'green',
       });
     } catch {
-      notifications.show({ title: 'Export failed', message: 'Could not export portfolio data', color: 'red' });
+      notifications.show({
+        title: 'Export failed',
+        message: 'Could not export portfolio data',
+        color: 'red',
+      });
     }
   };
 
@@ -159,7 +235,7 @@ const InvestmentTracker: React.FC = () => {
     try {
       let investmentsData: any[] = [];
       let platformsData: Platform[] = [];
-      
+
       // Handle both old format (array of investments) and new format (object with investments + platforms)
       if (Array.isArray(data)) {
         // Legacy format: just investments
@@ -176,55 +252,61 @@ const InvestmentTracker: React.FC = () => {
       // Normalize investments
       const normalizedInvestments = investmentsData.map((raw: any) => {
         let platform: Platform;
-        
+
         if (typeof raw.platform === 'string') {
           // Try to find in imported platforms first, then existing platforms
-          platform = [...platformsData, ...platforms].find(p => p.id === raw.platform) as Platform;
+          platform = [...platformsData, ...platforms].find(
+            p => p.id === raw.platform
+          ) as Platform;
           if (!platform) {
             throw new Error(`Platform "${raw.platform}" not found`);
           }
         } else {
           platform = raw.platform;
         }
-        
+
         return {
           ...raw,
           platform,
-          purchaseDate: raw.purchaseDate ? new Date(raw.purchaseDate) : new Date(),
+          purchaseDate: raw.purchaseDate
+            ? new Date(raw.purchaseDate)
+            : new Date(),
           createdAt: raw.createdAt ? new Date(raw.createdAt) : new Date(),
           updatedAt: raw.updatedAt ? new Date(raw.updatedAt) : new Date(),
         } as Investment;
       });
 
-      const confirmMessage = platformsData.length > 0 
-        ? `Import will replace current data with ${normalizedInvestments.length} investments and ${platformsData.length} platforms. Continue?`
-        : `Import will replace current investments with ${normalizedInvestments.length} investments. Continue?`;
-      
+      const confirmMessage =
+        platformsData.length > 0
+          ? `Import will replace current data with ${normalizedInvestments.length} investments and ${platformsData.length} platforms. Continue?`
+          : `Import will replace current investments with ${normalizedInvestments.length} investments. Continue?`;
+
       const replace = window.confirm(confirmMessage);
       if (!replace) return;
 
       // Update investments
       setInvestments(normalizedInvestments);
-      
+
       // Update platforms if provided
       if (platformsData.length > 0) {
         setPlatforms(platformsData);
       }
 
-      const successMessage = platformsData.length > 0
-        ? `Imported ${normalizedInvestments.length} investments and ${platformsData.length} platforms`
-        : `Imported ${normalizedInvestments.length} investments`;
-      
-      notifications.show({ 
-        title: 'Imported', 
-        message: successMessage, 
-        color: 'green' 
+      const successMessage =
+        platformsData.length > 0
+          ? `Imported ${normalizedInvestments.length} investments and ${platformsData.length} platforms`
+          : `Imported ${normalizedInvestments.length} investments`;
+
+      notifications.show({
+        title: 'Imported',
+        message: successMessage,
+        color: 'green',
       });
     } catch (e: any) {
-      notifications.show({ 
-        title: 'Import failed', 
-        message: e?.message || 'Invalid file format', 
-        color: 'red' 
+      notifications.show({
+        title: 'Import failed',
+        message: e?.message || 'Invalid file format',
+        color: 'red',
       });
     }
   };
@@ -238,12 +320,16 @@ const InvestmentTracker: React.FC = () => {
             Investment Portfolio Tracker
           </Title>
           <Text c="dimmed">
-            Track your investments across platforms with comprehensive analytics and insights.
+            Track your investments across platforms with comprehensive analytics
+            and insights.
           </Text>
         </Box>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onChange={(value) => setActiveTab(value || 'dashboard')}>
+        <Tabs
+          value={activeTab}
+          onChange={value => setActiveTab(value || 'dashboard')}
+        >
           <Tabs.List>
             <Tabs.Tab value="dashboard" leftSection={<BarChart3 size={16} />}>
               Dashboard
@@ -258,10 +344,10 @@ const InvestmentTracker: React.FC = () => {
             {/* Lessons removed per request */}
           </Tabs.List>
 
-      {/* Dashboard Tab */}
+          {/* Dashboard Tab */}
           <Tabs.Panel value="dashboard">
-            <DashboardView 
-              portfolio={portfolio} 
+            <DashboardView
+              portfolio={portfolio}
               investments={investments}
               onAddInvestment={handleAddInvestment}
               onViewInvestment={handleViewInvestment}
@@ -276,7 +362,7 @@ const InvestmentTracker: React.FC = () => {
 
           {/* Analytics Tab */}
           <Tabs.Panel value="analytics">
-            <AnalyticsView 
+            <AnalyticsView
               portfolioStats={portfolioStats}
               investments={investments}
               performanceData={portfolio.monthlyPerformance}
@@ -317,8 +403,10 @@ const AnalyticsView: React.FC<{
   investments: Investment[];
   performanceData: PerformancePoint[];
 }> = ({ portfolioStats, investments, performanceData }) => {
-
-  const getRiskLevel = (value: number, thresholds: { low: number; medium: number }) => {
+  const getRiskLevel = (
+    value: number,
+    thresholds: { low: number; medium: number }
+  ) => {
     if (value <= thresholds.low) return { level: 'Low', color: 'green' };
     if (value <= thresholds.medium) return { level: 'Medium', color: 'yellow' };
     return { level: 'High', color: 'red' };
@@ -331,15 +419,26 @@ const AnalyticsView: React.FC<{
     return { rating: 'Poor', color: 'red' };
   };
 
-  const volatilityRisk = getRiskLevel(portfolioStats.volatility * 100, { low: 15, medium: 25 });
-  const drawdownRisk = getRiskLevel(portfolioStats.maxDrawdown.maxDrawdown, { low: 10, medium: 20 });
-  const concentrationRisk = getRiskLevel(portfolioStats.concentration * 100, { low: 20, medium: 40 });
+  const volatilityRisk = getRiskLevel(portfolioStats.volatility * 100, {
+    low: 15,
+    medium: 25,
+  });
+  const drawdownRisk = getRiskLevel(portfolioStats.maxDrawdown.maxDrawdown, {
+    low: 10,
+    medium: 20,
+  });
+  const concentrationRisk = getRiskLevel(portfolioStats.concentration * 100, {
+    low: 20,
+    medium: 40,
+  });
   const performanceRating = getPerformanceRating(portfolioStats.sharpeRatio);
 
   return (
     <Stack gap="xl" mt="md">
       <Group justify="space-between">
-        <Title order={2} size="h2">Portfolio Analytics</Title>
+        <Title order={2} size="h2">
+          Portfolio Analytics
+        </Title>
         <Badge size="lg" variant="light" color="blue">
           {investments.length} Investments Analyzed
         </Badge>
@@ -347,13 +446,19 @@ const AnalyticsView: React.FC<{
 
       {/* Risk Metrics */}
       <Card withBorder p="md">
-        <Title order={3} size="h4" mb="md" c="blue">Risk Assessment</Title>
+        <Title order={3} size="h4" mb="md" c="blue">
+          Risk Assessment
+        </Title>
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Volatility Risk</Text>
-                <Text size="lg" fw={700}>{(portfolioStats.volatility * 100).toFixed(1)}%</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Volatility Risk
+                </Text>
+                <Text size="lg" fw={700}>
+                  {(portfolioStats.volatility * 100).toFixed(1)}%
+                </Text>
                 <Badge size="sm" color={volatilityRisk.color} variant="light">
                   {volatilityRisk.level}
                 </Badge>
@@ -367,8 +472,12 @@ const AnalyticsView: React.FC<{
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Max Drawdown</Text>
-                <Text size="lg" fw={700}>{portfolioStats.maxDrawdown.maxDrawdown.toFixed(1)}%</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Max Drawdown
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.maxDrawdown.maxDrawdown.toFixed(1)}%
+                </Text>
                 <Badge size="sm" color={drawdownRisk.color} variant="light">
                   {drawdownRisk.level}
                 </Badge>
@@ -382,9 +491,15 @@ const AnalyticsView: React.FC<{
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Value at Risk (95%)</Text>
-                <Text size="lg" fw={700}>{portfolioStats.valueAtRisk.toFixed(1)}%</Text>
-                <Text size="xs" c="dimmed">Potential monthly loss</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Value at Risk (95%)
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.valueAtRisk.toFixed(1)}%
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Potential monthly loss
+                </Text>
               </div>
               <ThemeIcon color="orange" variant="light" size="md">
                 <Shield size={16} />
@@ -395,9 +510,15 @@ const AnalyticsView: React.FC<{
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Portfolio Beta</Text>
-                <Text size="lg" fw={700}>{portfolioStats.beta.toFixed(2)}</Text>
-                <Text size="xs" c="dimmed">vs Market</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Portfolio Beta
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.beta.toFixed(2)}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  vs Market
+                </Text>
               </div>
               <ThemeIcon color="purple" variant="light" size="md">
                 <TrendingUp size={16} />
@@ -409,18 +530,32 @@ const AnalyticsView: React.FC<{
 
       {/* Performance Metrics */}
       <Card withBorder p="md">
-        <Title order={3} size="h4" mb="md" c="green">Performance Analysis</Title>
+        <Title order={3} size="h4" mb="md" c="green">
+          Performance Analysis
+        </Title>
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Sharpe Ratio</Text>
-                <Text size="lg" fw={700}>{portfolioStats.sharpeRatio.toFixed(2)}</Text>
-                <Badge size="sm" color={performanceRating.color} variant="light">
+                <Text size="xs" c="dimmed" fw={500}>
+                  Sharpe Ratio
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.sharpeRatio.toFixed(2)}
+                </Text>
+                <Badge
+                  size="sm"
+                  color={performanceRating.color}
+                  variant="light"
+                >
                   {performanceRating.rating}
                 </Badge>
               </div>
-              <ThemeIcon color={performanceRating.color} variant="light" size="md">
+              <ThemeIcon
+                color={performanceRating.color}
+                variant="light"
+                size="md"
+              >
                 <Target size={16} />
               </ThemeIcon>
             </Group>
@@ -429,14 +564,30 @@ const AnalyticsView: React.FC<{
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Annualized Return</Text>
-                <Text size="lg" fw={700} c={portfolioStats.annualizedReturn >= 0 ? 'green' : 'red'}>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Annualized Return
+                </Text>
+                <Text
+                  size="lg"
+                  fw={700}
+                  c={portfolioStats.annualizedReturn >= 0 ? 'green' : 'red'}
+                >
                   {portfolioStats.annualizedReturn.toFixed(1)}%
                 </Text>
-                <Text size="xs" c="dimmed">Per year</Text>
+                <Text size="xs" c="dimmed">
+                  Per year
+                </Text>
               </div>
-              <ThemeIcon color={portfolioStats.annualizedReturn >= 0 ? 'green' : 'red'} variant="light" size="md">
-                {portfolioStats.annualizedReturn >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+              <ThemeIcon
+                color={portfolioStats.annualizedReturn >= 0 ? 'green' : 'red'}
+                variant="light"
+                size="md"
+              >
+                {portfolioStats.annualizedReturn >= 0 ? (
+                  <ArrowUpRight size={16} />
+                ) : (
+                  <ArrowDownRight size={16} />
+                )}
               </ThemeIcon>
             </Group>
           </Card>
@@ -444,9 +595,15 @@ const AnalyticsView: React.FC<{
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Win Rate</Text>
-                <Text size="lg" fw={700}>{portfolioStats.winRate.toFixed(1)}%</Text>
-                <Text size="xs" c="dimmed">Profitable periods</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Win Rate
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.winRate.toFixed(1)}%
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Profitable periods
+                </Text>
               </div>
               <ThemeIcon color="blue" variant="light" size="md">
                 <Target size={16} />
@@ -457,9 +614,15 @@ const AnalyticsView: React.FC<{
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Information Ratio</Text>
-                <Text size="lg" fw={700}>{portfolioStats.informationRatio.toFixed(2)}</Text>
-                <Text size="xs" c="dimmed">vs Benchmark</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Information Ratio
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.informationRatio.toFixed(2)}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  vs Benchmark
+                </Text>
               </div>
               <ThemeIcon color="indigo" variant="light" size="md">
                 <BarChart3 size={16} />
@@ -471,32 +634,53 @@ const AnalyticsView: React.FC<{
 
       {/* Diversification Metrics */}
       <Card withBorder p="md">
-        <Title order={3} size="h4" mb="md" c="purple">Diversification Analysis</Title>
+        <Title order={3} size="h4" mb="md" c="purple">
+          Diversification Analysis
+        </Title>
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Concentration Risk</Text>
-                <Text size="lg" fw={700}>{(portfolioStats.concentration * 100).toFixed(1)}%</Text>
-                <Badge size="sm" color={concentrationRisk.color} variant="light">
+                <Text size="xs" c="dimmed" fw={500}>
+                  Concentration Risk
+                </Text>
+                <Text size="lg" fw={700}>
+                  {(portfolioStats.concentration * 100).toFixed(1)}%
+                </Text>
+                <Badge
+                  size="sm"
+                  color={concentrationRisk.color}
+                  variant="light"
+                >
                   {concentrationRisk.level}
                 </Badge>
               </div>
-              <ThemeIcon color={concentrationRisk.color} variant="light" size="md">
+              <ThemeIcon
+                color={concentrationRisk.color}
+                variant="light"
+                size="md"
+              >
                 <PieChart size={16} />
               </ThemeIcon>
             </Group>
             <Text size="xs" c="dimmed" mt="xs">
-              Lower is better (perfect = {(100 / investments.length).toFixed(1)}%)
+              Lower is better (perfect = {(100 / investments.length).toFixed(1)}
+              %)
             </Text>
           </Card>
 
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Diversification Ratio</Text>
-                <Text size="lg" fw={700}>{portfolioStats.diversificationRatio.toFixed(2)}</Text>
-                <Text size="xs" c="dimmed">Efficiency score</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Diversification Ratio
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.diversificationRatio.toFixed(2)}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Efficiency score
+                </Text>
               </div>
               <ThemeIcon color="teal" variant="light" size="md">
                 <Shield size={16} />
@@ -510,9 +694,15 @@ const AnalyticsView: React.FC<{
           <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
             <Group justify="space-between" align="flex-start">
               <div>
-                <Text size="xs" c="dimmed" fw={500}>Market Correlation</Text>
-                <Text size="lg" fw={700}>{portfolioStats.correlation.toFixed(2)}</Text>
-                <Text size="xs" c="dimmed">vs Market proxy</Text>
+                <Text size="xs" c="dimmed" fw={500}>
+                  Market Correlation
+                </Text>
+                <Text size="lg" fw={700}>
+                  {portfolioStats.correlation.toFixed(2)}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  vs Market proxy
+                </Text>
               </div>
               <ThemeIcon color="cyan" variant="light" size="md">
                 <Activity size={16} />
@@ -527,17 +717,23 @@ const AnalyticsView: React.FC<{
 
       {/* Advanced Metrics */}
       <Card withBorder p="md">
-        <Title order={3} size="h4" mb="md" c="orange">Advanced Statistics</Title>
+        <Title order={3} size="h4" mb="md" c="orange">
+          Advanced Statistics
+        </Title>
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
           <Stack gap="md">
             <div>
               <Group justify="space-between" mb="xs">
                 <Text fw={500}>Average Win</Text>
-                <Text c="green" fw={700}>{portfolioStats.averageWin.toFixed(2)}%</Text>
+                <Text c="green" fw={700}>
+                  {portfolioStats.averageWin.toFixed(2)}%
+                </Text>
               </Group>
               <Group justify="space-between" mb="xs">
                 <Text fw={500}>Average Loss</Text>
-                <Text c="red" fw={700}>{portfolioStats.averageLoss.toFixed(2)}%</Text>
+                <Text c="red" fw={700}>
+                  {portfolioStats.averageLoss.toFixed(2)}%
+                </Text>
               </Group>
               <Group justify="space-between" mb="xs">
                 <Text fw={500}>Profit Factor</Text>
@@ -545,12 +741,14 @@ const AnalyticsView: React.FC<{
               </Group>
             </div>
           </Stack>
-          
+
           <Stack gap="md">
             <div>
               <Group justify="space-between" mb="xs">
                 <Text fw={500}>Max Drawdown Duration</Text>
-                <Text fw={700}>{portfolioStats.maxDrawdown.duration} months</Text>
+                <Text fw={700}>
+                  {portfolioStats.maxDrawdown.duration} months
+                </Text>
               </Group>
               <Group justify="space-between" mb="xs">
                 <Text fw={500}>Total Investments</Text>
@@ -567,33 +765,41 @@ const AnalyticsView: React.FC<{
 
       {/* Risk-Return Interpretation */}
       <Card withBorder p="md" bg="var(--mantine-color-default-hover)">
-        <Title order={4} size="h5" mb="sm">📊 Portfolio Interpretation</Title>
+        <Title order={4} size="h5" mb="sm">
+          📊 Portfolio Interpretation
+        </Title>
         <Stack gap="xs">
           <Text size="sm">
-            <strong>Risk Profile:</strong> Your portfolio shows {volatilityRisk.level.toLowerCase()} volatility 
-            ({(portfolioStats.volatility * 100).toFixed(1)}% annualized) with {drawdownRisk.level.toLowerCase()} drawdown risk.
+            <strong>Risk Profile:</strong> Your portfolio shows{' '}
+            {volatilityRisk.level.toLowerCase()} volatility (
+            {(portfolioStats.volatility * 100).toFixed(1)}% annualized) with{' '}
+            {drawdownRisk.level.toLowerCase()} drawdown risk.
           </Text>
           <Text size="sm">
-            <strong>Performance:</strong> {performanceRating.rating} risk-adjusted returns with a Sharpe ratio of {portfolioStats.sharpeRatio.toFixed(2)}.
+            <strong>Performance:</strong> {performanceRating.rating}{' '}
+            risk-adjusted returns with a Sharpe ratio of{' '}
+            {portfolioStats.sharpeRatio.toFixed(2)}.
           </Text>
           <Text size="sm">
-            <strong>Diversification:</strong> {concentrationRisk.level} concentration risk. 
-            Consider {concentrationRisk.level === 'High' ? 'diversifying further' : 'maintaining current diversification'}.
+            <strong>Diversification:</strong> {concentrationRisk.level}{' '}
+            concentration risk. Consider{' '}
+            {concentrationRisk.level === 'High'
+              ? 'diversifying further'
+              : 'maintaining current diversification'}
+            .
           </Text>
         </Stack>
       </Card>
 
       {/* Mathematical Explanations */}
-      <StatisticalExplanations 
-        portfolioStats={portfolioStats}
-      />
+      <StatisticalExplanations portfolioStats={portfolioStats} />
     </Stack>
   );
 };
 
 // Dashboard View Component
-const DashboardView: React.FC<{ 
-  portfolio: PortfolioSummary; 
+const DashboardView: React.FC<{
+  portfolio: PortfolioSummary;
   investments: Investment[];
   onAddInvestment: () => void;
   onViewInvestment: (investment: Investment) => void;
@@ -604,8 +810,8 @@ const DashboardView: React.FC<{
   onImportInvestments?: (data: any) => void;
   onLoadDemo: () => void;
   onClearAll: () => void;
-}> = ({ 
-  portfolio, 
+}> = ({
+  portfolio,
   investments,
   onAddInvestment,
   onViewInvestment,
@@ -615,19 +821,36 @@ const DashboardView: React.FC<{
   onExportInvestments,
   onImportInvestments,
   onLoadDemo,
-  onClearAll
+  onClearAll,
 }) => {
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1', '#d084d0', '#ffb347', '#87ceeb'];
-  const [timeframe, setTimeframe] = React.useState<'1M' | '3M' | '1Y' | 'ALL'>('1Y');
+  const COLORS = [
+    '#8884d8',
+    '#82ca9d',
+    '#ffc658',
+    '#ff7c7c',
+    '#8dd1e1',
+    '#d084d0',
+    '#ffb347',
+    '#87ceeb',
+  ];
+  const [timeframe, setTimeframe] = React.useState<'1M' | '3M' | '1Y' | 'ALL'>(
+    '1Y'
+  );
   const fileRef = React.useRef<HTMLInputElement>(null);
   const { colorScheme } = useMantineColorScheme();
-  
+
   // Theme-aware chart styling
   const chartTheme = {
-    grid: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+    grid:
+      colorScheme === 'dark'
+        ? 'rgba(255, 255, 255, 0.1)'
+        : 'rgba(0, 0, 0, 0.1)',
     text: colorScheme === 'dark' ? '#ffffff' : '#000000',
-    axis: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-    background: 'transparent'
+    axis:
+      colorScheme === 'dark'
+        ? 'rgba(255, 255, 255, 0.6)'
+        : 'rgba(0, 0, 0, 0.6)',
+    background: 'transparent',
   };
 
   // Prepare data for charts
@@ -654,12 +877,12 @@ const DashboardView: React.FC<{
   return (
     <Stack gap="xl" mt="md">
       {/* Hidden file input for import */}
-      <input 
-        ref={fileRef} 
-        type="file" 
-        accept="application/json" 
-        style={{ display: 'none' }} 
-        onChange={(e) => {
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json"
+        style={{ display: 'none' }}
+        onChange={e => {
           const file = e.currentTarget.files?.[0];
           if (!file || !onImportInvestments) return;
           const reader = new FileReader();
@@ -668,26 +891,40 @@ const DashboardView: React.FC<{
               const data = JSON.parse(String(reader.result));
               onImportInvestments(data);
             } catch {
-              notifications.show({ title: 'Import failed', message: 'Invalid JSON', color: 'red' });
+              notifications.show({
+                title: 'Import failed',
+                message: 'Invalid JSON',
+                color: 'red',
+              });
             }
           };
           reader.readAsText(file);
           e.currentTarget.value = '';
-        }} 
+        }}
       />
 
       <Group justify="space-between">
-        <Title order={2} size="h2">Portfolio Overview</Title>
+        <Title order={2} size="h2">
+          Portfolio Overview
+        </Title>
         <Group gap="xs">
           {onExportInvestments && (
-            <Button size="xs" variant="light" onClick={onExportInvestments}>Export JSON</Button>
+            <Button size="xs" variant="light" onClick={onExportInvestments}>
+              Export JSON
+            </Button>
           )}
           {onImportInvestments && (
-            <Button size="xs" variant="light" onClick={() => fileRef.current?.click()}>Import JSON</Button>
+            <Button
+              size="xs"
+              variant="light"
+              onClick={() => fileRef.current?.click()}
+            >
+              Import JSON
+            </Button>
           )}
-          <Button 
-            size="xs" 
-            variant="light" 
+          <Button
+            size="xs"
+            variant="light"
             color="red"
             leftSection={<Trash2 size={14} />}
             onClick={onClearAll}
@@ -695,7 +932,12 @@ const DashboardView: React.FC<{
             Clear All
           </Button>
           {onNavigateToAnalytics && (
-            <Button size="xs" variant="gradient" gradient={{ from: 'corporate', to: 'accent' }} onClick={onNavigateToAnalytics}>
+            <Button
+              size="xs"
+              variant="gradient"
+              gradient={{ from: 'corporate', to: 'accent' }}
+              onClick={onNavigateToAnalytics}
+            >
               Open Analytics
             </Button>
           )}
@@ -703,7 +945,7 @@ const DashboardView: React.FC<{
       </Group>
       {/* Key Metrics */}
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
-      <Card withBorder p="md" className="glass-effect">
+        <Card withBorder p="md" className="glass-effect">
           <Group justify="space-between" align="flex-start">
             <div>
               <Text size="sm" c="dimmed" fw={500}>
@@ -725,19 +967,30 @@ const DashboardView: React.FC<{
               <Text size="sm" c="dimmed" fw={500}>
                 Total Return
               </Text>
-              <Text size="xl" fw={700} c={portfolio.totalReturn >= 0 ? 'green' : 'red'}>
+              <Text
+                size="xl"
+                fw={700}
+                c={portfolio.totalReturn >= 0 ? 'green' : 'red'}
+              >
                 {formatCurrency(portfolio.totalReturn)}
               </Text>
-              <Text size="sm" c={portfolio.returnPercentage >= 0 ? 'green' : 'red'}>
+              <Text
+                size="sm"
+                c={portfolio.returnPercentage >= 0 ? 'green' : 'red'}
+              >
                 {formatPercentage(portfolio.returnPercentage)}
               </Text>
             </div>
-            <ThemeIcon 
-              color={portfolio.totalReturn >= 0 ? 'green' : 'red'} 
-              variant="light" 
+            <ThemeIcon
+              color={portfolio.totalReturn >= 0 ? 'green' : 'red'}
+              variant="light"
               size="lg"
             >
-              {portfolio.totalReturn >= 0 ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+              {portfolio.totalReturn >= 0 ? (
+                <ArrowUpRight size={20} />
+              ) : (
+                <ArrowDownRight size={20} />
+              )}
             </ThemeIcon>
           </Group>
         </Card>
@@ -752,14 +1005,25 @@ const DashboardView: React.FC<{
                 <Text size="xl" fw={700}>
                   {portfolio.diversificationScore.toFixed(0)}
                 </Text>
-                <Text size="sm" c="dimmed">/100</Text>
+                <Text size="sm" c="dimmed">
+                  /100
+                </Text>
               </Group>
               <Text size="xs" c="dimmed" mt={2}>
-                {portfolio.diversificationScore >= 80 ? 'Excellent diversification' : 
-                 portfolio.diversificationScore >= 60 ? 'Good diversification' : 
-                 portfolio.diversificationScore >= 40 ? 'Fair diversification' : 'Needs more diversification'}
+                {portfolio.diversificationScore >= 80
+                  ? 'Excellent diversification'
+                  : portfolio.diversificationScore >= 60
+                    ? 'Good diversification'
+                    : portfolio.diversificationScore >= 40
+                      ? 'Fair diversification'
+                      : 'Needs more diversification'}
               </Text>
-              <Progress value={portfolio.diversificationScore} color="cyan" size="sm" mt="xs" />
+              <Progress
+                value={portfolio.diversificationScore}
+                color="cyan"
+                size="sm"
+                mt="xs"
+              />
             </div>
             <ThemeIcon color="cyan" variant="light" size="lg">
               <PieChart size={20} />
@@ -777,24 +1041,43 @@ const DashboardView: React.FC<{
                 <Text size="xl" fw={700}>
                   {portfolio.riskScore.toFixed(0)}
                 </Text>
-                <Text size="sm" c="dimmed">/100</Text>
+                <Text size="sm" c="dimmed">
+                  /100
+                </Text>
               </Group>
               <Text size="xs" c="dimmed" mt={2}>
-                {portfolio.riskScore >= 80 ? 'Very high risk portfolio' : 
-                 portfolio.riskScore >= 60 ? 'High risk portfolio' : 
-                 portfolio.riskScore >= 40 ? 'Medium risk portfolio' : 
-                 portfolio.riskScore >= 20 ? 'Low risk portfolio' : 'Very low risk portfolio'}
+                {portfolio.riskScore >= 80
+                  ? 'Very high risk portfolio'
+                  : portfolio.riskScore >= 60
+                    ? 'High risk portfolio'
+                    : portfolio.riskScore >= 40
+                      ? 'Medium risk portfolio'
+                      : portfolio.riskScore >= 20
+                        ? 'Low risk portfolio'
+                        : 'Very low risk portfolio'}
               </Text>
-              <Progress 
-                value={portfolio.riskScore} 
-                color={portfolio.riskScore > 70 ? 'red' : portfolio.riskScore > 40 ? 'orange' : 'green'} 
-                size="sm" 
-                mt="xs" 
+              <Progress
+                value={portfolio.riskScore}
+                color={
+                  portfolio.riskScore > 70
+                    ? 'red'
+                    : portfolio.riskScore > 40
+                      ? 'orange'
+                      : 'green'
+                }
+                size="sm"
+                mt="xs"
               />
             </div>
-            <ThemeIcon 
-              color={portfolio.riskScore > 70 ? 'red' : portfolio.riskScore > 40 ? 'orange' : 'green'} 
-              variant="light" 
+            <ThemeIcon
+              color={
+                portfolio.riskScore > 70
+                  ? 'red'
+                  : portfolio.riskScore > 40
+                    ? 'orange'
+                    : 'green'
+              }
+              variant="light"
               size="lg"
             >
               <Shield size={20} />
@@ -808,84 +1091,145 @@ const DashboardView: React.FC<{
         <Grid.Col span={{ base: 12, lg: 8 }}>
           <Card withBorder p="md" h={400} className="glass-effect">
             <Group justify="space-between" mb="md">
-              <Title order={3} size="h4" className="animate-gradient-text">Performance Over Time</Title>
+              <Title order={3} size="h4" className="animate-gradient-text">
+                Performance Over Time
+              </Title>
               <Group gap="xs">
-                <Button size="xs" variant={timeframe === '1M' ? 'filled' : 'light'} onClick={() => setTimeframe('1M')}>1M</Button>
-                <Button size="xs" variant={timeframe === '3M' ? 'filled' : 'light'} onClick={() => setTimeframe('3M')}>3M</Button>
-                <Button size="xs" variant={timeframe === '1Y' ? 'filled' : 'light'} onClick={() => setTimeframe('1Y')}>1Y</Button>
-                <Button size="xs" variant={timeframe === 'ALL' ? 'filled' : 'light'} onClick={() => setTimeframe('ALL')}>ALL</Button>
+                <Button
+                  size="xs"
+                  variant={timeframe === '1M' ? 'filled' : 'light'}
+                  onClick={() => setTimeframe('1M')}
+                >
+                  1M
+                </Button>
+                <Button
+                  size="xs"
+                  variant={timeframe === '3M' ? 'filled' : 'light'}
+                  onClick={() => setTimeframe('3M')}
+                >
+                  3M
+                </Button>
+                <Button
+                  size="xs"
+                  variant={timeframe === '1Y' ? 'filled' : 'light'}
+                  onClick={() => setTimeframe('1Y')}
+                >
+                  1Y
+                </Button>
+                <Button
+                  size="xs"
+                  variant={timeframe === 'ALL' ? 'filled' : 'light'}
+                  onClick={() => setTimeframe('ALL')}
+                >
+                  ALL
+                </Button>
               </Group>
             </Group>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart
+                data={performanceData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
                 <defs>
-                  <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS[0]} stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor={COLORS[0]} stopOpacity={0.05}/>
+                  <linearGradient
+                    id="portfolioGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor={COLORS[0]} stopOpacity={0.3} />
+                    <stop
+                      offset="95%"
+                      stopColor={COLORS[0]}
+                      stopOpacity={0.05}
+                    />
                   </linearGradient>
-                  <linearGradient id="investedGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor={COLORS[1]} stopOpacity={0.02}/>
+                  <linearGradient
+                    id="investedGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.2} />
+                    <stop
+                      offset="95%"
+                      stopColor={COLORS[1]}
+                      stopOpacity={0.02}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tick={{ fill: chartTheme.text, fontSize: 11 }}
                   axisLine={{ stroke: chartTheme.axis }}
                   tickLine={{ stroke: chartTheme.axis }}
-                  tickFormatter={(value) => {
+                  tickFormatter={value => {
                     const date = new Date(value);
                     return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(-2)}`;
                   }}
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fill: chartTheme.text, fontSize: 11 }}
                   axisLine={{ stroke: chartTheme.axis }}
                   tickLine={{ stroke: chartTheme.axis }}
-                  tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
+                  tickFormatter={value => `€${(value / 1000).toFixed(0)}k`}
                 />
-                <RechartsTooltip 
+                <RechartsTooltip
                   formatter={(value: any, name: string) => {
-                    const dataPoint = performanceData.find(d => d.totalValue === value);
-                    const profit = dataPoint ? dataPoint.totalValue - dataPoint.invested : 0;
+                    const dataPoint = performanceData.find(
+                      d => d.totalValue === value
+                    );
+                    const profit = dataPoint
+                      ? dataPoint.totalValue - dataPoint.invested
+                      : 0;
                     return [
-                      formatCurrency(value as number), 
-                      name === 'totalValue' ? `Portfolio Value ${dataPoint ? `(${profit >= 0 ? '+' : ''}${formatCurrency(profit)})` : ''}` : name
+                      formatCurrency(value as number),
+                      name === 'totalValue'
+                        ? `Portfolio Value ${dataPoint ? `(${profit >= 0 ? '+' : ''}${formatCurrency(profit)})` : ''}`
+                        : name,
                     ];
                   }}
-                  labelFormatter={(value) => {
+                  labelFormatter={value => {
                     const date = new Date(value);
-                    return date.toLocaleDateString('en-US', { 
-                      month: 'short', 
+                    return date.toLocaleDateString('en-US', {
+                      month: 'short',
                       year: 'numeric',
-                      day: 'numeric'
+                      day: 'numeric',
                     });
                   }}
                   contentStyle={{
-                    backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                    backgroundColor:
+                      colorScheme === 'dark'
+                        ? 'rgba(30, 30, 30, 0.95)'
+                        : 'rgba(255, 255, 255, 0.95)',
                     border: `1px solid ${chartTheme.grid}`,
                     borderRadius: '8px',
                     color: chartTheme.text,
-                    boxShadow: colorScheme === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    boxShadow:
+                      colorScheme === 'dark'
+                        ? '0 4px 12px rgba(0, 0, 0, 0.3)'
+                        : '0 4px 12px rgba(0, 0, 0, 0.1)',
                   }}
                 />
-                <Legend 
+                <Legend
                   wrapperStyle={{ color: chartTheme.text, paddingTop: '10px' }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="totalValue" 
-                  stroke={COLORS[0]} 
+                <Line
+                  type="monotone"
+                  dataKey="totalValue"
+                  stroke={COLORS[0]}
                   strokeWidth={3}
                   name="Portfolio Value"
                   dot={{ fill: COLORS[0], strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, stroke: COLORS[0], strokeWidth: 2 }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="invested" 
-                  stroke={COLORS[1]} 
+                <Line
+                  type="monotone"
+                  dataKey="invested"
+                  stroke={COLORS[1]}
                   strokeWidth={2}
                   strokeDasharray="8 4"
                   name="Total Invested"
@@ -899,7 +1243,9 @@ const DashboardView: React.FC<{
         <Grid.Col span={{ base: 12, lg: 4 }}>
           <Card withBorder p="md" h={400} className="glass-effect">
             <Group justify="space-between" mb="md">
-              <Title order={3} size="h4" className="animate-gradient-text">Allocation by Type</Title>
+              <Title order={3} size="h4" className="animate-gradient-text">
+                Allocation by Type
+              </Title>
             </Group>
             <ResponsiveContainer width="100%" height="100%">
               <RechartsPieChart>
@@ -911,47 +1257,55 @@ const DashboardView: React.FC<{
                   outerRadius={85}
                   paddingAngle={2}
                   dataKey="value"
-                  label={({ name, percent }: any) => 
-                    percent > 0.05 ? `${name}\n${(percent * 100).toFixed(1)}%` : ''
+                  label={({ name, percent }: any) =>
+                    percent > 0.05
+                      ? `${name}\n${(percent * 100).toFixed(1)}%`
+                      : ''
                   }
                   labelLine={false}
                   fontSize={11}
                 >
                   {typeData.map((_, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
+                    <Cell
+                      key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
-                      stroke={colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                      stroke={
+                        colorScheme === 'dark'
+                          ? 'rgba(255, 255, 255, 0.1)'
+                          : 'rgba(0, 0, 0, 0.1)'
+                      }
                       strokeWidth={1}
                     />
                   ))}
                 </Pie>
 
                 {/* Center text showing total */}
-                <text 
-                  x="50%" 
-                  y="48%" 
-                  textAnchor="middle" 
-                  dominantBaseline="middle" 
-                  style={{ 
-                    fontSize: '14px', 
-                    fontWeight: 'bold', 
-                    fill: chartTheme.text 
+                <text
+                  x="50%"
+                  y="48%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    fill: chartTheme.text,
                   }}
                 >
                   Total
                 </text>
-                <text 
-                  x="50%" 
-                  y="52%" 
-                  textAnchor="middle" 
-                  dominantBaseline="middle" 
-                  style={{ 
-                    fontSize: '12px', 
-                    fill: chartTheme.axis 
+                <text
+                  x="50%"
+                  y="52%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  style={{
+                    fontSize: '12px',
+                    fill: chartTheme.axis,
                   }}
                 >
-                  {formatCurrency(typeData.reduce((sum, item) => sum + item.value, 0))}
+                  {formatCurrency(
+                    typeData.reduce((sum, item) => sum + item.value, 0)
+                  )}
                 </text>
               </RechartsPieChart>
             </ResponsiveContainer>
@@ -962,41 +1316,60 @@ const DashboardView: React.FC<{
       {/* Platform Performance */}
       <Card withBorder p="md" className="glass-effect">
         <Group justify="space-between" mb="md">
-          <Title order={3} size="h4" className="animate-gradient-text">Platform Performance</Title>
+          <Title order={3} size="h4" className="animate-gradient-text">
+            Platform Performance
+          </Title>
         </Group>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={platformData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <BarChart
+            data={platformData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
             <defs>
-              <rect id="backgroundRect" width="100%" height="100%" fill="transparent" />
+              <rect
+                id="backgroundRect"
+                width="100%"
+                height="100%"
+                fill="transparent"
+              />
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
-            <XAxis 
-              dataKey="name" 
+            <XAxis
+              dataKey="name"
               tick={{ fill: chartTheme.text, fontSize: 11 }}
               axisLine={{ stroke: chartTheme.axis }}
               tickLine={{ stroke: chartTheme.axis }}
             />
-            <YAxis 
+            <YAxis
               tick={{ fill: chartTheme.text, fontSize: 11 }}
               axisLine={{ stroke: chartTheme.axis }}
               tickLine={{ stroke: chartTheme.axis }}
-              tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
+              tickFormatter={value => `€${(value / 1000).toFixed(0)}k`}
             />
-            <RechartsTooltip 
+            <RechartsTooltip
               formatter={(value, name) => [
-                typeof value === 'number' ? 
-                  (name === 'return' ? formatPercentage(value) : formatCurrency(value)) : value,
-                name === 'return' ? 'Return %' : name
+                typeof value === 'number'
+                  ? name === 'return'
+                    ? formatPercentage(value)
+                    : formatCurrency(value)
+                  : value,
+                name === 'return' ? 'Return %' : name,
               ]}
               contentStyle={{
-                backgroundColor: colorScheme === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                backgroundColor:
+                  colorScheme === 'dark'
+                    ? 'rgba(30, 30, 30, 0.95)'
+                    : 'rgba(255, 255, 255, 0.95)',
                 border: `1px solid ${chartTheme.grid}`,
                 borderRadius: '8px',
                 color: chartTheme.text,
-                boxShadow: colorScheme === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.1)'
+                boxShadow:
+                  colorScheme === 'dark'
+                    ? '0 4px 12px rgba(0, 0, 0, 0.3)'
+                    : '0 4px 12px rgba(0, 0, 0, 0.1)',
               }}
             />
-            <Legend 
+            <Legend
               wrapperStyle={{ color: chartTheme.text, paddingTop: '10px' }}
             />
             <Bar dataKey="value" fill={COLORS[0]} name="Current Value" />
@@ -1011,11 +1384,17 @@ const DashboardView: React.FC<{
           <Title order={3} size="h4" className="animate-gradient-text">
             All Investments ({investments.length})
           </Title>
-          <Button size="sm" variant="gradient" gradient={{ from: 'corporate', to: 'accent' }} leftSection={<Plus size={16} />} onClick={onAddInvestment}>
+          <Button
+            size="sm"
+            variant="gradient"
+            gradient={{ from: 'corporate', to: 'accent' }}
+            leftSection={<Plus size={16} />}
+            onClick={onAddInvestment}
+          >
             Add New
           </Button>
         </Group>
-        
+
         {investments.length === 0 ? (
           <Group justify="center" p="xl">
             <Stack align="center" gap="md">
@@ -1023,22 +1402,25 @@ const DashboardView: React.FC<{
                 <PieChart size={24} />
               </ThemeIcon>
               <Stack align="center" gap="xs">
-                <Text c="dimmed" fw={500}>No investments yet</Text>
+                <Text c="dimmed" fw={500}>
+                  No investments yet
+                </Text>
                 <Text size="sm" c="dimmed" ta="center">
-                  Add your first investment to get started, or load demo data to explore the features
+                  Add your first investment to get started, or load demo data to
+                  explore the features
                 </Text>
               </Stack>
               <Group gap="sm">
-                <Button 
-                  variant="gradient" 
+                <Button
+                  variant="gradient"
                   gradient={{ from: 'corporate', to: 'accent' }}
                   leftSection={<Plus size={16} />}
                   onClick={onAddInvestment}
                 >
                   Add Investment
                 </Button>
-                <Button 
-                  variant="light" 
+                <Button
+                  variant="light"
                   color="blue"
                   leftSection={<Download size={16} />}
                   onClick={onLoadDemo}
@@ -1050,33 +1432,39 @@ const DashboardView: React.FC<{
           </Group>
         ) : (
           <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
-            {investments.map((investment) => (
+            {investments.map(investment => (
               <Card key={investment.id} withBorder p="md">
                 <Stack gap="sm">
                   <Group justify="space-between">
-                    <Badge color={INVESTMENT_CATEGORIES[investment.type]?.color || 'blue'} variant="light" size="md">
+                    <Badge
+                      color={
+                        INVESTMENT_CATEGORIES[investment.type]?.color || 'blue'
+                      }
+                      variant="light"
+                      size="md"
+                    >
                       {investment.type}
                     </Badge>
                     <Group gap="xs">
-                      <Button 
-                        size="xs" 
-                        variant="light" 
+                      <Button
+                        size="xs"
+                        variant="light"
                         leftSection={<Eye size={12} />}
                         onClick={() => onViewInvestment(investment)}
                       >
                         View
                       </Button>
-                      <Button 
-                        size="xs" 
-                        variant="light" 
+                      <Button
+                        size="xs"
+                        variant="light"
                         leftSection={<Edit size={12} />}
                         onClick={() => onEditInvestment(investment)}
                       >
                         Edit
                       </Button>
-                      <Button 
-                        size="xs" 
-                        variant="light" 
+                      <Button
+                        size="xs"
+                        variant="light"
                         color="red"
                         leftSection={<Trash2 size={12} />}
                         onClick={() => onDeleteInvestment(investment.id)}
@@ -1085,20 +1473,33 @@ const DashboardView: React.FC<{
                       </Button>
                     </Group>
                   </Group>
-                  
+
                   <div>
-                    <Text fw={500} size="lg">{investment.assetName}</Text>
-                    <Text size="sm" c="dimmed">{investment.platform.name}</Text>
+                    <Text fw={500} size="lg">
+                      {investment.assetName}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {investment.platform.name}
+                    </Text>
                   </div>
-                  
+
                   <Group justify="space-between">
                     <div>
-                      <Text size="xs" c="dimmed">Current Value</Text>
-                      <Text fw={500}>{formatCurrency(investment.currentValue)}</Text>
+                      <Text size="xs" c="dimmed">
+                        Current Value
+                      </Text>
+                      <Text fw={500}>
+                        {formatCurrency(investment.currentValue)}
+                      </Text>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <Text size="xs" c="dimmed">Return</Text>
-                      <Text fw={500} c={investment.actualReturn >= 0 ? 'green' : 'red'}>
+                      <Text size="xs" c="dimmed">
+                        Return
+                      </Text>
+                      <Text
+                        fw={500}
+                        c={investment.actualReturn >= 0 ? 'green' : 'red'}
+                      >
                         {formatPercentage(investment.actualReturn)}
                       </Text>
                     </div>

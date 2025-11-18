@@ -1,27 +1,46 @@
 import {
-  Button, Group, Modal, NumberInput, Select, Stack, TextInput, 
-  Textarea, Text, Grid, Badge, Card, Divider, ActionIcon
+  ActionIcon,
+  Badge,
+  Button,
+  Card,
+  Divider,
+  Grid,
+  Group,
+  Modal,
+  NumberInput,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { Calculator, X, Save } from 'lucide-react';
+import { Calculator, Save, X } from 'lucide-react';
 import React, { useEffect, useMemo } from 'react';
 
-import { 
-  Investment, 
-  InvestmentType, 
-  InvestmentStatus, 
+import {
+  calculateAnnualizedReturn,
+  calculateReturn,
+  formatCurrency,
+  formatPercentage,
+} from './calculations';
+import {
   Currency,
+  Investment,
+  InvestmentStatus,
+  InvestmentType,
+  INVESTMENT_CATEGORIES,
   Platform,
-  INVESTMENT_CATEGORIES 
 } from './types';
-import { calculateReturn, calculateAnnualizedReturn, formatCurrency, formatPercentage } from './calculations';
 
 interface InvestmentFormProps {
   investment?: Investment | null;
   opened: boolean;
   onClose: () => void;
-  onSave: (investment: Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSave: (
+    investment: Omit<Investment, 'id' | 'createdAt' | 'updatedAt'>
+  ) => void;
   mode: 'add' | 'edit' | 'view';
   platforms: Platform[];
 }
@@ -32,7 +51,7 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
   onClose,
   onSave,
   mode,
-  platforms
+  platforms,
 }) => {
   const form = useForm({
     initialValues: {
@@ -52,11 +71,16 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
       tags: '',
     },
     validate: {
-      assetName: (value: string) => value.length < 2 ? 'Asset name must be at least 2 characters' : null,
-      purchasePrice: (value: number) => value <= 0 ? 'Purchase price must be greater than 0' : null,
-      currentValue: (value: number) => value < 0 ? 'Current value cannot be negative' : null,
-      quantity: (value: number) => value <= 0 ? 'Quantity must be greater than 0' : null,
-      platformId: (value: string) => !value ? 'Please select a platform' : null,
+      assetName: (value: string) =>
+        value.length < 2 ? 'Asset name must be at least 2 characters' : null,
+      purchasePrice: (value: number) =>
+        value <= 0 ? 'Purchase price must be greater than 0' : null,
+      currentValue: (value: number) =>
+        value < 0 ? 'Current value cannot be negative' : null,
+      quantity: (value: number) =>
+        value <= 0 ? 'Quantity must be greater than 0' : null,
+      platformId: (value: string) =>
+        !value ? 'Please select a platform' : null,
     },
   });
 
@@ -84,13 +108,13 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
     }
   }, [investment, mode, opened]);
 
-  const selectedPlatform = useMemo(() => 
-    platforms.find(p => p.id === form.values.platformId),
+  const selectedPlatform = useMemo(
+    () => platforms.find(p => p.id === form.values.platformId),
     [form.values.platformId, platforms]
   );
 
-  const availablePlatforms = useMemo(() => 
-    platforms.filter(p => p.type.includes(form.values.type)),
+  const availablePlatforms = useMemo(
+    () => platforms.filter(p => p.type.includes(form.values.type)),
     [form.values.type, platforms]
   );
 
@@ -112,7 +136,14 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
       };
     }
     return { totalReturn: 0, annualizedReturn: 0 };
-  }, [form.values.purchasePrice, form.values.currentValue, form.values.quantity, form.values.fees, form.values.dividends, form.values.purchaseDate]);
+  }, [
+    form.values.purchasePrice,
+    form.values.currentValue,
+    form.values.quantity,
+    form.values.fees,
+    form.values.dividends,
+    form.values.purchaseDate,
+  ]);
 
   const handleSubmit = (values: typeof form.values) => {
     const platform = platforms.find(p => p.id === values.platformId);
@@ -140,11 +171,14 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
       actualReturn: calculatedReturn.totalReturn,
       fees: values.fees,
       dividends: values.dividends,
-      tags: values.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0),
+      tags: values.tags
+        .split(',')
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag.length > 0),
     };
 
     onSave(investmentData);
-    
+
     notifications.show({
       title: 'Success',
       message: `Investment ${mode === 'add' ? 'added' : 'updated'} successfully`,
@@ -155,7 +189,12 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
   };
 
   const isReadonly = mode === 'view';
-  const title = mode === 'add' ? 'Add New Investment' : mode === 'edit' ? 'Edit Investment' : 'View Investment';
+  const title =
+    mode === 'add'
+      ? 'Add New Investment'
+      : mode === 'edit'
+        ? 'Edit Investment'
+        : 'View Investment';
 
   return (
     <Modal
@@ -174,13 +213,15 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
               <Select
                 label="Investment Type"
                 placeholder="Select type"
-                data={Object.entries(INVESTMENT_CATEGORIES).map(([key, value]) => ({
-                  value: key,
-                  label: value.label,
-                }))}
+                data={Object.entries(INVESTMENT_CATEGORIES).map(
+                  ([key, value]) => ({
+                    value: key,
+                    label: value.label,
+                  })
+                )}
                 readOnly={isReadonly}
                 {...form.getInputProps('type')}
-                onChange={(value) => {
+                onChange={value => {
                   form.setFieldValue('type', value as InvestmentType);
                   form.setFieldValue('platformId', ''); // Reset platform when type changes
                 }}
@@ -193,7 +234,9 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 data={availablePlatforms.map(platform => ({
                   value: platform.id,
                   label: `${platform.name} • ${platform.country} • ${platform.type.join(', ')}`,
-                  disabled: platform.status === 'Closed' || platform.status === 'Avoiding',
+                  disabled:
+                    platform.status === 'Closed' ||
+                    platform.status === 'Avoiding',
                 }))}
                 readOnly={isReadonly}
                 {...form.getInputProps('platformId')}
@@ -206,9 +249,12 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
             <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
               <Group justify="space-between" align="flex-start">
                 <div>
-                  <Text size="sm" fw={500}>{selectedPlatform.name}</Text>
+                  <Text size="sm" fw={500}>
+                    {selectedPlatform.name}
+                  </Text>
                   <Text size="xs">
-                    {selectedPlatform.country} • {selectedPlatform.type.join(', ')}
+                    {selectedPlatform.country} •{' '}
+                    {selectedPlatform.type.join(', ')}
                   </Text>
                   {selectedPlatform.notes && (
                     <Text size="xs" c="yellow" mt="xs">
@@ -217,8 +263,13 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                   )}
                 </div>
                 <Badge
-                  color={selectedPlatform.status === 'Active' ? 'green' : 
-                         selectedPlatform.status === 'Avoiding' ? 'red' : 'gray'}
+                  color={
+                    selectedPlatform.status === 'Active'
+                      ? 'green'
+                      : selectedPlatform.status === 'Avoiding'
+                        ? 'red'
+                        : 'gray'
+                  }
                   variant="light"
                   size="sm"
                 >
@@ -244,10 +295,17 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
                 type="date"
                 readOnly={isReadonly}
                 {...form.getInputProps('purchaseDate')}
-                value={form.values.purchaseDate instanceof Date 
-                  ? form.values.purchaseDate.toISOString().split('T')[0] 
-                  : form.values.purchaseDate}
-                onChange={(event) => form.setFieldValue('purchaseDate', new Date(event.currentTarget.value))}
+                value={
+                  form.values.purchaseDate instanceof Date
+                    ? form.values.purchaseDate.toISOString().split('T')[0]
+                    : form.values.purchaseDate
+                }
+                onChange={event =>
+                  form.setFieldValue(
+                    'purchaseDate',
+                    new Date(event.currentTarget.value)
+                  )
+                }
               />
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -341,28 +399,51 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
           </Grid>
 
           {/* Calculated Metrics */}
-          {(form.values.purchasePrice > 0 && form.values.currentValue > 0) && (
+          {form.values.purchasePrice > 0 && form.values.currentValue > 0 && (
             <Card withBorder p="sm" bg="var(--mantine-color-default-hover)">
               <Group justify="space-between">
                 <div>
-                  <Text size="sm" fw={600} className="animate-gradient-text">📊 Calculated Returns</Text>
+                  <Text size="sm" fw={600} className="animate-gradient-text">
+                    📊 Calculated Returns
+                  </Text>
                   <Group gap="lg" mt="xs">
                     <div>
-                      <Text size="xs" c="dimmed">Total Return</Text>
-                      <Text size="sm" fw={500} c={calculatedReturn.totalReturn >= 0 ? 'green' : 'red'}>
+                      <Text size="xs" c="dimmed">
+                        Total Return
+                      </Text>
+                      <Text
+                        size="sm"
+                        fw={500}
+                        c={calculatedReturn.totalReturn >= 0 ? 'green' : 'red'}
+                      >
                         {formatPercentage(calculatedReturn.totalReturn)}
                       </Text>
                     </div>
                     <div>
-                      <Text size="xs" c="dimmed">Annualized</Text>
-                      <Text size="sm" fw={500} c={calculatedReturn.annualizedReturn >= 0 ? 'green' : 'red'}>
+                      <Text size="xs" c="dimmed">
+                        Annualized
+                      </Text>
+                      <Text
+                        size="sm"
+                        fw={500}
+                        c={
+                          calculatedReturn.annualizedReturn >= 0
+                            ? 'green'
+                            : 'red'
+                        }
+                      >
                         {formatPercentage(calculatedReturn.annualizedReturn)}
                       </Text>
                     </div>
                     <div>
-                      <Text size="xs" c="dimmed">Total Investment</Text>
+                      <Text size="xs" c="dimmed">
+                        Total Investment
+                      </Text>
                       <Text size="sm" fw={500}>
-                        {formatCurrency(form.values.purchasePrice * form.values.quantity + form.values.fees)}
+                        {formatCurrency(
+                          form.values.purchasePrice * form.values.quantity +
+                            form.values.fees
+                        )}
                       </Text>
                     </div>
                   </Group>
@@ -412,10 +493,14 @@ const InvestmentForm: React.FC<InvestmentFormProps> = ({
           {/* Action Buttons */}
           <Divider />
           <Group justify="space-between">
-            <Button variant="light" onClick={onClose} leftSection={<X size={16} />}>
+            <Button
+              variant="light"
+              onClick={onClose}
+              leftSection={<X size={16} />}
+            >
               {isReadonly ? 'Close' : 'Cancel'}
             </Button>
-            
+
             {!isReadonly && (
               <Button type="submit" leftSection={<Save size={16} />}>
                 {mode === 'add' ? 'Add Investment' : 'Update Investment'}

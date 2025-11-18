@@ -1,10 +1,23 @@
 import {
-    ActionIcon, Button, Container,
-    Drawer, Group, Stack,
-    Title, useMantineColorScheme
+  ActionIcon,
+  Button,
+  Container,
+  Drawer,
+  Group,
+  Stack,
+  Title,
+  useMantineColorScheme,
 } from '@mantine/core';
-import { Calculator, FileText, Home, Menu, Moon, Sun, Gamepad2 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import {
+  Calculator,
+  FileText,
+  Gamepad2,
+  Home,
+  Menu,
+  Moon,
+  Sun,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 // Custom hook to detect mobile screen size
@@ -41,7 +54,10 @@ const Navbar: React.FC = () => {
   // Persist color scheme toggle
   useEffect(() => {
     try {
-      localStorage.setItem('color-scheme', colorScheme === 'dark' ? 'dark' : 'light');
+      localStorage.setItem(
+        'color-scheme',
+        colorScheme === 'dark' ? 'dark' : 'light'
+      );
     } catch {
       // Silently fail if localStorage is not available
     }
@@ -49,8 +65,6 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
   const isMobile = useIsMobile(768);
-  
-
 
   const navigationItems = [
     {
@@ -86,7 +100,7 @@ const Navbar: React.FC = () => {
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     // Cleanup on unmount
     return () => {
       document.body.style.overflow = 'unset';
@@ -101,23 +115,21 @@ const Navbar: React.FC = () => {
   return (
     <Container size="lg" h="100%">
       <Group h="100%" justify="space-between">
-        <Link 
+        <Link
           to="/"
-          style={{ 
-            textDecoration: 'none', 
+          style={{
+            textDecoration: 'none',
             color: 'inherit',
-            transition: 'opacity 0.2s ease'
+            transition: 'opacity 0.2s ease',
           }}
-          onMouseEnter={(e) => {
+          onMouseEnter={e => {
             e.currentTarget.style.opacity = '0.7';
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={e => {
             e.currentTarget.style.opacity = '1';
           }}
         >
-          <Title order={3}>
-            Algimantas K.
-          </Title>
+          <Title order={3}>Algimantas K.</Title>
         </Link>
 
         {isMobile ? (
@@ -132,9 +144,9 @@ const Navbar: React.FC = () => {
             >
               {colorScheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </ActionIcon>
-            
+
             <ActionIcon
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 e.stopPropagation();
                 setMobileMenuOpened(true);
@@ -147,21 +159,21 @@ const Navbar: React.FC = () => {
                   border: '1px solid var(--mantine-color-default-border)',
                   '&:hover': {
                     backgroundColor: 'var(--mantine-color-default-hover)',
-                    transform: 'scale(1.05)'
+                    transform: 'scale(1.05)',
                   },
                   '&:active': {
                     transform: 'scale(0.95)',
-                    backgroundColor: 'var(--mantine-color-default-hover)'
-                  }
-                }
+                    backgroundColor: 'var(--mantine-color-default-hover)',
+                  },
+                },
               }}
-              style={{ 
+              style={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent',
                 minWidth: '48px',
                 minHeight: '48px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
               }}
             >
               <Menu size={22} />
@@ -171,14 +183,16 @@ const Navbar: React.FC = () => {
           // Desktop Navigation
           <Group gap="md">
             <Group gap="xs">
-              {navigationItems.map((item) => {
+              {navigationItems.map(item => {
                 const IconComponent = item.icon;
                 return (
                   <Button
                     key={item.path}
                     component={Link}
                     to={item.path}
-                    variant={location.pathname === item.path ? 'light' : 'subtle'}
+                    variant={
+                      location.pathname === item.path ? 'light' : 'subtle'
+                    }
                     leftSection={<IconComponent size={16} />}
                     size="sm"
                     className="custom-button-hover"
@@ -202,77 +216,80 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Drawer - always render but only open on mobile */}
         <Drawer
-            opened={mobileMenuOpened && isMobile}
-            onClose={() => setMobileMenuOpened(false)}
-            title="Navigation"
-            position="right"
-            size="80%"
-            overlayProps={{ 
-              opacity: 0.6, 
-              blur: 4,
-              onClick: () => setMobileMenuOpened(false)
-            }}
-            trapFocus
-            closeOnClickOutside
-            closeOnEscape
-            transitionProps={{
-              transition: 'slide-left',
-              duration: 200,
-              timingFunction: 'ease'
-            }}
-            styles={{
-              content: {
-                height: '100vh',
-                display: 'flex',
-                flexDirection: 'column'
-              },
-              body: {
-                flex: 1,
-                padding: '1rem',
-                paddingTop: '0.5rem'
-              }
-            }}
-          >
-            <Stack gap="md">
-              {navigationItems.map((item) => {
-                const IconComponent = item.icon;
-                return (
-                  <Button
-                    key={item.path}
-                    component={Link}
-                    to={item.path}
-                    variant={location.pathname === item.path ? 'filled' : 'light'}
-                    leftSection={<IconComponent size={20} />}
-                    size="lg"
-                    fullWidth
-                    onClick={handleMobileNavClick}
-                    justify="flex-start"
-                    styles={{
-                      root: {
-                        height: '56px',
-                        fontSize: '1rem',
-                        fontWeight: 500,
-                        borderRadius: '12px',
-                        transition: 'all 0.2s ease',
-                        border: location.pathname === item.path ? 'none' : '1px solid var(--mantine-color-default-border)',
-                      },
-                      inner: {
-                        justifyContent: 'flex-start',
-                        gap: '12px'
-                      }
-                    }}
-                    style={{ 
-                      touchAction: 'manipulation',
-                      WebkitTapHighlightColor: 'transparent',
-                      userSelect: 'none'
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </Stack>
-          </Drawer>
+          opened={mobileMenuOpened && isMobile}
+          onClose={() => setMobileMenuOpened(false)}
+          title="Navigation"
+          position="right"
+          size="80%"
+          overlayProps={{
+            opacity: 0.6,
+            blur: 4,
+            onClick: () => setMobileMenuOpened(false),
+          }}
+          trapFocus
+          closeOnClickOutside
+          closeOnEscape
+          transitionProps={{
+            transition: 'slide-left',
+            duration: 200,
+            timingFunction: 'ease',
+          }}
+          styles={{
+            content: {
+              height: '100vh',
+              display: 'flex',
+              flexDirection: 'column',
+            },
+            body: {
+              flex: 1,
+              padding: '1rem',
+              paddingTop: '0.5rem',
+            },
+          }}
+        >
+          <Stack gap="md">
+            {navigationItems.map(item => {
+              const IconComponent = item.icon;
+              return (
+                <Button
+                  key={item.path}
+                  component={Link}
+                  to={item.path}
+                  variant={location.pathname === item.path ? 'filled' : 'light'}
+                  leftSection={<IconComponent size={20} />}
+                  size="lg"
+                  fullWidth
+                  onClick={handleMobileNavClick}
+                  justify="flex-start"
+                  styles={{
+                    root: {
+                      height: '56px',
+                      fontSize: '1rem',
+                      fontWeight: 500,
+                      borderRadius: '12px',
+                      transition: 'all 0.2s ease',
+                      border:
+                        location.pathname === item.path
+                          ? 'none'
+                          : '1px solid var(--mantine-color-default-border)',
+                    },
+                    inner: {
+                      justifyContent: 'flex-start',
+                      gap: '12px',
+                    },
+                  }}
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    userSelect: 'none',
+                  }}
+                >
+                  {item.label}
+                </Button>
+              );
+            })}
+          </Stack>
+        </Drawer>
       </Group>
     </Container>
   );

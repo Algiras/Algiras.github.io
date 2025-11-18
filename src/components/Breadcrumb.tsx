@@ -1,7 +1,7 @@
+import { Anchor, Breadcrumbs, Text } from '@mantine/core';
+import { ChevronRight, Home } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Breadcrumbs, Text, Anchor } from '@mantine/core';
-import { ChevronRight, Home } from 'lucide-react';
 
 interface BreadcrumbItem {
   label: string;
@@ -22,12 +22,12 @@ const Breadcrumb: React.FC = () => {
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     const segments = pathname.split('/').filter(Boolean);
     const breadcrumbs: BreadcrumbItem[] = [];
-    
+
     let currentPath = '';
-    
+
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`;
-      
+
       // Convert segment to readable label
       let label = segment;
       if (segment === 'finance') label = 'Finance';
@@ -35,7 +35,8 @@ const Breadcrumb: React.FC = () => {
       else if (segment === 'games') label = 'Games';
       else if (segment === 'akotchi') label = 'Akotchi';
       else if (segment === 'share') label = 'Share';
-      else if (segment === 'investment-calculator') label = 'Investment Calculator';
+      else if (segment === 'investment-calculator')
+        label = 'Investment Calculator';
       else if (segment === 'investment-tracker') label = 'Investment Tracker';
       else if (segment === 'loan-comparison') label = 'Loan Comparison';
       else if (segment === 'mortgage-calculator') label = 'Mortgage Calculator';
@@ -44,16 +45,17 @@ const Breadcrumb: React.FC = () => {
       else if (segment === 'markdown-to-pdf') label = 'Markdown to PDF';
       else {
         // Capitalize first letter and replace hyphens with spaces
-        label = segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+        label =
+          segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
       }
-      
+
       breadcrumbs.push({
         label,
         path: currentPath,
-        icon: index === 0 ? <Home size={16} /> : undefined
+        icon: index === 0 ? <Home size={16} /> : undefined,
       });
     });
-    
+
     return breadcrumbs;
   };
 
@@ -66,16 +68,18 @@ const Breadcrumb: React.FC = () => {
 
   const items = breadcrumbItems.map((item, index) => {
     const isLast = index === breadcrumbItems.length - 1;
-    
+
     if (isLast) {
       return (
         <Text key={item.path} size="sm" c="dimmed">
-          {item.icon && <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>}
+          {item.icon && (
+            <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>
+          )}
           {item.label}
         </Text>
       );
     }
-    
+
     return (
       <Anchor
         key={item.path}
@@ -83,20 +87,22 @@ const Breadcrumb: React.FC = () => {
         to={item.path}
         size="sm"
         c="blue"
-        style={{ 
-          display: 'flex', 
+        style={{
+          display: 'flex',
           alignItems: 'center',
           textDecoration: 'none',
-          transition: 'opacity 0.2s ease'
+          transition: 'opacity 0.2s ease',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           e.currentTarget.style.opacity = '0.7';
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           e.currentTarget.style.opacity = '1';
         }}
       >
-        {item.icon && <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>}
+        {item.icon && (
+          <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>
+        )}
         {item.label}
       </Anchor>
     );
@@ -104,11 +110,16 @@ const Breadcrumb: React.FC = () => {
 
   return (
     <Breadcrumbs
-      separator={<ChevronRight size={16} style={{ color: 'var(--mantine-color-dimmed)' }} />}
-      style={{ 
+      separator={
+        <ChevronRight
+          size={16}
+          style={{ color: 'var(--mantine-color-dimmed)' }}
+        />
+      }
+      style={{
         padding: '0.75rem 0',
         marginBottom: '0.75rem',
-        borderBottom: '1px solid var(--mantine-color-default-border)'
+        borderBottom: '1px solid var(--mantine-color-default-border)',
       }}
     >
       {items}

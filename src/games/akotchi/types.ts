@@ -65,5 +65,3 @@ export interface AkotchiState {
   messCount?: number; // Number of poops/messes that need cleaning
   lastPoopAt?: number; // When last poop occurred
 }
-
-

@@ -24,23 +24,11 @@ export const initializeAnalytics = (): void => {
   const isProduction = import.meta.env.PROD;
   const hasConsent = localStorage.getItem(ANALYTICS_CONSENT_KEY) === 'true';
 
-  console.log(
-    `Analytics initialization check: Production=${isProduction}, ENABLE_ANALYTICS=${ENABLE_ANALYTICS}, Consent=${hasConsent}`
-  );
-
   // Only initialize if in production or analytics explicitly enabled, and user has given consent
   if ((isProduction || ENABLE_ANALYTICS) && hasConsent) {
     // Enable debug mode in development environment
     const debugMode = !isProduction;
     ReactGA.initialize(GA_MEASUREMENT_ID, { testMode: debugMode });
-    console.log(
-      `Google Analytics initialized with ID: ${GA_MEASUREMENT_ID}, Debug mode: ${debugMode}`
-    );
-  } else {
-    console.log(
-      'Google Analytics not initialized. Missing:',
-      !hasConsent ? 'User consent' : 'Environment configuration'
-    );
   }
 };
 
@@ -58,10 +46,8 @@ export const initGA = () => {
  */
 export const trackPageView = (path: string): void => {
   const hasConsent = localStorage.getItem(ANALYTICS_CONSENT_KEY) === 'true';
-  console.log(`Tracking page view: ${path}, Consent: ${hasConsent}`);
   if (hasConsent) {
     ReactGA.send({ hitType: 'pageview', page: path });
-    console.log(`Page view sent to GA: ${path}`);
   }
 };
 
@@ -76,7 +62,7 @@ export const trackRouteChange = (path: string): void => {
     action: 'Route Change',
     label: path,
   });
-  
+
   // Also track as pageview
   trackPageView(path);
 };
@@ -86,7 +72,10 @@ export const trackRouteChange = (path: string): void => {
  * @param toolName - The name of the tool
  * @param action - The action performed on the tool (e.g., 'view', 'click')
  */
-export const trackToolUsage = (toolName: string, action: string = 'view'): void => {
+export const trackToolUsage = (
+  toolName: string,
+  action: string = 'view'
+): void => {
   ReactGA.event({
     category: 'Tool Usage',
     action: action,
@@ -99,7 +88,10 @@ export const trackToolUsage = (toolName: string, action: string = 'view'): void 
  * @param buttonName - The name of the button
  * @param location - The location of the button (e.g., 'header', 'footer')
  */
-export const trackButtonClick = (buttonName: string, location: string): void => {
+export const trackButtonClick = (
+  buttonName: string,
+  location: string
+): void => {
   ReactGA.event({
     category: 'Button Click',
     action: 'Click',

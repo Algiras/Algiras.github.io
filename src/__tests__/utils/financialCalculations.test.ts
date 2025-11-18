@@ -1,7 +1,14 @@
 import {
-    calculateInvestmentGrowth, calculateLoanPayment, calculateMortgagePayment,
-    calculateRetirementSavings, calculateROI, type InvestmentCalculationInput, type LoanCalculationInput, type MortgageCalculationInput,
-    type RetirementCalculationInput, type ROICalculationInput
+  calculateInvestmentGrowth,
+  calculateLoanPayment,
+  calculateMortgagePayment,
+  calculateRetirementSavings,
+  calculateROI,
+  type InvestmentCalculationInput,
+  type LoanCalculationInput,
+  type MortgageCalculationInput,
+  type RetirementCalculationInput,
+  type ROICalculationInput,
 } from '../../utils/financialCalculations';
 
 describe('Financial Calculations', () => {
@@ -10,7 +17,7 @@ describe('Financial Calculations', () => {
       const input: LoanCalculationInput = {
         principal: 100000,
         interestRate: 5,
-        termYears: 30
+        termYears: 30,
       };
 
       const result = calculateLoanPayment(input);
@@ -27,14 +34,14 @@ describe('Financial Calculations', () => {
         principal: 100000,
         interestRate: 5,
         termYears: 30,
-        extraPayment: 100
+        extraPayment: 100,
       };
 
       const result = calculateLoanPayment(input);
       const baseResult = calculateLoanPayment({
         principal: 100000,
         interestRate: 5,
-        termYears: 30
+        termYears: 30,
       });
 
       expect(result.payoffTime).toBeLessThan(baseResult.payoffTime);
@@ -45,7 +52,7 @@ describe('Financial Calculations', () => {
       const input: LoanCalculationInput = {
         principal: 100000,
         interestRate: 0,
-        termYears: 30
+        termYears: 30,
       };
 
       const result = calculateLoanPayment(input);
@@ -56,23 +63,29 @@ describe('Financial Calculations', () => {
     });
 
     it('should throw error for invalid inputs', () => {
-      expect(() => calculateLoanPayment({
-        principal: 0,
-        interestRate: 5,
-        termYears: 30
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateLoanPayment({
+          principal: 0,
+          interestRate: 5,
+          termYears: 30,
+        })
+      ).toThrow('Invalid input parameters');
 
-      expect(() => calculateLoanPayment({
-        principal: 100000,
-        interestRate: -1,
-        termYears: 30
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateLoanPayment({
+          principal: 100000,
+          interestRate: -1,
+          termYears: 30,
+        })
+      ).toThrow('Invalid input parameters');
 
-      expect(() => calculateLoanPayment({
-        principal: 100000,
-        interestRate: 5,
-        termYears: 0
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateLoanPayment({
+          principal: 100000,
+          interestRate: 5,
+          termYears: 0,
+        })
+      ).toThrow('Invalid input parameters');
     });
   });
 
@@ -83,7 +96,7 @@ describe('Financial Calculations', () => {
         finalValue: 15000,
         additionalInvestments: 2000,
         timeframe: 2,
-        timeframeUnit: 'years'
+        timeframeUnit: 'years',
       };
 
       const result = calculateROI(input);
@@ -101,7 +114,7 @@ describe('Financial Calculations', () => {
         finalValue: 12000,
         additionalInvestments: 0,
         timeframe: 1,
-        timeframeUnit: 'years'
+        timeframeUnit: 'years',
       };
 
       const monthInput: ROICalculationInput = {
@@ -109,13 +122,16 @@ describe('Financial Calculations', () => {
         finalValue: 12000,
         additionalInvestments: 0,
         timeframe: 12,
-        timeframeUnit: 'months'
+        timeframeUnit: 'months',
       };
 
       const yearResult = calculateROI(yearInput);
       const monthResult = calculateROI(monthInput);
 
-      expect(yearResult.annualizedROI).toBeCloseTo(monthResult.annualizedROI, 1);
+      expect(yearResult.annualizedROI).toBeCloseTo(
+        monthResult.annualizedROI,
+        1
+      );
     });
 
     it('should handle negative returns', () => {
@@ -124,7 +140,7 @@ describe('Financial Calculations', () => {
         finalValue: 8000,
         additionalInvestments: 0,
         timeframe: 1,
-        timeframeUnit: 'years'
+        timeframeUnit: 'years',
       };
 
       const result = calculateROI(input);
@@ -135,21 +151,25 @@ describe('Financial Calculations', () => {
     });
 
     it('should throw error for invalid inputs', () => {
-      expect(() => calculateROI({
-        initialInvestment: 0,
-        finalValue: 15000,
-        additionalInvestments: 0,
-        timeframe: 1,
-        timeframeUnit: 'years'
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateROI({
+          initialInvestment: 0,
+          finalValue: 15000,
+          additionalInvestments: 0,
+          timeframe: 1,
+          timeframeUnit: 'years',
+        })
+      ).toThrow('Invalid input parameters');
 
-      expect(() => calculateROI({
-        initialInvestment: 10000,
-        finalValue: 0,
-        additionalInvestments: 0,
-        timeframe: 1,
-        timeframeUnit: 'years'
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateROI({
+          initialInvestment: 10000,
+          finalValue: 0,
+          additionalInvestments: 0,
+          timeframe: 1,
+          timeframeUnit: 'years',
+        })
+      ).toThrow('Invalid input parameters');
     });
   });
 
@@ -161,14 +181,16 @@ describe('Financial Calculations', () => {
         annualInterestRate: 7,
         investmentPeriod: 10,
         inflationRate: 2.5,
-        taxRate: 15
+        taxRate: 15,
       };
 
       const result = calculateInvestmentGrowth(input);
 
       expect(result.futureValue).toBeGreaterThan(result.totalContributions);
-      expect(result.totalContributions).toBe(10000 + (500 * 10 * 12));
-      expect(result.totalInterest).toBe(result.futureValue - result.totalContributions);
+      expect(result.totalContributions).toBe(10000 + 500 * 10 * 12);
+      expect(result.totalInterest).toBe(
+        result.futureValue - result.totalContributions
+      );
       expect(result.realValue).toBeLessThan(result.futureValue);
       expect(result.afterTaxValue).toBeLessThan(result.futureValue);
     });
@@ -180,7 +202,7 @@ describe('Financial Calculations', () => {
         annualInterestRate: 0,
         investmentPeriod: 10,
         inflationRate: 0,
-        taxRate: 0
+        taxRate: 0,
       };
 
       const result = calculateInvestmentGrowth(input);
@@ -198,7 +220,7 @@ describe('Financial Calculations', () => {
         annualInterestRate: 7,
         investmentPeriod: 10,
         inflationRate: 2.5,
-        taxRate: 15
+        taxRate: 15,
       };
 
       const result = calculateInvestmentGrowth(input);
@@ -209,23 +231,27 @@ describe('Financial Calculations', () => {
     });
 
     it('should throw error for invalid inputs', () => {
-      expect(() => calculateInvestmentGrowth({
-        initialAmount: -1000,
-        monthlyContribution: 500,
-        annualInterestRate: 7,
-        investmentPeriod: 10,
-        inflationRate: 2.5,
-        taxRate: 15
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateInvestmentGrowth({
+          initialAmount: -1000,
+          monthlyContribution: 500,
+          annualInterestRate: 7,
+          investmentPeriod: 10,
+          inflationRate: 2.5,
+          taxRate: 15,
+        })
+      ).toThrow('Invalid input parameters');
 
-      expect(() => calculateInvestmentGrowth({
-        initialAmount: 10000,
-        monthlyContribution: -500,
-        annualInterestRate: 7,
-        investmentPeriod: 10,
-        inflationRate: 2.5,
-        taxRate: 15
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateInvestmentGrowth({
+          initialAmount: 10000,
+          monthlyContribution: -500,
+          annualInterestRate: 7,
+          investmentPeriod: 10,
+          inflationRate: 2.5,
+          taxRate: 15,
+        })
+      ).toThrow('Invalid input parameters');
     });
   });
 
@@ -239,7 +265,7 @@ describe('Financial Calculations', () => {
         propertyTax: 6000,
         homeInsurance: 1200,
         pmiRate: 0.5,
-        hoaFees: 100
+        hoaFees: 100,
       };
 
       const result = calculateMortgagePayment(input);
@@ -249,7 +275,9 @@ describe('Financial Calculations', () => {
       expect(result.monthlyPropertyTax).toBe(500);
       expect(result.monthlyInsurance).toBe(100);
       expect(result.monthlyPMI).toBe(0); // 20% down payment, no PMI
-      expect(result.totalMonthlyPayment).toBeGreaterThan(result.monthlyPrincipalInterest);
+      expect(result.totalMonthlyPayment).toBeGreaterThan(
+        result.monthlyPrincipalInterest
+      );
       expect(result.totalInterest).toBeGreaterThan(0);
     });
 
@@ -262,13 +290,13 @@ describe('Financial Calculations', () => {
         propertyTax: 6000,
         homeInsurance: 1200,
         pmiRate: 0.5,
-        hoaFees: 0
+        hoaFees: 0,
       };
 
       const result = calculateMortgagePayment(input);
 
       expect(result.monthlyPMI).toBeGreaterThan(0);
-      expect(result.monthlyPMI).toBeCloseTo((360000 * 0.5 / 100) / 12, 2);
+      expect(result.monthlyPMI).toBeCloseTo((360000 * 0.5) / 100 / 12, 2);
     });
 
     it('should handle zero down payment', () => {
@@ -280,7 +308,7 @@ describe('Financial Calculations', () => {
         propertyTax: 6000,
         homeInsurance: 1200,
         pmiRate: 0.5,
-        hoaFees: 0
+        hoaFees: 0,
       };
 
       const result = calculateMortgagePayment(input);
@@ -290,27 +318,31 @@ describe('Financial Calculations', () => {
     });
 
     it('should throw error for invalid inputs', () => {
-      expect(() => calculateMortgagePayment({
-        homePrice: 0,
-        downPayment: 80000,
-        loanTerm: 30,
-        interestRate: 6.5,
-        propertyTax: 6000,
-        homeInsurance: 1200,
-        pmiRate: 0.5,
-        hoaFees: 0
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateMortgagePayment({
+          homePrice: 0,
+          downPayment: 80000,
+          loanTerm: 30,
+          interestRate: 6.5,
+          propertyTax: 6000,
+          homeInsurance: 1200,
+          pmiRate: 0.5,
+          hoaFees: 0,
+        })
+      ).toThrow('Invalid input parameters');
 
-      expect(() => calculateMortgagePayment({
-        homePrice: 400000,
-        downPayment: -1000,
-        loanTerm: 30,
-        interestRate: 6.5,
-        propertyTax: 6000,
-        homeInsurance: 1200,
-        pmiRate: 0.5,
-        hoaFees: 0
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateMortgagePayment({
+          homePrice: 400000,
+          downPayment: -1000,
+          loanTerm: 30,
+          interestRate: 6.5,
+          propertyTax: 6000,
+          homeInsurance: 1200,
+          pmiRate: 0.5,
+          hoaFees: 0,
+        })
+      ).toThrow('Invalid input parameters');
     });
   });
 
@@ -326,12 +358,14 @@ describe('Financial Calculations', () => {
         inflationRate: 2.5,
         withdrawalRate: 4,
         lifeExpectancy: 85,
-        taxRate: 15
+        taxRate: 15,
       };
 
       const result = calculateRetirementSavings(input);
 
-      expect(result.projectedSavings).toBeGreaterThan(result.totalContributions);
+      expect(result.projectedSavings).toBeGreaterThan(
+        result.totalContributions
+      );
       expect(result.totalContributions).toBeGreaterThan(50000);
       expect(result.totalInterest).toBeGreaterThan(0);
       expect(result.yearsOfRetirement).toBe(20);
@@ -350,13 +384,13 @@ describe('Financial Calculations', () => {
         inflationRate: 2.5,
         withdrawalRate: 4,
         lifeExpectancy: 85,
-        taxRate: 15
+        taxRate: 15,
       };
 
       const result = calculateRetirementSavings(input);
 
       expect(result.projectedSavings).toBeGreaterThan(0);
-      expect(result.totalContributions).toBe(50000 + (1000 * 35 * 12));
+      expect(result.totalContributions).toBe(50000 + 1000 * 35 * 12);
     });
 
     it('should handle zero return rate', () => {
@@ -370,7 +404,7 @@ describe('Financial Calculations', () => {
         inflationRate: 0,
         withdrawalRate: 4,
         lifeExpectancy: 85,
-        taxRate: 0
+        taxRate: 0,
       };
 
       const result = calculateRetirementSavings(input);
@@ -380,44 +414,50 @@ describe('Financial Calculations', () => {
     });
 
     it('should throw error for invalid inputs', () => {
-      expect(() => calculateRetirementSavings({
-        currentAge: -5,
-        retirementAge: 65,
-        currentSavings: 50000,
-        monthlyContribution: 1000,
-        employerMatch: 500,
-        annualReturn: 7,
-        inflationRate: 2.5,
-        withdrawalRate: 4,
-        lifeExpectancy: 85,
-        taxRate: 15
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateRetirementSavings({
+          currentAge: -5,
+          retirementAge: 65,
+          currentSavings: 50000,
+          monthlyContribution: 1000,
+          employerMatch: 500,
+          annualReturn: 7,
+          inflationRate: 2.5,
+          withdrawalRate: 4,
+          lifeExpectancy: 85,
+          taxRate: 15,
+        })
+      ).toThrow('Invalid input parameters');
 
-      expect(() => calculateRetirementSavings({
-        currentAge: 65,
-        retirementAge: 60,
-        currentSavings: 50000,
-        monthlyContribution: 1000,
-        employerMatch: 500,
-        annualReturn: 7,
-        inflationRate: 2.5,
-        withdrawalRate: 4,
-        lifeExpectancy: 85,
-        taxRate: 15
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateRetirementSavings({
+          currentAge: 65,
+          retirementAge: 60,
+          currentSavings: 50000,
+          monthlyContribution: 1000,
+          employerMatch: 500,
+          annualReturn: 7,
+          inflationRate: 2.5,
+          withdrawalRate: 4,
+          lifeExpectancy: 85,
+          taxRate: 15,
+        })
+      ).toThrow('Invalid input parameters');
 
-      expect(() => calculateRetirementSavings({
-        currentAge: 30,
-        retirementAge: 65,
-        currentSavings: 50000,
-        monthlyContribution: -1000,
-        employerMatch: 500,
-        annualReturn: 7,
-        inflationRate: 2.5,
-        withdrawalRate: 4,
-        lifeExpectancy: 85,
-        taxRate: 15
-      })).toThrow('Invalid input parameters');
+      expect(() =>
+        calculateRetirementSavings({
+          currentAge: 30,
+          retirementAge: 65,
+          currentSavings: 50000,
+          monthlyContribution: -1000,
+          employerMatch: 500,
+          annualReturn: 7,
+          inflationRate: 2.5,
+          withdrawalRate: 4,
+          lifeExpectancy: 85,
+          taxRate: 15,
+        })
+      ).toThrow('Invalid input parameters');
     });
   });
 
@@ -426,7 +466,7 @@ describe('Financial Calculations', () => {
       const loanResult = calculateLoanPayment({
         principal: 1,
         interestRate: 5,
-        termYears: 1
+        termYears: 1,
       });
 
       expect(loanResult.monthlyPayment).toBeGreaterThan(0);
@@ -440,7 +480,7 @@ describe('Financial Calculations', () => {
         annualInterestRate: 7,
         investmentPeriod: 30,
         inflationRate: 2.5,
-        taxRate: 15
+        taxRate: 15,
       });
 
       expect(investmentResult.futureValue).toBeGreaterThan(1000000);
@@ -453,7 +493,7 @@ describe('Financial Calculations', () => {
         finalValue: 50000,
         additionalInvestments: 0,
         timeframe: 1,
-        timeframeUnit: 'years'
+        timeframeUnit: 'years',
       });
 
       expect(roiResult.simpleROI).toBe(400);
@@ -471,11 +511,11 @@ describe('Financial Calculations', () => {
         inflationRate: 2.5,
         withdrawalRate: 4,
         lifeExpectancy: 90,
-        taxRate: 15
+        taxRate: 15,
       });
 
       expect(retirementResult.projectedSavings).toBeGreaterThan(10000);
       expect(retirementResult.yearsOfRetirement).toBe(20);
     });
   });
-}); 
+});

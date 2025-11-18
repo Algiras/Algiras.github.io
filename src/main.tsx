@@ -12,10 +12,10 @@ import '@mantine/notifications/styles.css';
 
 // Mantine imports
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
-import { useLocalStorage, useColorScheme } from '@mantine/hooks';
+import { useColorScheme, useLocalStorage } from '@mantine/hooks';
 import { Notifications } from '@mantine/notifications';
-import { theme } from './theme';
 import { ThemeProvider } from './context/ThemeContext';
+import { theme } from './theme';
 
 // Initialize Sentry for error tracking
 Sentry.init({
@@ -32,7 +32,10 @@ initializeAnalytics();
 
 const Root = () => {
   const systemScheme = useColorScheme();
-  const [scheme] = useLocalStorage<'light' | 'dark'>({ key: 'color-scheme', defaultValue: systemScheme === 'dark' ? 'dark' : 'light' });
+  const [scheme] = useLocalStorage<'light' | 'dark'>({
+    key: 'color-scheme',
+    defaultValue: systemScheme === 'dark' ? 'dark' : 'light',
+  });
   return (
     <React.StrictMode>
       <ColorSchemeScript defaultColorScheme={scheme} />

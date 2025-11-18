@@ -75,12 +75,12 @@ export interface MarkdownDocumentData extends BaseCalculatorData {
 }
 
 // Calculator types
-export type CalculatorType = 
-  | 'loan' 
-  | 'roi' 
-  | 'investment' 
-  | 'mortgage' 
-  | 'retirement' 
+export type CalculatorType =
+  | 'loan'
+  | 'roi'
+  | 'investment'
+  | 'mortgage'
+  | 'retirement'
   | 'markdown-document';
 
 // Generic calculator persistence hook
@@ -89,7 +89,7 @@ export function useCalculatorPersistence<T extends BaseCalculatorData>(
   initialData: Omit<T, 'lastUpdated' | 'version'>
 ) {
   const storageKey = `calculator-${calculatorType}`;
-  
+
   // Default data with metadata
   const defaultData: T = {
     ...initialData,
@@ -108,7 +108,7 @@ export function useCalculatorPersistence<T extends BaseCalculatorData>(
         lastUpdated: new Date().toISOString(),
         version: '1.0.0',
       } as T;
-      
+
       setData(updatedData);
     },
     [data, setData]
@@ -227,11 +227,11 @@ export function useMarkdownDocumentPersistence() {
 export function clearAllCalculatorData() {
   const calculatorTypes: CalculatorType[] = [
     'loan',
-    'roi', 
+    'roi',
     'investment',
     'mortgage',
     'retirement',
-    'markdown-document'
+    'markdown-document',
   ];
 
   calculatorTypes.forEach(type => {
@@ -243,10 +243,10 @@ export function exportCalculatorData() {
   const calculatorTypes: CalculatorType[] = [
     'loan',
     'roi',
-    'investment', 
+    'investment',
     'mortgage',
     'retirement',
-    'markdown-document'
+    'markdown-document',
   ];
 
   const exportData: Record<string, any> = {};
@@ -273,4 +273,4 @@ export function importCalculatorData(data: Record<string, any>) {
       console.warn(`Error importing ${type} calculator data:`, error);
     }
   });
-} 
+}

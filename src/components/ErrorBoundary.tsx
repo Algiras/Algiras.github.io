@@ -70,11 +70,13 @@ export class ErrorBoundary extends Component<Props, State> {
         <Container size="sm" py="xl">
           <Stack align="center" gap="md">
             <AlertTriangle size={48} color="red" />
-            <Title order={2} ta="center">Something went wrong</Title>
-            
-            <Alert 
-              variant="light" 
-              color="red" 
+            <Title order={2} ta="center">
+              Something went wrong
+            </Title>
+
+            <Alert
+              variant="light"
+              color="red"
               title="Error Details"
               icon={<AlertTriangle size={16} />}
               style={{ width: '100%' }}
@@ -82,34 +84,36 @@ export class ErrorBoundary extends Component<Props, State> {
               <Text size="sm" mb="xs">
                 {this.state.error?.message || 'An unexpected error occurred'}
               </Text>
-              
-              {process.env.NODE_ENV === 'development' && this.state.error?.stack && (
-                <Text size="xs" c="dimmed" style={{ fontFamily: 'monospace' }}>
-                  {this.state.error.stack}
-                </Text>
-              )}
+
+              {process.env.NODE_ENV === 'development' &&
+                this.state.error?.stack && (
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    style={{ fontFamily: 'monospace' }}
+                  >
+                    {this.state.error.stack}
+                  </Text>
+                )}
             </Alert>
 
             <Stack gap="sm">
-              <Button 
+              <Button
                 onClick={this.handleReset}
                 leftSection={<RefreshCw size={16} />}
                 variant="filled"
               >
                 Try Again
               </Button>
-              
-              <Button 
-                onClick={this.handleReload}
-                variant="light"
-                color="gray"
-              >
+
+              <Button onClick={this.handleReload} variant="light" color="gray">
                 Reload Page
               </Button>
             </Stack>
 
             <Text size="sm" c="dimmed" ta="center">
-              If this problem persists, please try refreshing the page or contact support.
+              If this problem persists, please try refreshing the page or
+              contact support.
             </Text>
           </Stack>
         </Container>
@@ -147,4 +151,4 @@ export const useErrorHandler = () => {
   }, [error]);
 
   return handleError;
-}; 
+};

@@ -1,12 +1,34 @@
 import {
-    ActionIcon, Badge,
-    Box, Button, Card, Container, Divider, Flex, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, Tooltip
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Flex,
+  Group,
+  SimpleGrid,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
-    ArrowRight, Bot, Code, Download,
-    ExternalLink, Github, Linkedin, Mail,
-    MapPin, Target, Users, Zap
+  ArrowRight,
+  Bot,
+  Code,
+  Download,
+  ExternalLink,
+  Github,
+  Linkedin,
+  Mail,
+  MapPin,
+  Target,
+  Users,
+  Zap,
 } from 'lucide-react';
 import React from 'react';
 
@@ -18,8 +40,16 @@ const Home: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const skills = [
-    'React', 'TypeScript', 'Node.js', 'PostgreSQL', 
-    'Docker', 'GraphQL', 'Functional Programming', 'ElasticSearch', 'Redis', 'Scala'
+    'React',
+    'TypeScript',
+    'Node.js',
+    'PostgreSQL',
+    'Docker',
+    'GraphQL',
+    'Functional Programming',
+    'ElasticSearch',
+    'Redis',
+    'Scala',
   ];
 
   return (
@@ -49,8 +79,9 @@ const Home: React.FC = () => {
                   Algimantas Krasnauskas
                 </Title>
                 <Text size="xl" c="dimmed" mb="lg">
-                  Senior Software Engineer crafting scalable solutions with modern technologies.
-                  Passionate about functional programming, AI integration, and building exceptional user experiences.
+                  Senior Software Engineer crafting scalable solutions with
+                  modern technologies. Passionate about functional programming,
+                  AI integration, and building exceptional user experiences.
                 </Text>
                 <Group gap="md">
                   <Button
@@ -82,7 +113,7 @@ const Home: React.FC = () => {
                   </Button>
                 </Group>
               </Box>
-              
+
               <Group gap="md">
                 <Tooltip label="LinkedIn Profile">
                   <ActionIcon
@@ -152,7 +183,12 @@ const Home: React.FC = () => {
                         animation: 'float 6s ease-in-out infinite',
                       }}
                     >
-                      <ThemeIcon size="lg" radius="md" variant="light" color="blue">
+                      <ThemeIcon
+                        size="lg"
+                        radius="md"
+                        variant="light"
+                        color="blue"
+                      >
                         <Bot size={20} />
                       </ThemeIcon>
                     </Box>
@@ -164,7 +200,12 @@ const Home: React.FC = () => {
                         animation: 'float 6s ease-in-out infinite 2s',
                       }}
                     >
-                      <ThemeIcon size="lg" radius="md" variant="light" color="cyan">
+                      <ThemeIcon
+                        size="lg"
+                        radius="md"
+                        variant="light"
+                        color="cyan"
+                      >
                         <Zap size={20} />
                       </ThemeIcon>
                     </Box>
@@ -176,7 +217,12 @@ const Home: React.FC = () => {
                         animation: 'float 6s ease-in-out infinite 4s',
                       }}
                     >
-                      <ThemeIcon size="lg" radius="md" variant="light" color="indigo">
+                      <ThemeIcon
+                        size="lg"
+                        radius="md"
+                        variant="light"
+                        color="indigo"
+                      >
                         <Target size={20} />
                       </ThemeIcon>
                     </Box>
@@ -188,7 +234,12 @@ const Home: React.FC = () => {
                         animation: 'float 6s ease-in-out infinite 3s',
                       }}
                     >
-                      <ThemeIcon size="lg" radius="md" variant="light" color="violet">
+                      <ThemeIcon
+                        size="lg"
+                        radius="md"
+                        variant="light"
+                        color="violet"
+                      >
                         <Users size={20} />
                       </ThemeIcon>
                     </Box>
@@ -206,7 +257,8 @@ const Home: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-cyan-5), var(--mantine-color-indigo-6))',
+                    background:
+                      'linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-cyan-5), var(--mantine-color-indigo-6))',
                     borderRadius: '50%',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                     overflow: 'hidden',
@@ -220,7 +272,8 @@ const Home: React.FC = () => {
                       transform: 'translate(-50%, -50%)',
                       width: '100%',
                       height: '100%',
-                      background: 'radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 50%)',
+                      background:
+                        'radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent 50%)',
                     }}
                   />
                   <Stack align="center" gap="xs" style={{ zIndex: 1 }}>
@@ -236,7 +289,9 @@ const Home: React.FC = () => {
               </Box>
               <Group justify="center" mt="md" gap="xs">
                 <MapPin size={16} />
-                <Text size="sm" c="dimmed">Vilnius, Lithuania</Text>
+                <Text size="sm" c="dimmed">
+                  Vilnius, Lithuania
+                </Text>
               </Group>
             </Box>
           </Flex>
@@ -253,20 +308,21 @@ const Home: React.FC = () => {
               Technical Expertise
             </Title>
             <Text size="lg" c="dimmed" maw={600} mx="auto">
-              Specialized in modern web technologies and passionate about clean, efficient code
+              Specialized in modern web technologies and passionate about clean,
+              efficient code
             </Text>
           </Box>
 
           <Group justify="center" gap="sm">
-            {skills.map((skill) => (
+            {skills.map(skill => (
               <Badge
                 key={skill}
                 size="lg"
                 variant="light"
                 radius="md"
                 className="animate-skill-bounce"
-                style={{ 
-                  cursor: 'pointer'
+                style={{
+                  cursor: 'pointer',
                 }}
               >
                 {skill}
@@ -286,20 +342,27 @@ const Home: React.FC = () => {
               About Me
             </Title>
             <Text size="md" c="dimmed" lh={1.6}>
-              I'm a passionate software engineer with over 8 years of experience building 
-              scalable web applications and leading development teams. My journey began with 
-              a fascination for problem-solving through code, and it has evolved into a 
-              career focused on creating meaningful digital experiences.
+              I'm a passionate software engineer with over 8 years of experience
+              building scalable web applications and leading development teams.
+              My journey began with a fascination for problem-solving through
+              code, and it has evolved into a career focused on creating
+              meaningful digital experiences.
             </Text>
             <Text size="md" c="dimmed" lh={1.6}>
-              Currently, I'm exploring the intersection of functional programming and AI, 
-              always seeking to improve code quality and development efficiency. I believe 
-              in writing clean, maintainable code that not only works but tells a story.
+              Currently, I'm exploring the intersection of functional
+              programming and AI, always seeking to improve code quality and
+              development efficiency. I believe in writing clean, maintainable
+              code that not only works but tells a story.
             </Text>
           </Stack>
 
           <SimpleGrid cols={1} spacing="md">
-            <Card padding="lg" radius="md" withBorder className="animate-card-glow">
+            <Card
+              padding="lg"
+              radius="md"
+              withBorder
+              className="animate-card-glow"
+            >
               <Group gap="md" align="flex-start">
                 <ThemeIcon size="lg" radius="md" variant="light" color="blue">
                   <Code size={20} />
@@ -309,14 +372,20 @@ const Home: React.FC = () => {
                     Functional Programming
                   </Title>
                   <Text size="sm" c="dimmed">
-                    Exploring functional programming concepts and their practical applications 
-                    in modern software development, focusing on immutability and declarative patterns.
+                    Exploring functional programming concepts and their
+                    practical applications in modern software development,
+                    focusing on immutability and declarative patterns.
                   </Text>
                 </Stack>
               </Group>
             </Card>
 
-            <Card padding="lg" radius="md" withBorder className="animate-card-glow">
+            <Card
+              padding="lg"
+              radius="md"
+              withBorder
+              className="animate-card-glow"
+            >
               <Group gap="md" align="flex-start">
                 <ThemeIcon size="lg" radius="md" variant="light" color="cyan">
                   <Bot size={20} />
@@ -326,8 +395,9 @@ const Home: React.FC = () => {
                     AI & Machine Learning
                   </Title>
                   <Text size="sm" c="dimmed">
-                    Investigating AI integration in software development, including automated 
-                    testing, code generation, and intelligent user interfaces.
+                    Investigating AI integration in software development,
+                    including automated testing, code generation, and
+                    intelligent user interfaces.
                   </Text>
                 </Stack>
               </Group>
@@ -346,13 +416,26 @@ const Home: React.FC = () => {
               Get In Touch
             </Title>
             <Text size="lg" c="dimmed" maw={600} mx="auto">
-              Let's connect and discuss opportunities, collaborations, or just chat about technology
+              Let's connect and discuss opportunities, collaborations, or just
+              chat about technology
             </Text>
           </Box>
 
           <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg">
-            <Card padding="lg" radius="md" withBorder ta="center" className="animate-card-glow">
-              <ThemeIcon size="xl" radius="md" variant="light" color="blue" mb="md">
+            <Card
+              padding="lg"
+              radius="md"
+              withBorder
+              ta="center"
+              className="animate-card-glow"
+            >
+              <ThemeIcon
+                size="xl"
+                radius="md"
+                variant="light"
+                color="blue"
+                mb="md"
+              >
                 <Linkedin size={24} />
               </ThemeIcon>
               <Title order={4} size="h5" mb="xs">
@@ -376,8 +459,20 @@ const Home: React.FC = () => {
               </Button>
             </Card>
 
-            <Card padding="lg" radius="md" withBorder ta="center" className="animate-card-glow">
-              <ThemeIcon size="xl" radius="md" variant="light" color="gray" mb="md">
+            <Card
+              padding="lg"
+              radius="md"
+              withBorder
+              ta="center"
+              className="animate-card-glow"
+            >
+              <ThemeIcon
+                size="xl"
+                radius="md"
+                variant="light"
+                color="gray"
+                mb="md"
+              >
                 <Github size={24} />
               </ThemeIcon>
               <Title order={4} size="h5" mb="xs">
@@ -401,8 +496,20 @@ const Home: React.FC = () => {
               </Button>
             </Card>
 
-            <Card padding="lg" radius="md" withBorder ta="center" className="animate-card-glow">
-              <ThemeIcon size="xl" radius="md" variant="light" color="red" mb="md">
+            <Card
+              padding="lg"
+              radius="md"
+              withBorder
+              ta="center"
+              className="animate-card-glow"
+            >
+              <ThemeIcon
+                size="xl"
+                radius="md"
+                variant="light"
+                color="red"
+                mb="md"
+              >
                 <Mail size={24} />
               </ThemeIcon>
               <Title order={4} size="h5" mb="xs">
@@ -447,20 +554,26 @@ const Home: React.FC = () => {
 
       {/* CTA Section */}
       <Container size="lg" py="xl">
-        <Card padding="xl" radius="md" withBorder ta="center" className="animate-card-glow glass-effect">
+        <Card
+          padding="xl"
+          radius="md"
+          withBorder
+          ta="center"
+          className="animate-card-glow glass-effect"
+        >
           <Stack gap="md">
             <Title order={2} size="h2">
               Let's Build Something Amazing Together
             </Title>
             <Text size="lg" c="dimmed" maw={600} mx="auto">
-              I'm always interested in discussing new opportunities, innovative projects, 
-              or just chatting about technology and development.
+              I'm always interested in discussing new opportunities, innovative
+              projects, or just chatting about technology and development.
             </Text>
             <Group justify="center" gap="md" wrap="wrap">
               <Button
                 component={Link}
                 to="/finance"
-                size={{ base: 'md', sm: 'lg' }}
+                size="lg"
                 variant="gradient"
                 gradient={{ from: 'blue', to: 'cyan' }}
                 rightSection={<ArrowRight size={18} />}
@@ -471,7 +584,7 @@ const Home: React.FC = () => {
               <Button
                 component={Link}
                 to="/documents"
-                size={{ base: 'md', sm: 'lg' }}
+                size="lg"
                 variant="gradient"
                 gradient={{ from: 'purple', to: 'pink' }}
                 rightSection={<ArrowRight size={18} />}
@@ -484,7 +597,7 @@ const Home: React.FC = () => {
                 href="https://github.com/Algiras"
                 target="_blank"
                 rel="noopener noreferrer"
-                size={{ base: 'md', sm: 'lg' }}
+                size="lg"
                 variant="outline"
                 rightSection={<ExternalLink size={18} />}
                 className="custom-button-hover"

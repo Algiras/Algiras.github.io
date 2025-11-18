@@ -1,11 +1,46 @@
-import { Badge, Card, Grid, Group, NumberInput, Select, Slider, Stack, Tabs, Text, Title, useMantineColorScheme, ActionIcon } from '@mantine/core';
-import { Calculator, DollarSign, PiggyBank, Target, TrendingUp, RotateCcw } from 'lucide-react';
+import {
+  ActionIcon,
+  Badge,
+  Card,
+  Grid,
+  Group,
+  NumberInput,
+  Select,
+  Slider,
+  Stack,
+  Tabs,
+  Text,
+  Title,
+  useMantineColorScheme,
+} from '@mantine/core';
+import {
+  Calculator,
+  DollarSign,
+  PiggyBank,
+  RotateCcw,
+  Target,
+  TrendingUp,
+} from 'lucide-react';
 import React, { useMemo } from 'react';
 
-import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Line,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
-import { calculateInvestmentGrowth } from '../../utils/financialCalculations';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { calculateInvestmentGrowth } from '../../utils/financialCalculations';
 
 interface InvestmentInput {
   initialAmount: number;
@@ -30,10 +65,13 @@ const InvestmentCalculator: React.FC = () => {
     compoundingFrequency: 'monthly',
     inflationRate: 2.5,
     taxRate: 15,
-    targetAmount: 1000000
+    targetAmount: 1000000,
   };
 
-  const [inputsStorage, setInputs] = useLocalStorage<InvestmentInput>('investment-calculator-inputs', defaultInputs);
+  const [inputsStorage, setInputs] = useLocalStorage<InvestmentInput>(
+    'investment-calculator-inputs',
+    defaultInputs
+  );
 
   // Ensure non-null value (hook always returns initialValue if null)
   const inputs = inputsStorage ?? defaultInputs;
@@ -51,10 +89,15 @@ const InvestmentCalculator: React.FC = () => {
       compoundingFrequency: _compoundingFrequency,
       inflationRate,
       taxRate,
-      targetAmount
+      targetAmount,
     } = inputs;
 
-    if (initialAmount < 0 || monthlyContribution < 0 || annualInterestRate < 0 || investmentPeriod <= 0) {
+    if (
+      initialAmount < 0 ||
+      monthlyContribution < 0 ||
+      annualInterestRate < 0 ||
+      investmentPeriod <= 0
+    ) {
       return null;
     }
 
@@ -69,16 +112,16 @@ const InvestmentCalculator: React.FC = () => {
     for (let year = 1; year <= investmentPeriod; year++) {
       // const _startBalance = futureValue;
       // const _startContributions = totalContributions;
-      
+
       futureValue = calculateInvestmentGrowth({
         initialAmount: futureValue,
         monthlyContribution,
         annualInterestRate,
         investmentPeriod: 1,
         inflationRate,
-        taxRate: taxRate
+        taxRate: taxRate,
       }).futureValue;
-      
+
       totalContributions += monthlyContribution * 12;
       // const _yearInterest = futureValue - startBalance - (monthlyContribution * 12);
       const realValue = futureValue / Math.pow(1 + inflationRate / 100, year);
@@ -88,20 +131,22 @@ const InvestmentCalculator: React.FC = () => {
         balance: Math.round(futureValue),
         contributions: Math.round(totalContributions),
         interest: Math.round(futureValue - totalContributions),
-        realValue: Math.round(realValue)
+        realValue: Math.round(realValue),
       });
     }
 
     const totalInterest = futureValue - totalContributions;
-    const realValue = futureValue / Math.pow(1 + inflationRate / 100, investmentPeriod);
-    const afterTaxValue = futureValue - (totalInterest * taxRate / 100);
+    const realValue =
+      futureValue / Math.pow(1 + inflationRate / 100, investmentPeriod);
+    const afterTaxValue = futureValue - (totalInterest * taxRate) / 100;
 
     // Calculate months to reach target
     let monthsToTarget = 0;
     let currentValue = initialAmount;
     let currentContributions = initialAmount;
 
-    while (currentValue < targetAmount && monthsToTarget < 1200) { // Max 100 years
+    while (currentValue < targetAmount && monthsToTarget < 1200) {
+      // Max 100 years
       currentValue = currentValue * (1 + monthlyRate) + monthlyContribution;
       currentContributions += monthlyContribution;
       monthsToTarget++;
@@ -114,7 +159,7 @@ const InvestmentCalculator: React.FC = () => {
       realValue: Math.round(realValue),
       afterTaxValue: Math.round(afterTaxValue),
       monthsToTarget: currentValue >= targetAmount ? monthsToTarget : -1,
-      yearlyBreakdown
+      yearlyBreakdown,
     };
   }, [inputs]);
 
@@ -123,27 +168,35 @@ const InvestmentCalculator: React.FC = () => {
     return results.yearlyBreakdown.map(item => ({
       ...item,
       contributionsOnly: item.contributions,
-      interestEarned: item.interest
+      interestEarned: item.interest,
     }));
   }, [results]);
 
   const pieData = useMemo(() => {
     if (!results) return [];
     return [
-      { name: 'Total Contributions', value: results.totalContributions, color: '#8884d8' },
-      { name: 'Interest Earned', value: results.totalInterest, color: '#82ca9d' }
+      {
+        name: 'Total Contributions',
+        value: results.totalContributions,
+        color: '#8884d8',
+      },
+      {
+        name: 'Interest Earned',
+        value: results.totalInterest,
+        color: '#82ca9d',
+      },
     ];
   }, [results]);
 
   const scenarios = useMemo(() => {
     if (!results) return [];
-    
+
     const baseInputs = inputs;
     const scenarios = [
       { name: 'Conservative (5%)', rate: 5, color: '#8884d8' },
       { name: 'Moderate (7%)', rate: 7, color: '#82ca9d' },
       { name: 'Aggressive (10%)', rate: 10, color: '#ffc658' },
-      { name: 'Very Aggressive (12%)', rate: 12, color: '#ff7300' }
+      { name: 'Very Aggressive (12%)', rate: 12, color: '#ff7300' },
     ];
 
     return scenarios.map(scenario => {
@@ -152,7 +205,8 @@ const InvestmentCalculator: React.FC = () => {
       let totalContributions = baseInputs.initialAmount;
 
       for (let month = 1; month <= baseInputs.investmentPeriod * 12; month++) {
-        futureValue = futureValue * (1 + monthlyRate) + baseInputs.monthlyContribution;
+        futureValue =
+          futureValue * (1 + monthlyRate) + baseInputs.monthlyContribution;
         totalContributions += baseInputs.monthlyContribution;
       }
 
@@ -161,56 +215,60 @@ const InvestmentCalculator: React.FC = () => {
         value: Math.round(futureValue),
         contributions: Math.round(totalContributions),
         interest: Math.round(futureValue - totalContributions),
-        color: scenario.color
+        color: scenario.color,
       };
     });
   }, [inputs, results]);
 
   const recommendations = useMemo(() => {
     if (!results) return [];
-    
+
     const recs = [];
     const contributionRatio = results.totalContributions / results.futureValue;
-    
+
     if (contributionRatio > 0.7) {
-      recs.push({ 
-        type: 'warning', 
-        text: 'Your contributions make up most of your final value. Consider increasing your investment period or interest rate for better compound growth.' 
+      recs.push({
+        type: 'warning',
+        text: 'Your contributions make up most of your final value. Consider increasing your investment period or interest rate for better compound growth.',
       });
     } else if (contributionRatio < 0.3) {
-      recs.push({ 
-        type: 'success', 
-        text: 'Excellent! Compound interest is doing most of the work. Your money is growing efficiently.' 
+      recs.push({
+        type: 'success',
+        text: 'Excellent! Compound interest is doing most of the work. Your money is growing efficiently.',
       });
     }
-    
-    if (results.monthsToTarget > 0 && results.monthsToTarget <= inputs.investmentPeriod * 12) {
-      recs.push({ 
-        type: 'success', 
-        text: `You'll reach your target of $${inputs.targetAmount.toLocaleString()} in ${Math.round(results.monthsToTarget / 12)} years!` 
+
+    if (
+      results.monthsToTarget > 0 &&
+      results.monthsToTarget <= inputs.investmentPeriod * 12
+    ) {
+      recs.push({
+        type: 'success',
+        text: `You'll reach your target of $${inputs.targetAmount.toLocaleString()} in ${Math.round(results.monthsToTarget / 12)} years!`,
       });
     } else if (results.monthsToTarget > inputs.investmentPeriod * 12) {
-      recs.push({ 
-        type: 'warning', 
-        text: 'You may need to increase contributions or extend your investment period to reach your target.' 
+      recs.push({
+        type: 'warning',
+        text: 'You may need to increase contributions or extend your investment period to reach your target.',
       });
     }
-    
+
     if (inputs.inflationRate > 0) {
-      const realReturn = ((results.realValue / results.totalContributions) - 1) * 100;
+      const realReturn =
+        (results.realValue / results.totalContributions - 1) * 100;
       if (realReturn > 100) {
-        recs.push({ 
-          type: 'success', 
-          text: `After inflation, your real return is ${realReturn.toFixed(1)}%. Your purchasing power is growing well.` 
+        recs.push({
+          type: 'success',
+          text: `After inflation, your real return is ${realReturn.toFixed(1)}%. Your purchasing power is growing well.`,
         });
       } else if (realReturn < 50) {
-        recs.push({ 
-          type: 'warning', 
-          text: 'Inflation is significantly reducing your real returns. Consider higher-yield investments.' 
+        recs.push({
+          type: 'warning',
+          text: 'Inflation is significantly reducing your real returns. Consider higher-yield investments.',
         });
       }
     }
-    
+
     return recs;
   }, [results, inputs]);
 
@@ -218,7 +276,7 @@ const InvestmentCalculator: React.FC = () => {
     primary: isDark ? '#8884d8' : '#6366f1',
     secondary: isDark ? '#82ca9d' : '#10b981',
     accent: isDark ? '#ffc658' : '#f59e0b',
-    danger: isDark ? '#ff7300' : '#ef4444'
+    danger: isDark ? '#ff7300' : '#ef4444',
   };
 
   return (
@@ -230,16 +288,18 @@ const InvestmentCalculator: React.FC = () => {
             Investment Calculator
           </Title>
           <Group gap="xs">
-            <ActionIcon 
-              variant="light" 
-              color="gray" 
+            <ActionIcon
+              variant="light"
+              color="gray"
               size="md"
               onClick={resetToDefaults}
               title="Reset to defaults"
             >
               <RotateCcw size={18} />
             </ActionIcon>
-            <Badge variant="light" color="green" size="md">Compound Interest</Badge>
+            <Badge variant="light" color="green" size="md">
+              Compound Interest
+            </Badge>
           </Group>
         </Group>
 
@@ -249,7 +309,12 @@ const InvestmentCalculator: React.FC = () => {
               <NumberInput
                 label="Initial Investment ($)"
                 value={inputs.initialAmount}
-                onChange={(value) => setInputs(prev => ({ ...prev, initialAmount: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    initialAmount: Number(value) || 0,
+                  }))
+                }
                 min={0}
                 step={100}
                 thousandSeparator=","
@@ -259,7 +324,12 @@ const InvestmentCalculator: React.FC = () => {
               <NumberInput
                 label="Monthly Contribution ($)"
                 value={inputs.monthlyContribution}
-                onChange={(value) => setInputs(prev => ({ ...prev, monthlyContribution: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    monthlyContribution: Number(value) || 0,
+                  }))
+                }
                 min={0}
                 step={50}
                 thousandSeparator=","
@@ -267,10 +337,14 @@ const InvestmentCalculator: React.FC = () => {
               />
 
               <div>
-                <Text size="sm" fw={500} mb="xs">Annual Interest Rate (%)</Text>
+                <Text size="sm" fw={500} mb="xs">
+                  Annual Interest Rate (%)
+                </Text>
                 <Slider
                   value={inputs.annualInterestRate}
-                  onChange={(value) => setInputs(prev => ({ ...prev, annualInterestRate: value }))}
+                  onChange={value =>
+                    setInputs(prev => ({ ...prev, annualInterestRate: value }))
+                  }
                   min={0}
                   max={20}
                   step={0.1}
@@ -279,7 +353,7 @@ const InvestmentCalculator: React.FC = () => {
                     { value: 5, label: '5%' },
                     { value: 10, label: '10%' },
                     { value: 15, label: '15%' },
-                    { value: 20, label: '20%' }
+                    { value: 20, label: '20%' },
                   ]}
                   mb="md"
                 />
@@ -291,7 +365,12 @@ const InvestmentCalculator: React.FC = () => {
               <NumberInput
                 label="Investment Period (Years)"
                 value={inputs.investmentPeriod}
-                onChange={(value) => setInputs(prev => ({ ...prev, investmentPeriod: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    investmentPeriod: Number(value) || 0,
+                  }))
+                }
                 min={1}
                 max={50}
               />
@@ -299,11 +378,16 @@ const InvestmentCalculator: React.FC = () => {
               <Select
                 label="Compounding Frequency"
                 value={inputs.compoundingFrequency}
-                onChange={(value) => setInputs(prev => ({ ...prev, compoundingFrequency: value as any }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    compoundingFrequency: value as any,
+                  }))
+                }
                 data={[
                   { value: 'monthly', label: 'Monthly' },
                   { value: 'quarterly', label: 'Quarterly' },
-                  { value: 'annually', label: 'Annually' }
+                  { value: 'annually', label: 'Annually' },
                 ]}
               />
             </Stack>
@@ -314,7 +398,12 @@ const InvestmentCalculator: React.FC = () => {
               <NumberInput
                 label="Inflation Rate (%)"
                 value={inputs.inflationRate}
-                onChange={(value) => setInputs(prev => ({ ...prev, inflationRate: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    inflationRate: Number(value) || 0,
+                  }))
+                }
                 min={0}
                 max={10}
                 step={0.1}
@@ -324,7 +413,9 @@ const InvestmentCalculator: React.FC = () => {
               <NumberInput
                 label="Tax Rate on Gains (%)"
                 value={inputs.taxRate}
-                onChange={(value) => setInputs(prev => ({ ...prev, taxRate: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({ ...prev, taxRate: Number(value) || 0 }))
+                }
                 min={0}
                 max={50}
                 step={1}
@@ -333,7 +424,12 @@ const InvestmentCalculator: React.FC = () => {
               <NumberInput
                 label="Target Amount ($)"
                 value={inputs.targetAmount}
-                onChange={(value) => setInputs(prev => ({ ...prev, targetAmount: Number(value) || 0 }))}
+                onChange={value =>
+                  setInputs(prev => ({
+                    ...prev,
+                    targetAmount: Number(value) || 0,
+                  }))
+                }
                 min={0}
                 step={10000}
                 thousandSeparator=","
@@ -342,27 +438,45 @@ const InvestmentCalculator: React.FC = () => {
 
               {results && (
                 <Stack gap="md" mt="md">
-                  <Card withBorder p="md" className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                  <Card
+                    withBorder
+                    p="md"
+                    className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
+                  >
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Future Value</Text>
+                      <Text size="sm" c="dimmed">
+                        Future Value
+                      </Text>
                       <Text size="xl" fw={700} c="blue">
                         ${results.futureValue.toLocaleString()}
                       </Text>
                     </Group>
                   </Card>
 
-                  <Card withBorder p="md" className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                  <Card
+                    withBorder
+                    p="md"
+                    className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
+                  >
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Total Interest</Text>
+                      <Text size="sm" c="dimmed">
+                        Total Interest
+                      </Text>
                       <Text size="lg" fw={600} c="green">
                         ${results.totalInterest.toLocaleString()}
                       </Text>
                     </Group>
                   </Card>
 
-                  <Card withBorder p="md" className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20">
+                  <Card
+                    withBorder
+                    p="md"
+                    className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20"
+                  >
                     <Group justify="space-between">
-                      <Text size="sm" c="dimmed">Real Value (Inflation-Adjusted)</Text>
+                      <Text size="sm" c="dimmed">
+                        Real Value (Inflation-Adjusted)
+                      </Text>
                       <Text size="lg" fw={600}>
                         ${results.realValue.toLocaleString()}
                       </Text>
@@ -382,7 +496,10 @@ const InvestmentCalculator: React.FC = () => {
               <Tabs.Tab value="growth" leftSection={<TrendingUp size={16} />}>
                 Growth Timeline
               </Tabs.Tab>
-              <Tabs.Tab value="breakdown" leftSection={<Calculator size={16} />}>
+              <Tabs.Tab
+                value="breakdown"
+                leftSection={<Calculator size={16} />}
+              >
                 Breakdown
               </Tabs.Tab>
               <Tabs.Tab value="scenarios" leftSection={<Target size={16} />}>
@@ -394,23 +511,51 @@ const InvestmentCalculator: React.FC = () => {
             </Tabs.List>
 
             <Tabs.Panel value="growth" pt="md">
-              <Title order={4} mb="md">Investment Growth Over Time</Title>
+              <Title order={4} mb="md">
+                Investment Growth Over Time
+              </Title>
               <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
                   <ComposedChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#e5e7eb'} />
-                    <XAxis dataKey="year" stroke={isDark ? '#9ca3af' : '#6b7280'} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={isDark ? '#374151' : '#e5e7eb'}
+                    />
+                    <XAxis
+                      dataKey="year"
+                      stroke={isDark ? '#9ca3af' : '#6b7280'}
+                    />
                     <YAxis stroke={isDark ? '#9ca3af' : '#6b7280'} />
-                    <Tooltip 
-                      contentStyle={{ 
+                    <Tooltip
+                      contentStyle={{
                         backgroundColor: isDark ? '#1f2937' : '#ffffff',
                         border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
-                        borderRadius: '8px'
+                        borderRadius: '8px',
                       }}
                     />
-                    <Area type="monotone" dataKey="contributions" stackId="1" stroke={chartColors.secondary} fill={chartColors.secondary} fillOpacity={0.3} />
-                    <Area type="monotone" dataKey="interestEarned" stackId="1" stroke={chartColors.primary} fill={chartColors.primary} fillOpacity={0.3} />
-                    <Line type="monotone" dataKey="realValue" stroke={chartColors.accent} strokeWidth={2} strokeDasharray="5 5" />
+                    <Area
+                      type="monotone"
+                      dataKey="contributions"
+                      stackId="1"
+                      stroke={chartColors.secondary}
+                      fill={chartColors.secondary}
+                      fillOpacity={0.3}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="interestEarned"
+                      stackId="1"
+                      stroke={chartColors.primary}
+                      fill={chartColors.primary}
+                      fillOpacity={0.3}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="realValue"
+                      stroke={chartColors.accent}
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                    />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -419,7 +564,9 @@ const InvestmentCalculator: React.FC = () => {
             <Tabs.Panel value="breakdown" pt="md">
               <Grid>
                 <Grid.Col span={{ base: 12, md: 8 }}>
-                  <Title order={4} mb="md">Contributions vs Interest</Title>
+                  <Title order={4} mb="md">
+                    Contributions vs Interest
+                  </Title>
                   <div style={{ width: '100%', height: 300 }}>
                     <ResponsiveContainer>
                       <PieChart>
@@ -430,17 +577,19 @@ const InvestmentCalculator: React.FC = () => {
                           outerRadius={100}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                          label={({ name, percent }) =>
+                            `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                          }
                         >
                           {pieData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip 
-                          contentStyle={{ 
+                        <Tooltip
+                          contentStyle={{
                             backgroundColor: isDark ? '#1f2937' : '#ffffff',
                             border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
-                            borderRadius: '8px'
+                            borderRadius: '8px',
                           }}
                         />
                       </PieChart>
@@ -448,27 +597,39 @@ const InvestmentCalculator: React.FC = () => {
                   </div>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 4 }}>
-                  <Title order={4} mb="md">Summary</Title>
+                  <Title order={4} mb="md">
+                    Summary
+                  </Title>
                   <Stack gap="sm">
                     <Group justify="space-between">
                       <Text>Total Contributions:</Text>
-                      <Text fw={600}>${results.totalContributions.toLocaleString()}</Text>
+                      <Text fw={600}>
+                        ${results.totalContributions.toLocaleString()}
+                      </Text>
                     </Group>
                     <Group justify="space-between">
                       <Text>Interest Earned:</Text>
-                      <Text fw={600} c="green">${results.totalInterest.toLocaleString()}</Text>
+                      <Text fw={600} c="green">
+                        ${results.totalInterest.toLocaleString()}
+                      </Text>
                     </Group>
                     <Group justify="space-between">
                       <Text>Future Value:</Text>
-                      <Text fw={600} c="blue">${results.futureValue.toLocaleString()}</Text>
+                      <Text fw={600} c="blue">
+                        ${results.futureValue.toLocaleString()}
+                      </Text>
                     </Group>
                     <Group justify="space-between">
                       <Text>After-Tax Value:</Text>
-                      <Text fw={600}>${results.afterTaxValue.toLocaleString()}</Text>
+                      <Text fw={600}>
+                        ${results.afterTaxValue.toLocaleString()}
+                      </Text>
                     </Group>
                     <Group justify="space-between">
                       <Text>Real Value:</Text>
-                      <Text fw={600}>${results.realValue.toLocaleString()}</Text>
+                      <Text fw={600}>
+                        ${results.realValue.toLocaleString()}
+                      </Text>
                     </Group>
                     {results.monthsToTarget > 0 && (
                       <Group justify="space-between">
@@ -484,36 +645,59 @@ const InvestmentCalculator: React.FC = () => {
             </Tabs.Panel>
 
             <Tabs.Panel value="scenarios" pt="md">
-              <Title order={4} mb="md">Different Return Scenarios</Title>
+              <Title order={4} mb="md">
+                Different Return Scenarios
+              </Title>
               <div style={{ width: '100%', height: 400 }}>
                 <ResponsiveContainer>
                   <BarChart data={scenarios}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#e5e7eb'} />
-                    <XAxis dataKey="name" stroke={isDark ? '#9ca3af' : '#6b7280'} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={isDark ? '#374151' : '#e5e7eb'}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke={isDark ? '#9ca3af' : '#6b7280'}
+                    />
                     <YAxis stroke={isDark ? '#9ca3af' : '#6b7280'} />
-                    <Tooltip 
-                      contentStyle={{ 
+                    <Tooltip
+                      contentStyle={{
                         backgroundColor: isDark ? '#1f2937' : '#ffffff',
                         border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
-                        borderRadius: '8px'
+                        borderRadius: '8px',
                       }}
                     />
-                    <Bar dataKey="contributions" stackId="a" fill={chartColors.secondary} />
-                    <Bar dataKey="interest" stackId="a" fill={chartColors.primary} />
+                    <Bar
+                      dataKey="contributions"
+                      stackId="a"
+                      fill={chartColors.secondary}
+                    />
+                    <Bar
+                      dataKey="interest"
+                      stackId="a"
+                      fill={chartColors.primary}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </Tabs.Panel>
 
             <Tabs.Panel value="analysis" pt="md">
-              <Title order={4} mb="md">Investment Analysis & Recommendations</Title>
+              <Title order={4} mb="md">
+                Investment Analysis & Recommendations
+              </Title>
               <Stack gap="md">
                 {recommendations.map((rec, index) => (
-                  <Card key={index} withBorder p="md" className={`
+                  <Card
+                    key={index}
+                    withBorder
+                    p="md"
+                    className={`
                     ${rec.type === 'success' ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : ''}
                     ${rec.type === 'warning' ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' : ''}
                     ${rec.type === 'danger' ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800' : ''}
-                  `}>
+                  `}
+                  >
                     <Text size="sm">{rec.text}</Text>
                   </Card>
                 ))}
@@ -526,4 +710,4 @@ const InvestmentCalculator: React.FC = () => {
   );
 };
 
-export default InvestmentCalculator; 
+export default InvestmentCalculator;

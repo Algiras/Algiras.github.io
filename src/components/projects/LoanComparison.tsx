@@ -1,14 +1,36 @@
 import {
-    Alert, Badge,
-    Box, Card, Container, Group, NumberInput,
-    Select, SimpleGrid, Stack, Tabs, Text, Title, useMantineColorScheme
+  Alert,
+  Badge,
+  Box,
+  Card,
+  Container,
+  Group,
+  NumberInput,
+  Select,
+  SimpleGrid,
+  Stack,
+  Tabs,
+  Text,
+  Title,
+  useMantineColorScheme,
 } from '@mantine/core';
 import { AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import {
-    Area,
-    AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis,
-    YAxis
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
 
 interface LoanData {
@@ -60,35 +82,36 @@ const LoanComparison: React.FC = () => {
     const { principal, interestRate, termYears, extraPayment } = loan;
     const monthlyRate = interestRate / 100 / 12;
     const totalMonths = termYears * 12;
-    
+
     // Calculate monthly payment (PMT formula)
-    const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / 
-                          (Math.pow(1 + monthlyRate, totalMonths) - 1);
-    
+    const monthlyPayment =
+      (principal * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths))) /
+      (Math.pow(1 + monthlyRate, totalMonths) - 1);
+
     // Generate amortization schedule
     const schedule = [];
     let balance = principal;
     let totalInterest = 0;
     let month = 0;
-    
+
     while (balance > 0.01 && month < totalMonths) {
       month++;
       const interestPayment = balance * monthlyRate;
       let principalPayment = monthlyPayment - interestPayment;
-      
+
       // Add extra payment to principal
       if (extraPayment > 0) {
         principalPayment += extraPayment;
       }
-      
+
       // Don't pay more than remaining balance
       if (principalPayment > balance) {
         principalPayment = balance;
       }
-      
+
       balance -= principalPayment;
       totalInterest += interestPayment;
-      
+
       schedule.push({
         month,
         payment: monthlyPayment + extraPayment,
@@ -98,10 +121,10 @@ const LoanComparison: React.FC = () => {
         cumulativeInterest: totalInterest,
         cumulativeCost: totalInterest + (principal - balance),
       });
-      
+
       if (balance <= 0) break;
     }
-    
+
     return {
       monthlyPayment: monthlyPayment + extraPayment,
       totalInterest,
@@ -118,32 +141,41 @@ const LoanComparison: React.FC = () => {
   const recommendations = useMemo(() => {
     const recs = [];
     const costDifference = Math.abs(loan1Calc.totalCost - loan2Calc.totalCost);
-    const paymentDifference = Math.abs(loan1Calc.monthlyPayment - loan2Calc.monthlyPayment);
-    const timeDifference = Math.abs(loan1Calc.payoffMonths - loan2Calc.payoffMonths);
-    
+    const paymentDifference = Math.abs(
+      loan1Calc.monthlyPayment - loan2Calc.monthlyPayment
+    );
+    const timeDifference = Math.abs(
+      loan1Calc.payoffMonths - loan2Calc.payoffMonths
+    );
+
     // Cost analysis
     if (costDifference > loan1Calc.totalCost * 0.1) {
-      const cheaper = loan1Calc.totalCost < loan2Calc.totalCost ? 'Loan 1' : 'Loan 2';
+      const cheaper =
+        loan1Calc.totalCost < loan2Calc.totalCost ? 'Loan 1' : 'Loan 2';
       recs.push({
         type: 'success',
         title: 'Significant Cost Savings',
         message: `${cheaper} will save you $${costDifference.toLocaleString()} in total costs.`,
       });
     }
-    
+
     // Payment affordability
     if (paymentDifference > 500) {
-      const lower = loan1Calc.monthlyPayment < loan2Calc.monthlyPayment ? 'Loan 1' : 'Loan 2';
+      const lower =
+        loan1Calc.monthlyPayment < loan2Calc.monthlyPayment
+          ? 'Loan 1'
+          : 'Loan 2';
       recs.push({
         type: 'info',
         title: 'Payment Difference',
         message: `${lower} has $${paymentDifference.toFixed(0)} lower monthly payments, improving cash flow.`,
       });
     }
-    
+
     // Time to payoff
     if (timeDifference > 24) {
-      const faster = loan1Calc.payoffMonths < loan2Calc.payoffMonths ? 'Loan 1' : 'Loan 2';
+      const faster =
+        loan1Calc.payoffMonths < loan2Calc.payoffMonths ? 'Loan 1' : 'Loan 2';
       const yearsDiff = Math.round(timeDifference / 12);
       recs.push({
         type: 'info',
@@ -151,19 +183,22 @@ const LoanComparison: React.FC = () => {
         message: `${faster} will be paid off ${yearsDiff} years earlier, providing financial freedom sooner.`,
       });
     }
-    
+
     return recs;
   }, [loan1Calc, loan2Calc]);
 
   // Chart data preparation
   const chartData = useMemo(() => {
-    const maxLength = Math.max(loan1Calc.schedule.length, loan2Calc.schedule.length);
+    const maxLength = Math.max(
+      loan1Calc.schedule.length,
+      loan2Calc.schedule.length
+    );
     const combinedData = [];
-    
+
     for (let i = 0; i < maxLength; i++) {
       const loan1Data = loan1Calc.schedule[i];
       const loan2Data = loan2Calc.schedule[i];
-      
+
       combinedData.push({
         month: i + 1,
         loan1Balance: loan1Data?.balance || 0,
@@ -174,7 +209,7 @@ const LoanComparison: React.FC = () => {
         loan2Interest: loan2Data?.cumulativeInterest || loan2Calc.totalInterest,
       });
     }
-    
+
     return combinedData;
   }, [loan1Calc, loan2Calc]);
 
@@ -240,47 +275,57 @@ const LoanComparison: React.FC = () => {
                   Primary Option
                 </Title>
               </Group>
-              
+
               <NumberInput
                 label="Loan Amount"
                 placeholder="Enter loan amount"
                 value={loan1.principal}
-                onChange={(value) => setLoan1({ ...loan1, principal: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan1({ ...loan1, principal: Number(value) || 0 })
+                }
                 thousandSeparator=","
                 leftSection={<DollarSign size={16} />}
               />
-              
+
               <NumberInput
                 label="Interest Rate (%)"
                 placeholder="Enter annual interest rate"
                 value={loan1.interestRate}
-                onChange={(value) => setLoan1({ ...loan1, interestRate: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan1({ ...loan1, interestRate: Number(value) || 0 })
+                }
                 decimalScale={2}
                 step={0.1}
               />
-              
+
               <NumberInput
                 label="Loan Term (Years)"
                 placeholder="Enter loan term"
                 value={loan1.termYears}
-                onChange={(value) => setLoan1({ ...loan1, termYears: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan1({ ...loan1, termYears: Number(value) || 0 })
+                }
               />
-              
+
               <Select
                 label="Loan Type"
                 value={loan1.loanType}
-                onChange={(value) => setLoan1({ ...loan1, loanType: value || 'fixed' })}
+                onChange={value =>
+                  setLoan1({ ...loan1, loanType: value || 'fixed' })
+                }
                 data={[
                   { value: 'fixed', label: 'Fixed Rate' },
                   { value: 'variable', label: 'Variable Rate' },
                 ]}
               />
-              
+
               <NumberInput
                 label="Extra Monthly Payment"
                 placeholder="Optional extra payment"
                 value={loan1.extraPayment}
-                onChange={(value) => setLoan1({ ...loan1, extraPayment: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan1({ ...loan1, extraPayment: Number(value) || 0 })
+                }
                 leftSection={<DollarSign size={16} />}
               />
             </Stack>
@@ -297,47 +342,57 @@ const LoanComparison: React.FC = () => {
                   Alternative Option
                 </Title>
               </Group>
-              
+
               <NumberInput
                 label="Loan Amount"
                 placeholder="Enter loan amount"
                 value={loan2.principal}
-                onChange={(value) => setLoan2({ ...loan2, principal: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan2({ ...loan2, principal: Number(value) || 0 })
+                }
                 thousandSeparator=","
                 leftSection={<DollarSign size={16} />}
               />
-              
+
               <NumberInput
                 label="Interest Rate (%)"
                 placeholder="Enter annual interest rate"
                 value={loan2.interestRate}
-                onChange={(value) => setLoan2({ ...loan2, interestRate: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan2({ ...loan2, interestRate: Number(value) || 0 })
+                }
                 decimalScale={2}
                 step={0.1}
               />
-              
+
               <NumberInput
                 label="Loan Term (Years)"
                 placeholder="Enter loan term"
                 value={loan2.termYears}
-                onChange={(value) => setLoan2({ ...loan2, termYears: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan2({ ...loan2, termYears: Number(value) || 0 })
+                }
               />
-              
+
               <Select
                 label="Loan Type"
                 value={loan2.loanType}
-                onChange={(value) => setLoan2({ ...loan2, loanType: value || 'fixed' })}
+                onChange={value =>
+                  setLoan2({ ...loan2, loanType: value || 'fixed' })
+                }
                 data={[
                   { value: 'fixed', label: 'Fixed Rate' },
                   { value: 'variable', label: 'Variable Rate' },
                 ]}
               />
-              
+
               <NumberInput
                 label="Extra Monthly Payment"
                 placeholder="Optional extra payment"
                 value={loan2.extraPayment}
-                onChange={(value) => setLoan2({ ...loan2, extraPayment: Number(value) || 0 })}
+                onChange={value =>
+                  setLoan2({ ...loan2, extraPayment: Number(value) || 0 })
+                }
                 leftSection={<DollarSign size={16} />}
               />
             </Stack>
@@ -443,7 +498,13 @@ const LoanComparison: React.FC = () => {
               {recommendations.map((rec, index) => (
                 <Alert
                   key={index}
-                  icon={rec.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                  icon={
+                    rec.type === 'success' ? (
+                      <CheckCircle size={16} />
+                    ) : (
+                      <AlertCircle size={16} />
+                    )
+                  }
                   title={rec.title}
                   color={rec.type === 'success' ? 'green' : 'blue'}
                   variant="light"
@@ -460,7 +521,7 @@ const LoanComparison: React.FC = () => {
           <Title order={2} size="h3" mb="md">
             Visual Analysis
           </Title>
-          
+
           <Tabs defaultValue="comparison" variant="outline">
             <Tabs.List>
               <Tabs.Tab value="comparison">Comparison Chart</Tabs.Tab>
@@ -473,7 +534,10 @@ const LoanComparison: React.FC = () => {
               <Box h={400}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={comparisonData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={chartTheme.grid}
+                    />
                     <XAxis dataKey="metric" stroke={chartTheme.text} />
                     <YAxis stroke={chartTheme.text} />
                     <RechartsTooltip
@@ -483,7 +547,10 @@ const LoanComparison: React.FC = () => {
                         borderRadius: '8px',
                         color: chartTheme.text,
                       }}
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                      formatter={(value: number) => [
+                        `$${value.toLocaleString()}`,
+                        '',
+                      ]}
                     />
                     <Bar dataKey="loan1" fill="#3b82f6" name="Loan 1" />
                     <Bar dataKey="loan2" fill="#10b981" name="Loan 2" />
@@ -496,7 +563,10 @@ const LoanComparison: React.FC = () => {
               <Box h={400}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={chartTheme.grid}
+                    />
                     <XAxis dataKey="month" stroke={chartTheme.text} />
                     <YAxis stroke={chartTheme.text} />
                     <RechartsTooltip
@@ -506,7 +576,10 @@ const LoanComparison: React.FC = () => {
                         borderRadius: '8px',
                         color: chartTheme.text,
                       }}
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                      formatter={(value: number) => [
+                        `$${value.toLocaleString()}`,
+                        '',
+                      ]}
                     />
                     <Line
                       type="monotone"
@@ -536,20 +609,25 @@ const LoanComparison: React.FC = () => {
                   <Box h={300}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                                                 <Pie
-                           data={pieData1}
-                           cx="50%"
-                           cy="50%"
-                           outerRadius={80}
-                           dataKey="value"
-                           label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                         >
+                        <Pie
+                          data={pieData1}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          dataKey="value"
+                          label={({ name, percent }) =>
+                            `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                          }
+                        >
                           {pieData1.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
                         <RechartsTooltip
-                          formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                          formatter={(value: number) => [
+                            `$${value.toLocaleString()}`,
+                            '',
+                          ]}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -563,20 +641,25 @@ const LoanComparison: React.FC = () => {
                   <Box h={300}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                                                 <Pie
-                           data={pieData2}
-                           cx="50%"
-                           cy="50%"
-                           outerRadius={80}
-                           dataKey="value"
-                           label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                         >
+                        <Pie
+                          data={pieData2}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          dataKey="value"
+                          label={({ name, percent }) =>
+                            `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                          }
+                        >
                           {pieData2.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
                         <RechartsTooltip
-                          formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                          formatter={(value: number) => [
+                            `$${value.toLocaleString()}`,
+                            '',
+                          ]}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -589,7 +672,10 @@ const LoanComparison: React.FC = () => {
               <Box h={400}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={chartTheme.grid}
+                    />
                     <XAxis dataKey="month" stroke={chartTheme.text} />
                     <YAxis stroke={chartTheme.text} />
                     <RechartsTooltip
@@ -599,7 +685,10 @@ const LoanComparison: React.FC = () => {
                         borderRadius: '8px',
                         color: chartTheme.text,
                       }}
-                      formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                      formatter={(value: number) => [
+                        `$${value.toLocaleString()}`,
+                        '',
+                      ]}
                     />
                     <Area
                       type="monotone"
@@ -630,4 +719,4 @@ const LoanComparison: React.FC = () => {
   );
 };
 
-export default LoanComparison; 
+export default LoanComparison;

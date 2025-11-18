@@ -1,0 +1,206 @@
+/* Glass Effect */
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-mantine-color-scheme='dark'] .glass-effect {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Chart Backgrounds */
+.recharts-wrapper {
+  background: transparent !important;
+}
+
+[data-mantine-color-scheme='dark'] .recharts-wrapper svg {
+  background: transparent !important;
+}
+
+[data-mantine-color-scheme='dark'] .recharts-surface {
+  background: transparent !important;
+}
+
+[data-mantine-color-scheme='dark']
+  .recharts-wrapper
+  rect.recharts-cartesian-grid-bg {
+  fill: transparent !important;
+}
+
+[data-mantine-color-scheme='dark']
+  .recharts-wrapper
+  rect[width='100%'][height='100%'] {
+  fill: transparent !important;
+}
+
+[data-mantine-color-scheme='dark'] .recharts-bar-rectangle {
+  background: transparent !important;
+}
+
+[data-mantine-color-scheme='dark'] .recharts-cartesian-grid rect {
+  fill: transparent !important;
+}
+
+/* Modal Styling */
+.mantine-Modal-content {
+  backdrop-filter: none !important;
+  background: var(--mantine-color-body) !important;
+  border: 1px solid var(--mantine-color-default-border) !important;
+}
+
+.mantine-Modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+/* MathJax Styles */
+.mathjax-container {
+  font-family: 'MJXZERO', 'MJXTEX', serif;
+  line-height: 1.2;
+}
+
+.mathjax-container mjx-container[display='true'] {
+  margin: 1em 0;
+  text-align: center;
+}
+
+.mathjax-container mjx-container[display='false'] {
+  display: inline-block;
+  margin: 0 2px;
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container {
+  color: var(--mantine-color-gray-1);
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container svg {
+  background: transparent !important;
+  color: var(--mantine-color-gray-1);
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg {
+  color: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg g {
+  fill: var(--mantine-color-gray-1) !important;
+  stroke: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg text {
+  fill: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg path {
+  fill: var(--mantine-color-gray-1) !important;
+  stroke: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme='light'] .mathjax-container {
+  color: var(--mantine-color-gray-9);
+}
+
+[data-mantine-color-scheme='light'] .mathjax-container mjx-container svg g {
+  fill: var(--mantine-color-gray-9) !important;
+  stroke: var(--mantine-color-gray-9) !important;
+}
+
+[data-mantine-color-scheme='light'] .mathjax-container mjx-container svg text {
+  fill: var(--mantine-color-gray-9) !important;
+}
+
+[data-mantine-color-scheme='light'] .mathjax-container mjx-container svg path {
+  fill: var(--mantine-color-gray-9) !important;
+  stroke: var(--mantine-color-gray-9) !important;
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg rect,
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg line,
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg polygon,
+[data-mantine-color-scheme='dark'] .mathjax-container mjx-container svg circle,
+[data-mantine-color-scheme='dark']
+  .mathjax-container
+  mjx-container
+  svg
+  ellipse {
+  fill: var(--mantine-color-gray-1) !important;
+  stroke: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme='light'] .mathjax-container mjx-container svg rect,
+[data-mantine-color-scheme='light'] .mathjax-container mjx-container svg line,
+[data-mantine-color-scheme='light']
+  .mathjax-container
+  mjx-container
+  svg
+  polygon,
+[data-mantine-color-scheme='light'] .mathjax-container mjx-container svg circle,
+[data-mantine-color-scheme='light']
+  .mathjax-container
+  mjx-container
+  svg
+  ellipse {
+  fill: var(--mantine-color-gray-9) !important;
+  stroke: var(--mantine-color-gray-9) !important;
+}
+
+[data-mantine-color-scheme='dark'] .mathjax-container * {
+  color: var(--mantine-color-gray-1) !important;
+}
+
+[data-mantine-color-scheme='light'] .mathjax-container * {
+  color: var(--mantine-color-gray-9) !important;
+}
+
+.mathjax-container svg {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.mathjax-container[data-loading='true'] {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.mathjax-container .MathJax_Error {
+  color: #d73a49;
+  font-size: 12px;
+}
+
+/* Chart Theme Styling */
+[data-mantine-color-scheme='dark'] .recharts-wrapper {
+  color: var(--mantine-color-gray-3);
+}
+
+[data-mantine-color-scheme='light'] .recharts-wrapper {
+  color: var(--mantine-color-gray-7);
+}
+
+[data-mantine-color-scheme='dark'] .recharts-text {
+  fill: var(--mantine-color-gray-3) !important;
+}
+
+[data-mantine-color-scheme='light'] .recharts-text {
+  fill: var(--mantine-color-gray-7) !important;
+}
+
+[data-mantine-color-scheme='dark'] .recharts-cartesian-grid line {
+  stroke: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-mantine-color-scheme='light'] .recharts-cartesian-grid line {
+  stroke: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-mantine-color-scheme='dark'] .recharts-xAxis line,
+[data-mantine-color-scheme='dark'] .recharts-yAxis line {
+  stroke: rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-mantine-color-scheme='light'] .recharts-xAxis line,
+[data-mantine-color-scheme='light'] .recharts-yAxis line {
+  stroke: rgba(0, 0, 0, 0.6) !important;
+}

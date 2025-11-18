@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 
 // Mock AkotchiState for testing
 interface MockAkotchiState {
@@ -16,9 +16,9 @@ describe('Akotchi Crying Feature', () => {
       name: 'TestPet',
       happiness: 10, // Very low happiness
       ageHours: 5,
-      isDead: false
+      isDead: false,
     };
-    
+
     const shouldCry = verySadPet.happiness < 15;
     expect(shouldCry).toBe(true);
   });
@@ -29,9 +29,9 @@ describe('Akotchi Crying Feature', () => {
       name: 'TestPet',
       happiness: 20, // Moderately low but not crying level
       ageHours: 5,
-      isDead: false
+      isDead: false,
     };
-    
+
     const shouldCry = moderatelySadPet.happiness < 15;
     expect(shouldCry).toBe(false);
   });
@@ -42,21 +42,27 @@ describe('Akotchi Crying Feature', () => {
       name: 'BabyPet',
       happiness: 10,
       ageHours: 1, // Very young
-      isDead: false
+      isDead: false,
     };
-    
+
     const adultPet: MockAkotchiState = {
       id: '2',
       name: 'AdultPet',
       happiness: 10,
       ageHours: 24, // 1 day old
-      isDead: false
+      isDead: false,
     };
-    
+
     // Younger pets should cry more frequently (shorter intervals)
-    const babyInterval = Math.max(5 * 60 * 1000, Math.min(30 * 60 * 1000, babyPet.ageHours * 2 * 60 * 1000));
-    const adultInterval = Math.max(5 * 60 * 1000, Math.min(30 * 60 * 1000, adultPet.ageHours * 2 * 60 * 1000));
-    
+    const babyInterval = Math.max(
+      5 * 60 * 1000,
+      Math.min(30 * 60 * 1000, babyPet.ageHours * 2 * 60 * 1000)
+    );
+    const adultInterval = Math.max(
+      5 * 60 * 1000,
+      Math.min(30 * 60 * 1000, adultPet.ageHours * 2 * 60 * 1000)
+    );
+
     expect(babyInterval).toBeLessThan(adultInterval);
     expect(babyInterval).toBeGreaterThanOrEqual(5 * 60 * 1000); // At least 5 minutes
     expect(adultInterval).toBeLessThanOrEqual(30 * 60 * 1000); // At most 30 minutes
@@ -69,15 +75,15 @@ describe('Akotchi Crying Feature', () => {
       if (pet.happiness < 25) return 'Sad';
       return 'Idle';
     };
-    
+
     const cryingPet: MockAkotchiState = {
       id: '1',
       name: 'CryingPet',
       happiness: 12,
       ageHours: 2,
-      isDead: false
+      isDead: false,
     };
-    
+
     const animationState = deriveAnimFromStats(cryingPet);
     expect(animationState).toBe('Crying');
   });
@@ -89,15 +95,15 @@ describe('Akotchi Crying Feature', () => {
       if (pet.happiness < 25) return 'Sad';
       return 'Idle';
     };
-    
+
     const veryUnhappyPet: MockAkotchiState = {
       id: '1',
       name: 'UnhappyPet',
       happiness: 8, // Very low happiness
       ageHours: 3,
-      isDead: false
+      isDead: false,
     };
-    
+
     const animationState = deriveAnimFromStats(veryUnhappyPet);
     expect(animationState).toBe('Crying');
   });

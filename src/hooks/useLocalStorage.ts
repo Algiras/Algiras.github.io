@@ -49,11 +49,12 @@ export function useLocalStorage<T>(
     (value: T | ((prev: T) => T)) => {
       try {
         // Allow value to be a function so we have the same API as useState
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
-        
+        const valueToStore =
+          value instanceof Function ? value(storedValue) : value;
+
         // Save to local storage
         window.localStorage.setItem(key, serialize(valueToStore));
-        
+
         // Save state
         setStoredValue(valueToStore);
       } catch (error) {
@@ -103,7 +104,10 @@ export function useLocalStorageNumber(key: string, initialValue: number = 0) {
   return useLocalStorage(key, initialValue);
 }
 
-export function useLocalStorageBoolean(key: string, initialValue: boolean = false) {
+export function useLocalStorageBoolean(
+  key: string,
+  initialValue: boolean = false
+) {
   return useLocalStorage(key, initialValue);
 }
 
@@ -112,8 +116,8 @@ export function useLocalStorageArray<T>(key: string, initialValue: T[] = []) {
 }
 
 export function useLocalStorageObject<T extends Record<string, any>>(
-  key: string, 
+  key: string,
   initialValue: T
 ) {
   return useLocalStorage(key, initialValue);
-} 
+}

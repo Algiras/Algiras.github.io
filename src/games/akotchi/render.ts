@@ -1,5 +1,5 @@
-import { AkotchiState, AnimationState } from './types';
 import { updateAndDrawParticles } from './particles';
+import { AkotchiState, AnimationState } from './types';
 
 function drawZ(ctx: CanvasRenderingContext2D, x: number, y: number, size = 6) {
   ctx.fillRect(x, y, size, 2);
@@ -7,7 +7,12 @@ function drawZ(ctx: CanvasRenderingContext2D, x: number, y: number, size = 6) {
   ctx.fillRect(x, y + size - 2, size, 2);
 }
 
-function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, size = 3) {
+function drawStar(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size = 3
+) {
   ctx.fillRect(x, y, size, size);
   ctx.fillRect(x - size, y, size, size);
   ctx.fillRect(x + size, y, size, size);
@@ -43,10 +48,13 @@ export function drawAkotchi(
   // Movement modifiers
   const happinessMod = 1 + (s.happiness - 50) / 200; // 0.75 .. 1.25
   const energyMod = 1 + (s.energy - 50) / 250; // 0.8 .. 1.2
-  const personalityMod = s.personality === 'Hyper' ? 1.15 : s.personality === 'Lazy' ? 0.85 : 1.0;
+  const personalityMod =
+    s.personality === 'Hyper' ? 1.15 : s.personality === 'Lazy' ? 0.85 : 1.0;
 
   // Bobbing
-  let bob = Math.floor(Math.sin(t / (400 / personalityMod)) * (2 * happinessMod));
+  let bob = Math.floor(
+    Math.sin(t / (400 / personalityMod)) * (2 * happinessMod)
+  );
 
   // Body
   ctx.save();
@@ -67,16 +75,34 @@ export function drawAkotchi(
   // Stage-based sizing and line-specific silhouette tweaks
   let bw = 48;
   let bh = 40;
-  if (s.stage === 'Baby') { bw = 40; bh = 32; }
-  else if (s.stage === 'Teen') { bw = 50; bh = 42; }
-  else if (s.stage === 'Adult') { bw = 56; bh = 46; }
-  else if (s.stage === 'Elder') { bw = 54; bh = 44; }
+  if (s.stage === 'Baby') {
+    bw = 40;
+    bh = 32;
+  } else if (s.stage === 'Teen') {
+    bw = 50;
+    bh = 42;
+  } else if (s.stage === 'Adult') {
+    bw = 56;
+    bh = 46;
+  } else if (s.stage === 'Elder') {
+    bw = 54;
+    bh = 44;
+  }
 
   // Species line modifiers: 1=Leaf (rounder), 2=Ember (spikier), 3=Ripple (wavier)
   const line = s.dna.line || 1;
-  if (line === 1) { bw += 0; bh += 2; } // rounder, squat
-  if (line === 2) { bw += 2; bh -= 0; } // a bit wider
-  if (line === 3) { bw -= 0; bh += 0; } // neutral
+  if (line === 1) {
+    bw += 0;
+    bh += 2;
+  } // rounder, squat
+  if (line === 2) {
+    bw += 2;
+    bh -= 0;
+  } // a bit wider
+  if (line === 3) {
+    bw -= 0;
+    bh += 0;
+  } // neutral
   ctx.fillStyle = isDark ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.06)';
   ctx.fillRect(cx - bw / 2 + 6, cy + bh / 2 - 2, bw - 12, 3);
   // Elder slightly desaturated
@@ -200,7 +226,12 @@ export function drawAkotchi(
     const foodX = cx + 18 - Math.floor((t / 100) % 24);
     ctx.fillRect(foodX, mouthY - 2, 4, 4);
     ctx.fillStyle = isDark ? '#111' : '#222';
-  } else if (anim === 'Hungry' || anim === 'Sad' || anim === 'Sick' || anim === 'LowEnergy') {
+  } else if (
+    anim === 'Hungry' ||
+    anim === 'Sad' ||
+    anim === 'Sick' ||
+    anim === 'LowEnergy'
+  ) {
     // Frown
     ctx.fillRect(cx - 6, mouthY + 2, 12, 2);
   } else if (s.dna.mouth === 1) {
@@ -253,7 +284,8 @@ export function drawAkotchi(
     ctx.fillRect(cx - bw / 2 - 10, cy - 6, 10, 12);
     ctx.fillRect(cx + bw / 2, cy - 6, 10, 12);
   } else if (s.dna.wings === 2) {
-    ctx.fillStyle = line === 2 ? 'rgba(255,200,160,0.7)' : 'rgba(200,220,255,0.7)';
+    ctx.fillStyle =
+      line === 2 ? 'rgba(255,200,160,0.7)' : 'rgba(200,220,255,0.7)';
     ctx.fillRect(cx - bw / 2 - 12, cy - 10, 12, 16);
     ctx.fillRect(cx + bw / 2, cy - 10, 12, 16);
   }
@@ -342,7 +374,7 @@ export function drawAkotchi(
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
     const seed = Math.floor(t / 120);
     for (let i = 0; i < 6; i++) {
-      const px = cx - 40 + ((seed + i) * 17) % 80;
+      const px = cx - 40 + (((seed + i) * 17) % 80);
       const py = cy - 30 + ((seed + i * 7) % 50);
       drawStar(ctx, px, py, 2);
     }
@@ -373,62 +405,62 @@ export function drawAkotchi(
 
   // Particles
   updateAndDrawParticles(ctx, anim);
-  
+
   // Thought bubble when Akotchi is asking for something
   if (showThoughtBubble) {
     const bubbleX = cx + 25;
     const bubbleY = cy - 60;
     const bubbleSize = 20;
-    
+
     // Main bubble
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.fillRect(bubbleX, bubbleY, bubbleSize, bubbleSize);
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.lineWidth = 1;
     ctx.strokeRect(bubbleX, bubbleY, bubbleSize, bubbleSize);
-    
+
     // Small connecting bubble
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.fillRect(bubbleX + 5, bubbleY + bubbleSize - 2, 8, 8);
     ctx.strokeRect(bubbleX + 5, bubbleY + bubbleSize - 2, 8, 8);
-    
+
     // Question mark or thought dots
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.font = '12px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('?', bubbleX + bubbleSize/2, bubbleY + bubbleSize/2 + 4);
+    ctx.fillText('?', bubbleX + bubbleSize / 2, bubbleY + bubbleSize / 2 + 4);
   }
 
   // Draw poop/mess
   const messCount = s.messCount || 0;
   if (messCount > 0) {
     for (let i = 0; i < Math.min(messCount, 3); i++) {
-      const poopX = cx - 25 + (i * 15) + Math.sin(t * 0.001 + i) * 2;
+      const poopX = cx - 25 + i * 15 + Math.sin(t * 0.001 + i) * 2;
       const poopY = cy + 35 + Math.cos(t * 0.0015 + i) * 1;
-      
+
       // Poop shape (brown pile)
       ctx.fillStyle = '#8B4513';
-      
+
       // Bottom part (wider)
       ctx.beginPath();
       ctx.ellipse(poopX, poopY + 2, 6, 4, 0, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // Middle part
       ctx.beginPath();
       ctx.ellipse(poopX, poopY, 5, 3, 0, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // Top part (smaller)
       ctx.beginPath();
       ctx.ellipse(poopX, poopY - 2, 3, 2, 0, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // Stink lines (optional visual effect)
       ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)';
       ctx.lineWidth = 1;
       const stinkOffset = Math.sin(t * 0.003 + i) * 2;
-      
+
       // Three small wavy lines above the poop
       for (let j = 0; j < 3; j++) {
         ctx.beginPath();
@@ -439,5 +471,3 @@ export function drawAkotchi(
     }
   }
 }
-
-
