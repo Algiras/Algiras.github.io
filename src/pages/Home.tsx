@@ -405,7 +405,7 @@ const ContactCard: React.FC<{ isDark: boolean; supportsHover: boolean }> = ({
 
   return (
     <Box
-      ref={tiltRef}
+      ref={tiltRef as any}
       className="glass-card tilt-card card-content-reveal"
       p={{ base: 'lg', md: 'xl' }}
       style={{
@@ -938,17 +938,14 @@ const HomePage: React.FC = () => {
           <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="lg">
             {tools.map((tool, index) => {
               const ToolIcon = tool.icon;
-              const tiltDisabled = !supportsHover;
-              const { ref: tiltRef, style: tiltStyle } = useTiltEffect(tiltDisabled);
               const animationType = index % 2 === 0 ? 'fadeLeft' : 'fadeRight';
 
               return (
                 <AnimatedSection key={tool.title} delay={index * (isMobile ? 50 : 100)} animationType={animationType}>
                   <Box
-                    ref={tiltRef}
                     component={Link}
                     to={tool.path}
-                    className="glass-card tilt-card card-content-reveal"
+                    className="glass-card card-content-reveal"
                     p="md"
                     style={{
                       borderRadius: 12,
@@ -957,7 +954,6 @@ const HomePage: React.FC = () => {
                       color: 'inherit',
                       borderTop: `3px solid var(--mantine-color-${tool.color}-6)`,
                       height: '100%',
-                      ...tiltStyle,
                     }}
                   >
                     <Stack gap="sm">
@@ -1026,15 +1022,12 @@ const HomePage: React.FC = () => {
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg" style={{ maxWidth: 600, margin: '0 auto' }}>
             {moreTools.map((tool, index) => {
               const ToolIcon = tool.icon;
-              const tiltDisabled = !supportsHover;
-              const { ref: tiltRef, style: tiltStyle } = useTiltEffect(tiltDisabled);
               return (
                 <AnimatedSection key={tool.title} delay={index * 100} animationType="scaleIn">
                   <Box
-                    ref={tiltRef}
                     component={Link}
                     to={tool.path}
-                    className="glass-card tilt-card card-content-reveal"
+                    className="glass-card card-content-reveal"
                     p="lg"
                     style={{
                       borderRadius: 12,
@@ -1043,7 +1036,6 @@ const HomePage: React.FC = () => {
                       color: 'inherit',
                       borderTop: `3px solid var(--mantine-color-${tool.color}-6)`,
                       height: '100%',
-                      ...tiltStyle,
                     }}
                   >
                     <Stack gap="md">
