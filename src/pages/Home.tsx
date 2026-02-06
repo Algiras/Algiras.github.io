@@ -254,9 +254,6 @@ const useMouseTrail = (enabled: boolean) => {
     if (!enabled) return;
 
     let particles: HTMLDivElement[] = [];
-    let rafId: number;
-    let lastX = 0;
-    let lastY = 0;
     let throttle = 0;
 
     const createParticle = (x: number, y: number) => {
@@ -274,9 +271,6 @@ const useMouseTrail = (enabled: boolean) => {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      lastX = e.clientX;
-      lastY = e.clientY;
-
       throttle++;
       if (throttle % 3 === 0) {
         createParticle(e.clientX, e.clientY);
@@ -288,7 +282,6 @@ const useMouseTrail = (enabled: boolean) => {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       particles.forEach(p => p.remove());
-      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [enabled]);
 };
@@ -445,6 +438,111 @@ const AnimatedSection: React.FC<{
     <div ref={ref} style={style}>
       {children}
     </div>
+  );
+};
+
+// Contact Card Component
+const ContactCard: React.FC<{ isDark: boolean; supportsHover: boolean; isMobile: boolean }> = ({
+  isDark,
+  supportsHover,
+  isMobile,
+}) => {
+  const { ref: tiltRef, style: tiltStyle } = useTiltEffect(!supportsHover);
+
+  return (
+    <Box
+      ref={tiltRef}
+      className="glass-card tilt-card card-content-reveal"
+      p={{ base: 'lg', md: 'xl' }}
+      style={{
+        borderRadius: 16,
+        animation: isDark ? 'borderGlow 4s ease-in-out infinite' : undefined,
+        ...tiltStyle,
+      }}
+    >
+      <Stack gap="xl" align="center">
+        <Box ta="center">
+          <Title order={2} mb="xs">
+            Built by{' '}
+            <Text component="span" inherit className="glow-text">
+              Algimantas K.
+            </Text>
+          </Title>
+          <Text size="sm" c="dimmed">
+            Senior Software Engineer based in Vilnius, Lithuania
+          </Text>
+        </Box>
+
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg" style={{ width: '100%' }}>
+          <Button
+            component="a"
+            href="mailto:algiras.dev@gmail.com"
+            variant={isDark ? 'outline' : 'light'}
+            size="lg"
+            fullWidth
+            leftSection={<Mail size={20} />}
+            rightSection={<ExternalLink size={14} />}
+            className="custom-button-hover"
+            color={isDark ? 'cyan' : 'blue'}
+            style={{
+              borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
+            }}
+          >
+            Email
+          </Button>
+
+          <Button
+            component="a"
+            href="https://www.linkedin.com/in/asimplek"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant={isDark ? 'outline' : 'light'}
+            size="lg"
+            fullWidth
+            leftSection={<Linkedin size={20} />}
+            rightSection={<ExternalLink size={14} />}
+            className="custom-button-hover"
+            color={isDark ? 'cyan' : 'blue'}
+            style={{
+              borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
+            }}
+          >
+            LinkedIn
+          </Button>
+
+          <Button
+            component="a"
+            href="https://github.com/Algiras"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant={isDark ? 'outline' : 'light'}
+            size="lg"
+            fullWidth
+            leftSection={<Github size={20} />}
+            rightSection={<ExternalLink size={14} />}
+            className="custom-button-hover"
+            color={isDark ? 'cyan' : 'blue'}
+            style={{
+              borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
+            }}
+          >
+            GitHub
+          </Button>
+        </SimpleGrid>
+
+        <Badge
+          size="lg"
+          variant="outline"
+          leftSection={<MapPin size={14} />}
+          color={isDark ? 'cyan' : 'blue'}
+          style={{
+            borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
+          }}
+        >
+          Vilnius, Lithuania
+        </Badge>
+      </Stack>
+    </Box>
   );
 };
 
@@ -888,21 +986,15 @@ const HomePage: React.FC = () => {
               const ToolIcon = tool.icon;
               const tiltDisabled = !supportsHover;
               const { ref: tiltRef, style: tiltStyle } = useTiltEffect(tiltDisabled);
-              const magneticRef = useMagneticEffect(0.3, !supportsHover || isMobile);
               const animationType = index % 2 === 0 ? 'fadeLeft' : 'fadeRight';
 
               return (
                 <AnimatedSection key={tool.title} delay={index * (isMobile ? 50 : 100)} animationType={animationType}>
                   <Box
-                    ref={(node) => {
-                      // Combine refs
-                      if (typeof tiltRef === 'function') tiltRef(node);
-                      else if (tiltRef) (tiltRef as any).current = node;
-                      if (magneticRef) (magneticRef as any).current = node;
-                    }}
+                    ref={tiltRef}
                     component={Link}
                     to={tool.path}
-                    className="glass-card tilt-card magnetic-item card-content-reveal"
+                    className="glass-card tilt-card card-content-reveal"
                     p="md"
                     style={{
                       borderRadius: 12,
@@ -982,18 +1074,13 @@ const HomePage: React.FC = () => {
               const ToolIcon = tool.icon;
               const tiltDisabled = !supportsHover;
               const { ref: tiltRef, style: tiltStyle } = useTiltEffect(tiltDisabled);
-              const magneticRef = useMagneticEffect(0.3, !supportsHover || isMobile);
               return (
                 <AnimatedSection key={tool.title} delay={index * 100} animationType="scaleIn">
                   <Box
-                    ref={(node) => {
-                      if (typeof tiltRef === 'function') tiltRef(node);
-                      else if (tiltRef) (tiltRef as any).current = node;
-                      if (magneticRef) (magneticRef as any).current = node;
-                    }}
+                    ref={tiltRef}
                     component={Link}
                     to={tool.path}
-                    className="glass-card tilt-card magnetic-item card-content-reveal"
+                    className="glass-card tilt-card card-content-reveal"
                     p="lg"
                     style={{
                       borderRadius: 12,
@@ -1059,109 +1146,7 @@ const HomePage: React.FC = () => {
       <Box py={{ base: 60, md: 80 }} id="contact">
         <Container size="md">
           <AnimatedSection animationType="scaleIn">
-            {(() => {
-              const tiltEffect = useTiltEffect(!supportsHover);
-              const magneticRef = useMagneticEffect(0.2, !supportsHover || isMobile);
-              return (
-                <Box
-                  className="glass-card tilt-card magnetic-item card-content-reveal"
-                  p={{ base: 'lg', md: 'xl' }}
-                  style={{
-                    borderRadius: 16,
-                    animation: isDark ? 'borderGlow 4s ease-in-out infinite' : undefined,
-                    ...tiltEffect.style,
-                  }}
-                  ref={(node) => {
-                    if (typeof tiltEffect.ref === 'function') tiltEffect.ref(node);
-                    else if (tiltEffect.ref) (tiltEffect.ref as any).current = node;
-                    if (magneticRef) (magneticRef as any).current = node;
-                  }}
-                >
-                  <Stack gap="xl" align="center">
-                    <Box ta="center">
-                      <Title order={2} mb="xs">
-                        Built by{' '}
-                        <Text component="span" inherit className="glow-text">
-                          Algimantas K.
-                        </Text>
-                      </Title>
-                      <Text size="sm" c="dimmed">
-                        Senior Software Engineer based in Vilnius, Lithuania
-                      </Text>
-                    </Box>
-
-                <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg" style={{ width: '100%' }}>
-                  <Button
-                    component="a"
-                    href="mailto:algiras.dev@gmail.com"
-                    variant={isDark ? 'outline' : 'light'}
-                    size="lg"
-                    fullWidth
-                    leftSection={<Mail size={20} />}
-                    rightSection={<ExternalLink size={14} />}
-                    className="custom-button-hover"
-                    color={isDark ? 'cyan' : 'blue'}
-                    style={{
-                      borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
-                    }}
-                  >
-                    Email
-                  </Button>
-
-                  <Button
-                    component="a"
-                    href="https://www.linkedin.com/in/asimplek"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant={isDark ? 'outline' : 'light'}
-                    size="lg"
-                    fullWidth
-                    leftSection={<Linkedin size={20} />}
-                    rightSection={<ExternalLink size={14} />}
-                    className="custom-button-hover"
-                    color={isDark ? 'cyan' : 'blue'}
-                    style={{
-                      borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
-                    }}
-                  >
-                    LinkedIn
-                  </Button>
-
-                  <Button
-                    component="a"
-                    href="https://github.com/Algiras"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant={isDark ? 'outline' : 'light'}
-                    size="lg"
-                    fullWidth
-                    leftSection={<Github size={20} />}
-                    rightSection={<ExternalLink size={14} />}
-                    className="custom-button-hover"
-                    color={isDark ? 'cyan' : 'blue'}
-                    style={{
-                      borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
-                    }}
-                  >
-                    GitHub
-                  </Button>
-                </SimpleGrid>
-
-                <Badge
-                  size="lg"
-                  variant="outline"
-                  leftSection={<MapPin size={14} />}
-                  color={isDark ? 'cyan' : 'blue'}
-                  style={{
-                    borderColor: isDark ? 'rgba(56, 190, 201, 0.3)' : undefined,
-                  }}
-                >
-                  Vilnius, Lithuania
-                </Badge>
-              </Stack>
-                </Box>
-              );
-            })()}
+            <ContactCard isDark={isDark} supportsHover={supportsHover} isMobile={isMobile} />
           </AnimatedSection>
         </Container>
       </Box>

@@ -21,7 +21,6 @@ import {
   Book,
   Briefcase,
   Code,
-  Download,
   ExternalLink,
   GraduationCap,
   Heart,

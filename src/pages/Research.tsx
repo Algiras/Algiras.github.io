@@ -48,7 +48,6 @@ const ResearchPage: React.FC = () => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const supportsHover = useMediaQuery('(hover: hover)');
 
   const papers: ResearchPaper[] = [
     {
