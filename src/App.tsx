@@ -15,10 +15,12 @@ import RouteTransition from './components/RouteTransition';
 import ScrollToTop from './components/ScrollToTop';
 import ToolWrapper from './components/ToolWrapper';
 import Akotchi from './games/akotchi/Akotchi';
+import About from './pages/About';
 import Documents from './pages/Documents';
 import Finance from './pages/Finance';
 import Games from './pages/Games';
 import Home from './pages/Home';
+import Research from './pages/Research';
 
 function App() {
   return (
@@ -29,6 +31,7 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route path="/finance" element={<Finance />} />
             <Route
               path="/finance/investment-calculator"
@@ -103,6 +106,7 @@ function App() {
                 </ToolWrapper>
               }
             />
+            <Route path="/research" element={<Research />} />
             <Route path="/games" element={<Games />} />
             <Route
               path="/games/akotchi"

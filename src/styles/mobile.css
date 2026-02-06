@@ -7,10 +7,18 @@
   }
 }
 
-/* Mobile-specific styles for Documents page */
+/* Mobile-specific styles for Home page sections */
 @media (max-width: 768px) {
-  .animate-gradient-text {
+  .hero-gradient-text {
     font-size: 2.5rem !important;
+  }
+
+  .typewriter-text {
+    font-size: 1rem !important;
+  }
+
+  .glass-card {
+    padding: 1rem !important;
   }
 
   .mobile-stack {
@@ -331,5 +339,71 @@
   .akotchi-mobile-text {
     font-size: 0.875rem !important;
     line-height: 1.4 !important;
+  }
+}
+
+/* Reduce particles on mobile */
+@media (max-width: 768px) {
+  .hero-particles > div:nth-child(n+10) {
+    display: none;
+  }
+
+  /* Reduce animation intensity */
+  .animated-gradient-bg {
+    width: 60vw !important;
+    height: 60vw !important;
+  }
+
+  /* Disable 3D tilt on touch devices */
+  .tilt-card {
+    perspective: none !important;
+    transform: none !important;
+  }
+
+  /* Disable shooting stars */
+  .shooting-star {
+    display: none !important;
+  }
+
+  /* Faster hero entrance on mobile */
+  .hero-entrance > *:nth-child(1) {
+    animation-delay: 0ms !important;
+  }
+
+  .hero-entrance > *:nth-child(2) {
+    animation-delay: 100ms !important;
+  }
+
+  .hero-entrance > *:nth-child(3) {
+    animation-delay: 200ms !important;
+  }
+
+  .hero-entrance > *:nth-child(4) {
+    animation-delay: 300ms !important;
+  }
+
+  .hero-entrance > *:nth-child(5) {
+    animation-delay: 400ms !important;
+  }
+
+  .hero-entrance > *:nth-child(6) {
+    animation-delay: 500ms !important;
+  }
+
+  /* Reduce orb pulse intensity */
+  .animate-orb-pulse {
+    animation: none !important;
+  }
+}
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+  .tilt-card {
+    perspective: none !important;
+    transform: none !important;
+  }
+
+  .glass-card::before {
+    display: none;
   }
 }

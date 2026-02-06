@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Box,
   Button,
   Container,
   Drawer,
@@ -9,22 +10,21 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import {
+  BookOpen,
   Calculator,
   FileText,
-  Gamepad2,
   Home,
   Menu,
   Moon,
   Sun,
+  User,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 // Custom hook to detect mobile screen size
 const useIsMobile = (breakpoint: number = 768) => {
-  // Start with a more accurate initial state
   const [isMobile, setIsMobile] = useState(() => {
-    // Check if window is available (client-side)
     if (typeof window !== 'undefined') {
       return window.innerWidth <= breakpoint;
     }
@@ -36,13 +36,8 @@ const useIsMobile = (breakpoint: number = 768) => {
       setIsMobile(window.innerWidth <= breakpoint);
     };
 
-    // Check on mount (in case initial state was wrong)
     checkIsMobile();
-
-    // Add event listener with passive option for better performance
     window.addEventListener('resize', checkIsMobile, { passive: true });
-
-    // Cleanup
     return () => window.removeEventListener('resize', checkIsMobile);
   }, [breakpoint]);
 
@@ -51,7 +46,6 @@ const useIsMobile = (breakpoint: number = 768) => {
 
 const Navbar: React.FC = () => {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  // Persist color scheme toggle
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -67,53 +61,36 @@ const Navbar: React.FC = () => {
   const isMobile = useIsMobile(768);
 
   const navigationItems = [
-    {
-      label: 'Home',
-      path: '/',
-      icon: Home,
-    },
-    {
-      label: 'Finance',
-      path: '/finance',
-      icon: Calculator,
-    },
-    {
-      label: 'Games',
-      path: '/games',
-      icon: Gamepad2,
-    },
-    {
-      label: 'Documents',
-      path: '/documents',
-      icon: FileText,
-    },
+    { label: 'Home', path: '/', icon: Home },
+    { label: 'About', path: '/about', icon: User },
+    { label: 'Finance', path: '/finance', icon: Calculator },
+    { label: 'Documents', path: '/documents', icon: FileText },
+    { label: 'Research', path: '/research', icon: BookOpen },
   ];
 
   const handleMobileNavClick = () => {
     setMobileMenuOpened(false);
   };
 
-  // Prevent scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpened) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [mobileMenuOpened]);
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setMobileMenuOpened(false);
   }, [location.pathname]);
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
-    <Container size="lg" h="100%">
+    <Container size="lg" h="100%" className="glass-navbar">
       <Group h="100%" justify="space-between">
         <Link
           to="/"
@@ -129,11 +106,12 @@ const Navbar: React.FC = () => {
             e.currentTarget.style.opacity = '1';
           }}
         >
-          <Title order={3}>Algimantas K.</Title>
+          <Title order={3} className="hero-gradient-text" style={{ fontSize: '1.25rem' }}>
+            Algimantas K.
+          </Title>
         </Link>
 
         {isMobile ? (
-          // Mobile Navigation
           <Group gap="sm">
             <ActionIcon
               onClick={toggleColorScheme}
@@ -154,19 +132,6 @@ const Navbar: React.FC = () => {
               variant="light"
               size="xl"
               aria-label="Open navigation menu"
-              styles={{
-                root: {
-                  border: '1px solid var(--mantine-color-default-border)',
-                  '&:hover': {
-                    backgroundColor: 'var(--mantine-color-default-hover)',
-                    transform: 'scale(1.05)',
-                  },
-                  '&:active': {
-                    transform: 'scale(0.95)',
-                    backgroundColor: 'var(--mantine-color-default-hover)',
-                  },
-                },
-              }}
               style={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent',
@@ -180,25 +145,41 @@ const Navbar: React.FC = () => {
             </ActionIcon>
           </Group>
         ) : (
-          // Desktop Navigation
           <Group gap="md">
             <Group gap="xs">
               {navigationItems.map(item => {
                 const IconComponent = item.icon;
+                const active = isActive(item.path);
                 return (
-                  <Button
-                    key={item.path}
-                    component={Link}
-                    to={item.path}
-                    variant={
-                      location.pathname === item.path ? 'light' : 'subtle'
-                    }
-                    leftSection={<IconComponent size={16} />}
-                    size="sm"
-                    className="custom-button-hover"
-                  >
-                    {item.label}
-                  </Button>
+                  <Box key={item.path} style={{ position: 'relative' }}>
+                    <Button
+                      component={Link}
+                      to={item.path}
+                      variant={active ? 'light' : 'subtle'}
+                      leftSection={<IconComponent size={16} />}
+                      size="sm"
+                      className="custom-button-hover"
+                      style={{
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                    {active && (
+                      <Box
+                        style={{
+                          position: 'absolute',
+                          bottom: -2,
+                          left: '20%',
+                          right: '20%',
+                          height: 2,
+                          background: 'linear-gradient(90deg, #3b82f6, #38bec9)',
+                          borderRadius: 1,
+                          boxShadow: '0 0 8px rgba(56, 190, 201, 0.5)',
+                        }}
+                      />
+                    )}
+                  </Box>
                 );
               })}
             </Group>
@@ -208,13 +189,13 @@ const Navbar: React.FC = () => {
               variant="subtle"
               size="lg"
               aria-label="Toggle color scheme"
+              className="custom-button-hover"
             >
               {colorScheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </ActionIcon>
           </Group>
         )}
 
-        {/* Mobile Drawer - always render but only open on mobile */}
         <Drawer
           opened={mobileMenuOpened && isMobile}
           onClose={() => setMobileMenuOpened(false)}
@@ -255,7 +236,7 @@ const Navbar: React.FC = () => {
                   key={item.path}
                   component={Link}
                   to={item.path}
-                  variant={location.pathname === item.path ? 'filled' : 'light'}
+                  variant={isActive(item.path) ? 'filled' : 'light'}
                   leftSection={<IconComponent size={20} />}
                   size="lg"
                   fullWidth
@@ -268,10 +249,9 @@ const Navbar: React.FC = () => {
                       fontWeight: 500,
                       borderRadius: '12px',
                       transition: 'all 0.2s ease',
-                      border:
-                        location.pathname === item.path
-                          ? 'none'
-                          : '1px solid var(--mantine-color-default-border)',
+                      border: isActive(item.path)
+                        ? 'none'
+                        : '1px solid var(--mantine-color-default-border)',
                     },
                     inner: {
                       justifyContent: 'flex-start',
