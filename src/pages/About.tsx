@@ -165,13 +165,13 @@ const AboutPage: React.FC = () => {
                   boxShadow: isDark
                     ? '0 0 60px rgba(56, 190, 201, 0.3), 0 8px 32px rgba(0, 0, 0, 0.3)'
                     : '0 8px 32px rgba(0, 0, 0, 0.15)',
-                  border: `4px solid ${isDark ? 'rgba(56, 190, 201, 0.5)' : 'white'}`,
+                  border: `4px solid ${isDark ? '#38bec9' : 'var(--mantine-color-blue-6)'}`,
                   background: isDark ? 'rgba(56, 190, 201, 0.1)' : 'white',
                 }}
                 className="animate-orb-pulse"
               >
                 <img
-                  src="/images/profile.jpg"
+                  src="./images/profile.jpg"
                   alt="Algimantas Krasauskas"
                   style={{
                     width: '100%',
