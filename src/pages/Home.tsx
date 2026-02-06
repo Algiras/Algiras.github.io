@@ -304,51 +304,6 @@ const useSpotlightCursor = (enabled: boolean) => {
   return position;
 };
 
-// Magnetic Attraction Effect
-const useMagneticEffect = (strength: number = 0.3, disabled: boolean = false) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (disabled) return;
-
-    const element = ref.current;
-    if (!element) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const distanceX = e.clientX - centerX;
-      const distanceY = e.clientY - centerY;
-      const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-      const maxDistance = 200;
-
-      if (distance < maxDistance) {
-        const pull = (maxDistance - distance) / maxDistance;
-        const translateX = distanceX * strength * pull;
-        const translateY = distanceY * strength * pull;
-        element.style.transform = `translate(${translateX}px, ${translateY}px)`;
-      } else {
-        element.style.transform = 'translate(0, 0)';
-      }
-    };
-
-    const handleMouseLeave = () => {
-      element.style.transform = 'translate(0, 0)';
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    element.addEventListener('mouseleave', handleMouseLeave);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      element.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, [strength, disabled]);
-
-  return ref;
-};
-
 // Button Ripple Effect
 const useRipple = () => {
   const createRipple = (event: React.MouseEvent<HTMLElement>) => {
@@ -384,7 +339,7 @@ const useRipple = () => {
 
 // 3D Tilt Hook
 const useTiltEffect = (disabled: boolean = false) => {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const [style, setStyle] = useState<React.CSSProperties>({});
 
   useEffect(() => {
@@ -442,10 +397,9 @@ const AnimatedSection: React.FC<{
 };
 
 // Contact Card Component
-const ContactCard: React.FC<{ isDark: boolean; supportsHover: boolean; isMobile: boolean }> = ({
+const ContactCard: React.FC<{ isDark: boolean; supportsHover: boolean }> = ({
   isDark,
   supportsHover,
-  isMobile,
 }) => {
   const { ref: tiltRef, style: tiltStyle } = useTiltEffect(!supportsHover);
 
@@ -1146,7 +1100,7 @@ const HomePage: React.FC = () => {
       <Box py={{ base: 60, md: 80 }} id="contact">
         <Container size="md">
           <AnimatedSection animationType="scaleIn">
-            <ContactCard isDark={isDark} supportsHover={supportsHover} isMobile={isMobile} />
+            <ContactCard isDark={isDark} supportsHover={supportsHover} />
           </AnimatedSection>
         </Container>
       </Box>
