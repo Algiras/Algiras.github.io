@@ -16,6 +16,7 @@ import {
   Calculator,
   Clock,
   CreditCard,
+  FolderOpen,
   Home,
   PiggyBank,
   RefreshCw,
@@ -179,11 +180,24 @@ const Finance: React.FC = () => {
             maw={600}
             mx="auto"
             className="mobile-description"
+            mb="lg"
           >
             Comprehensive financial calculators designed to help with real-world
             money decisions. Each tool combines powerful calculations with
             beautiful visualizations.
           </Text>
+
+          <Group justify="center" mt="md">
+            <Button
+              component={Link}
+              to="/dashboard"
+              variant="light"
+              leftSection={<FolderOpen size={18} />}
+              size="md"
+            >
+              View My Saved Calculations
+            </Button>
+          </Group>
         </Box>
 
         {/* Projects Grid */}

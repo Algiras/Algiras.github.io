@@ -19,6 +19,7 @@ import Akotchi from './games/akotchi/Akotchi';
 import About from './pages/About';
 import Documents from './pages/Documents';
 import Finance from './pages/Finance';
+import FinancialDashboard from './pages/FinancialDashboard';
 import Games from './pages/Games';
 import Home from './pages/Home';
 import Research from './pages/Research';
@@ -34,6 +35,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/dashboard" element={<FinancialDashboard />} />
             <Route
               path="/finance/investment-calculator"
               element={
