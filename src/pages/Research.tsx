@@ -13,7 +13,7 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { BookOpen, Download, ExternalLink, FileText } from 'lucide-react';
+import { BookOpen, Download, ExternalLink, FileText, Headphones } from 'lucide-react';
 import React from 'react';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { useDocumentTitle } from '../utils/documentUtils';
@@ -41,15 +41,53 @@ interface ResearchPaper {
   pdfUrl: string;
   tags: string[];
   color: string;
+  audiobookUrl?: string;
+  downloadUrl?: string;
 }
 
 const ResearchPage: React.FC = () => {
-  useDocumentTitle('Research Papers');
+  useDocumentTitle('Research & Publications - Books and Papers');
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === 'dark';
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const papers: ResearchPaper[] = [
+    {
+      title: 'Geležinio Vilko Saga (Iron Wolf Saga)',
+      authors: ['Algimantas Krasnauskas'],
+      year: 2024,
+      venue: 'Epic Dark Fantasy Novel',
+      description:
+        'An epic dark fantasy tale set in 14th century Lithuania. Follow the Iron Wolf saga through battles, magic, and the forging of a nation. Available in Lithuanian with full audiobook narration.',
+      pdfUrl: 'https://algiras.github.io/wolf-saga/',
+      audiobookUrl: 'https://www.youtube.com/watch?v=7FTLqyPXSr0',
+      tags: ['Lithuanian Literature', 'Dark Fantasy', 'Historical Fiction', 'Audiobook'],
+      color: 'violet',
+    },
+    {
+      title: 'The Shadow of Extremism',
+      authors: ['Algimantas Krasnauskas'],
+      year: 2025,
+      venue: 'Comparative Religious Analysis',
+      description:
+        'A 200-page comparative analysis exploring extremism across major world religions. Created in 2 days using AI-assisted research, this work examines patterns, causes, and manifestations of religious extremism through a balanced, scholarly lens.',
+      pdfUrl: 'https://algiras.github.io/the-shadow-of-extremism/',
+      downloadUrl: 'https://github.com/Algiras/the-shadow-of-extremism/releases',
+      tags: ['Religion', 'Extremism', 'Comparative Analysis', 'AI-Assisted'],
+      color: 'orange',
+    },
+    {
+      title: 'Complex Parenting: A Guide to Raising Teens with Bipolar and Autism/ADHD',
+      authors: ['Algimantas Krasnauskas'],
+      year: 2025,
+      venue: 'Parenting Guide',
+      description:
+        'A comprehensive, evidence-based guide for parents navigating the challenges of raising teenagers with Bipolar disorder and Autism/ADHD. Combines personal experience with research-backed strategies, offering practical advice and emotional support.',
+      pdfUrl: 'https://algiras.github.io/complex-parenting/',
+      downloadUrl: 'https://github.com/Algiras/complex-parenting/releases',
+      tags: ['Parenting', 'Mental Health', 'Autism', 'ADHD', 'Bipolar'],
+      color: 'teal',
+    },
     {
       title: 'Skillz Research',
       authors: ['Algimantas Krasnauskas'],
@@ -81,15 +119,15 @@ const ResearchPage: React.FC = () => {
               </ThemeIcon>
 
               <Title order={1} size={isMobile ? 'h2' : 'h1'}>
-                Research{' '}
+                Research &{' '}
                 <Text component="span" inherit className="glow-text">
-                  Papers
+                  Publications
                 </Text>
               </Title>
 
               <Text size="lg" c="dimmed" maw={600}>
-                Exploring innovative ideas, methodologies, and findings in software engineering and
-                technology.
+                Books, research papers, and explorations spanning software engineering, literature,
+                psychology, and comparative analysis.
               </Text>
 
               <Box
@@ -174,7 +212,7 @@ const ResearchPage: React.FC = () => {
                     </Group>
 
                     {/* Actions */}
-                    <Group gap="md" mt="sm">
+                    <Group gap="md" mt="sm" wrap="wrap">
                       <Button
                         component="a"
                         href={paper.pdfUrl}
@@ -182,29 +220,49 @@ const ResearchPage: React.FC = () => {
                         rel="noopener noreferrer"
                         variant="gradient"
                         gradient={{ from: 'blue', to: 'cyan' }}
-                        leftSection={<Download size={18} />}
+                        leftSection={<BookOpen size={18} />}
                         rightSection={<ExternalLink size={14} />}
                         className="custom-button-hover ripple-effect"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        Download PDF
-                      </Button>
-                      <Button
-                        component="a"
-                        href={paper.pdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="outline"
-                        color={paper.color}
-                        leftSection={<BookOpen size={18} />}
-                        className="custom-button-hover"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          borderColor: isDark ? `rgba(56, 190, 201, 0.4)` : undefined,
-                        }}
-                      >
                         Read Online
                       </Button>
+
+                      {paper.downloadUrl && (
+                        <Button
+                          component="a"
+                          href={paper.downloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          variant="outline"
+                          color={paper.color}
+                          leftSection={<Download size={18} />}
+                          className="custom-button-hover"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            borderColor: isDark ? `rgba(56, 190, 201, 0.4)` : undefined,
+                          }}
+                        >
+                          Download PDF/EPUB
+                        </Button>
+                      )}
+
+                      {paper.audiobookUrl && (
+                        <Button
+                          component="a"
+                          href={paper.audiobookUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          variant="light"
+                          color={paper.color}
+                          leftSection={<Headphones size={18} />}
+                          rightSection={<ExternalLink size={14} />}
+                          className="custom-button-hover"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Audiobook
+                        </Button>
+                      )}
                     </Group>
                   </Stack>
                 </Paper>
@@ -229,11 +287,11 @@ const ResearchPage: React.FC = () => {
                   <FileText size={30} />
                 </ThemeIcon>
                 <Title order={3} size="h4">
-                  More Papers Coming Soon
+                  More Coming Soon
                 </Title>
                 <Text size="sm" c="dimmed" maw={500}>
-                  Stay tuned for more research publications exploring cutting-edge topics in
-                  software engineering, AI, and technology.
+                  Stay tuned for more publications exploring software engineering, AI, literature,
+                  and research across diverse topics.
                 </Text>
               </Stack>
             </Box>
