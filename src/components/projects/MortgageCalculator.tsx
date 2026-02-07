@@ -23,7 +23,7 @@ import {
   RotateCcw,
   TrendingUp,
 } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 
 import {
   Area,
@@ -40,6 +40,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { decodeStateFromURL } from '../../utils/calculatorExport';
 
 interface MortgageInput {
   homePrice: number;
@@ -122,6 +123,18 @@ const MortgageCalculator: React.FC = () => {
   // Ensure non-null values (hook always returns initialValue if null)
   const inputs = inputsStorage ?? defaultInputs;
   const monthlyIncome = monthlyIncomeStorage ?? 8000;
+
+  // URL state support - load from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const calcState = params.get('calc');
+    if (calcState) {
+      const decoded = decodeStateFromURL(calcState);
+      if (decoded && decoded.calculatorType === 'mortgage') {
+        setInputs(decoded.inputs as MortgageInput);
+      }
+    }
+  }, [setInputs]);
 
   const resetToDefaults = () => {
     setInputs(defaultInputs);
@@ -344,6 +357,12 @@ const MortgageCalculator: React.FC = () => {
         : []),
     ];
   }, [results]);
+
+  // Generate AI insights (will be used when InsightList is added)
+  // const insights = useMemo(() => {
+  //   if (!results) return [];
+  //   return generateMortgageInsights(inputs, results);
+  // }, [inputs, results]);
 
   const recommendations = useMemo(() => {
     if (!results) return [];

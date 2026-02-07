@@ -19,7 +19,7 @@ import {
   RotateCcw,
   TrendingUp,
 } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 
 import {
   Area,
@@ -36,6 +36,15 @@ import {
   YAxis,
 } from 'recharts';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import {
+  AnimatedCurrency,
+  AnimatedPercentage,
+  ExportPanel,
+  InputHelper,
+  InsightList,
+} from '../calculator';
+import { generateROIInsights } from '../../utils/insightGenerator';
+import { decodeStateFromURL, formatCurrency, formatPercentage } from '../../utils/calculatorExport';
 
 interface ROIInput {
   initialInvestment: number;
@@ -79,6 +88,18 @@ const ROICalculator: React.FC = () => {
   // Ensure non-null value (hook always returns initialValue if null)
   const inputs = inputsStorage ?? defaultInputs;
 
+  // URL state support - load from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const calcState = params.get('calc');
+    if (calcState) {
+      const decoded = decodeStateFromURL(calcState);
+      if (decoded && decoded.calculatorType === 'roi') {
+        setInputs(decoded.inputs as ROIInput);
+      }
+    }
+  }, [setInputs]);
+
   const resetToDefaults = () => {
     setInputs(defaultInputs);
   };
@@ -120,6 +141,51 @@ const ROICalculator: React.FC = () => {
       riskAdjustedReturn,
     };
   }, [inputs]);
+
+  // Generate smart insights
+  const insights = useMemo(() => {
+    if (!results) return [];
+    return generateROIInsights(
+      {
+        initialInvestment: inputs.initialInvestment,
+        finalValue: inputs.finalValue,
+        timeHorizon: inputs.timeframeUnit === 'years' ? inputs.timeframe :
+                     inputs.timeframeUnit === 'months' ? inputs.timeframe / 12 :
+                     inputs.timeframe / 365,
+        additionalCosts: inputs.additionalInvestments,
+      },
+      {
+        totalReturn: results.totalReturn,
+        roi: results.simpleROI,
+        annualizedReturn: results.annualizedROI,
+      }
+    );
+  }, [inputs, results]);
+
+  // Export options
+  const exportOptions = useMemo(() => ({
+    calculatorType: 'roi',
+    calculatorName: 'ROI Calculator',
+    inputs,
+    results: results || {},
+    generateMarkdown: () => `# ROI Calculation Report
+
+## Investment Details
+- Initial Investment: ${formatCurrency(inputs.initialInvestment)}
+- Final Value: ${formatCurrency(inputs.finalValue)}
+- Additional Investments: ${formatCurrency(inputs.additionalInvestments)}
+- Timeframe: ${inputs.timeframe} ${inputs.timeframeUnit}
+
+## Results
+- Simple ROI: ${formatPercentage(results?.simpleROI || 0)}
+- Annualized ROI: ${formatPercentage(results?.annualizedROI || 0)}
+- Total Return: ${formatCurrency(results?.totalReturn || 0)}
+- Net Profit: ${formatCurrency(results?.netProfit || 0)}
+
+---
+*Generated on ${new Date().toLocaleDateString()}*
+`,
+  }), [inputs, results]);
 
   const chartData = useMemo(() => {
     if (!results) return [];
@@ -242,35 +308,50 @@ const ROICalculator: React.FC = () => {
         <Grid>
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Stack gap="md">
-              <NumberInput
-                label="Initial Investment ($)"
-                value={inputs.initialInvestment}
-                onChange={value =>
-                  setInputs(prev => ({
-                    ...prev,
-                    initialInvestment: Number(value) || 0,
-                  }))
-                }
-                min={0}
-                step={100}
-                thousandSeparator=","
-                leftSection={<DollarSign size={16} />}
-              />
+              <div>
+                <Group gap={4} mb={4}>
+                  <Text size="sm" fw={500}>Initial Investment ($)</Text>
+                  <InputHelper
+                    helpText="The starting amount you invested"
+                    currentAverage="$10,000 typical"
+                  />
+                </Group>
+                <NumberInput
+                  value={inputs.initialInvestment}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      initialInvestment: Number(value) || 0,
+                    }))
+                  }
+                  min={0}
+                  step={100}
+                  thousandSeparator=","
+                  leftSection={<DollarSign size={16} />}
+                />
+              </div>
 
-              <NumberInput
-                label="Final Value ($)"
-                value={inputs.finalValue}
-                onChange={value =>
-                  setInputs(prev => ({
-                    ...prev,
-                    finalValue: Number(value) || 0,
-                  }))
-                }
-                min={0}
-                step={100}
-                thousandSeparator=","
-                leftSection={<DollarSign size={16} />}
-              />
+              <div>
+                <Group gap={4} mb={4}>
+                  <Text size="sm" fw={500}>Final Value ($)</Text>
+                  <InputHelper
+                    helpText="Current or projected value of your investment"
+                  />
+                </Group>
+                <NumberInput
+                  value={inputs.finalValue}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      finalValue: Number(value) || 0,
+                    }))
+                  }
+                  min={0}
+                  step={100}
+                  thousandSeparator=","
+                  leftSection={<DollarSign size={16} />}
+                />
+              </div>
 
               <NumberInput
                 label="Additional Investments ($)"
@@ -336,83 +417,62 @@ const ROICalculator: React.FC = () => {
 
           <Grid.Col span={{ base: 12, md: 6 }}>
             {results && (
-              <Stack gap="md">
-                <Card
-                  withBorder
-                  p="md"
-                  className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
-                >
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      Simple ROI
-                    </Text>
-                    <Text
-                      size="xl"
-                      fw={700}
-                      c={results.simpleROI >= 0 ? 'green' : 'red'}
-                    >
-                      {results.simpleROI.toFixed(2)}%
-                    </Text>
-                  </Group>
-                </Card>
+              <Stack gap="lg">
+                <Group justify="space-between" align="flex-start">
+                  <AnimatedPercentage
+                    value={results.simpleROI}
+                    label="Simple ROI"
+                    description={`Return over ${inputs.timeframe} ${inputs.timeframeUnit}`}
+                    size="lg"
+                    colorScheme={results.simpleROI >= 0 ? 'positive' : 'negative'}
+                  />
+                  <ExportPanel options={exportOptions} variant="menu" />
+                </Group>
 
-                <Card
-                  withBorder
-                  p="md"
-                  className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-                >
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      Annualized ROI
-                    </Text>
-                    <Text
-                      size="xl"
-                      fw={700}
-                      c={results.annualizedROI >= 0 ? 'green' : 'red'}
-                    >
-                      {results.annualizedROI.toFixed(2)}%
-                    </Text>
-                  </Group>
-                </Card>
-
-                <Card
-                  withBorder
-                  p="md"
-                  className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20"
-                >
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      Net Profit
-                    </Text>
-                    <Text
-                      size="lg"
-                      fw={600}
-                      c={results.netProfit >= 0 ? 'green' : 'red'}
-                    >
-                      ${results.netProfit.toLocaleString()}
-                    </Text>
-                  </Group>
-                </Card>
-
-                <Card
-                  withBorder
-                  p="md"
-                  className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20"
-                >
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      Total Return
-                    </Text>
-                    <Text size="lg" fw={600}>
-                      ${results.totalReturn.toLocaleString()}
-                    </Text>
-                  </Group>
-                </Card>
+                <Grid gutter="md">
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <AnimatedPercentage
+                      value={results.annualizedROI}
+                      label="Annualized ROI"
+                      description="Year-over-year return"
+                      size="md"
+                      colorScheme={results.annualizedROI >= 0 ? 'positive' : 'negative'}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6 }}>
+                    <AnimatedCurrency
+                      value={results.netProfit}
+                      label="Net Profit"
+                      description="Total gain or loss"
+                      size="md"
+                      decimals={0}
+                      colorScheme={results.netProfit >= 0 ? 'positive' : 'negative'}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={12}>
+                    <AnimatedCurrency
+                      value={results.totalReturn}
+                      label="Total Return"
+                      description="Final investment value"
+                      size="md"
+                      decimals={0}
+                      colorScheme="neutral"
+                    />
+                  </Grid.Col>
+                </Grid>
               </Stack>
             )}
           </Grid.Col>
         </Grid>
       </Card>
+
+      {/* Smart Insights Section */}
+      {results && insights.length > 0 && (
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Title order={4} mb="md">💡 Smart Insights</Title>
+          <InsightList insights={insights} />
+        </Card>
+      )}
 
       {results && (
         <Card shadow="sm" padding="lg" radius="md" withBorder>

@@ -28,7 +28,7 @@ import {
   TrendingDown,
   Wallet,
 } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   Area,
   AreaChart,
@@ -44,6 +44,14 @@ import {
   YAxis,
 } from 'recharts';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import {
+  AnimatedCurrency,
+  AnimatedMetric,
+  ExportPanel,
+  InsightList,
+} from '../calculator';
+import { generateDebtPayoffInsights } from '../../utils/insightGenerator';
+import { generateDebtPayoffMarkdown, decodeStateFromURL } from '../../utils/calculatorExport';
 
 interface Debt {
   id: string;
@@ -117,6 +125,20 @@ const DebtPayoffCalculator: React.FC = () => {
   const debts = debtsStorage ?? defaultDebts;
   const strategy = strategyStorage ?? 'avalanche';
   const extraPayment = extraPaymentStorage ?? 500;
+
+  // URL state support - load from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const calcState = params.get('calc');
+    if (calcState) {
+      const decoded = decodeStateFromURL(calcState);
+      if (decoded && decoded.calculatorType === 'debtPayoff') {
+        if (decoded.inputs.debts) setDebts(decoded.inputs.debts);
+        if (decoded.inputs.strategy) setStrategy(decoded.inputs.strategy);
+        if (decoded.inputs.extraPayment !== undefined) setExtraPayment(decoded.inputs.extraPayment);
+      }
+    }
+  }, [setDebts, setStrategy, setExtraPayment]);
 
   const resetToDefaults = () => {
     setDebts(defaultDebts);
@@ -221,6 +243,54 @@ const DebtPayoffCalculator: React.FC = () => {
     () => calculatePayoff(debts, 'avalanche', extraPayment),
     [debts, extraPayment]
   );
+
+  // Generate smart insights
+  const insights = useMemo(() => {
+    return generateDebtPayoffInsights(
+      {
+        debts: debts,
+        extraPayment: extraPayment,
+      },
+      {
+        snowball: {
+          timeToPayoff: snowballResult.payoffTime,
+          totalInterest: snowballResult.totalInterest,
+          totalPaid: snowballResult.totalPayments,
+        },
+        avalanche: {
+          timeToPayoff: avalancheResult.payoffTime,
+          totalInterest: avalancheResult.totalInterest,
+          totalPaid: avalancheResult.totalPayments,
+        },
+      }
+    );
+  }, [debts, extraPayment, snowballResult, avalancheResult]);
+
+  // Export options
+  const exportOptions = useMemo(() => ({
+    calculatorType: 'debtPayoff',
+    calculatorName: 'Debt Payoff Calculator',
+    inputs: { debts, strategy, extraPayment },
+    results: {
+      snowball: snowballResult,
+      avalanche: avalancheResult,
+    },
+    generateMarkdown: () => generateDebtPayoffMarkdown(
+      { debts, extraPayment },
+      {
+        snowball: {
+          timeToPayoff: snowballResult.payoffTime,
+          totalInterest: snowballResult.totalInterest,
+          totalPaid: snowballResult.totalPayments,
+        },
+        avalanche: {
+          timeToPayoff: avalancheResult.payoffTime,
+          totalInterest: avalancheResult.totalInterest,
+          totalPaid: avalancheResult.totalPayments,
+        },
+      }
+    ),
+  }), [debts, strategy, extraPayment, snowballResult, avalancheResult]);
 
   const comparisonData = [
     {
@@ -508,21 +578,15 @@ const DebtPayoffCalculator: React.FC = () => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Stack gap="md">
-              <Card
-                withBorder
-                p="md"
-                className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20"
-              >
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Total Debt
-                  </Text>
-                  <Text size="xl" fw={700} c="red">
-                    ${totalDebt.toLocaleString()}
-                  </Text>
-                </Group>
-              </Card>
+            <Stack gap="lg">
+              <AnimatedCurrency
+                value={totalDebt}
+                label="Total Debt"
+                description={`Across ${debts.length} debt${debts.length > 1 ? 's' : ''}`}
+                size="lg"
+                decimals={0}
+                colorScheme="negative"
+              />
 
               <Card withBorder p="md">
                 <Group justify="space-between" mb="md">
@@ -563,44 +627,28 @@ const DebtPayoffCalculator: React.FC = () => {
                 </Stack>
               </Card>
 
-              <Card
-                withBorder
-                p="md"
-                className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
-              >
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Payoff Time (
-                    {strategy === 'snowball' ? 'Snowball' : 'Avalanche'})
-                  </Text>
-                  <Text size="xl" fw={700} c="blue">
-                    {(strategy === 'snowball'
-                      ? snowballResult.payoffTime
-                      : avalancheResult.payoffTime) / 12}{' '}
-                    years
-                  </Text>
-                </Group>
-              </Card>
+              <AnimatedMetric
+                value={(strategy === 'snowball'
+                  ? snowballResult.payoffTime
+                  : avalancheResult.payoffTime) / 12}
+                label={`Payoff Time (${strategy === 'snowball' ? 'Snowball' : 'Avalanche'})`}
+                description="Time to debt freedom"
+                size="md"
+                suffix=" years"
+                decimals={1}
+                colorScheme="positive"
+              />
 
-              <Card
-                withBorder
-                p="md"
-                className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-              >
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Total Interest (
-                    {strategy === 'snowball' ? 'Snowball' : 'Avalanche'})
-                  </Text>
-                  <Text size="xl" fw={700} c="green">
-                    $
-                    {(strategy === 'snowball'
-                      ? snowballResult.totalInterest
-                      : avalancheResult.totalInterest
-                    ).toLocaleString()}
-                  </Text>
-                </Group>
-              </Card>
+              <AnimatedCurrency
+                value={strategy === 'snowball'
+                  ? snowballResult.totalInterest
+                  : avalancheResult.totalInterest}
+                label={`Total Interest (${strategy === 'snowball' ? 'Snowball' : 'Avalanche'})`}
+                description="Interest paid over payoff period"
+                size="md"
+                decimals={0}
+                colorScheme="negative"
+              />
 
               <Card withBorder p="md">
                 <Text size="sm" c="dimmed" mb="xs">
@@ -651,6 +699,17 @@ const DebtPayoffCalculator: React.FC = () => {
           </Stack>
         )}
       </Card>
+
+      {/* Smart Insights Section */}
+      {insights.length > 0 && (
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Group justify="space-between" mb="md">
+            <Title order={4}>💡 Smart Insights</Title>
+            <ExportPanel options={exportOptions} variant="menu" />
+          </Group>
+          <InsightList insights={insights} />
+        </Card>
+      )}
 
       {(snowballResult.schedule.length > 0 ||
         avalancheResult.schedule.length > 0) && (

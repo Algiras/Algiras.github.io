@@ -71,6 +71,7 @@ import {
   PerformancePoint,
   PortfolioSummary,
 } from './types';
+import { ExportPanel } from '../../calculator';
 
 const InvestmentTracker: React.FC = () => {
   const [investments, setInvestments] = useLocalStorage<Investment[]>({
@@ -99,6 +100,34 @@ const InvestmentTracker: React.FC = () => {
       calculatePortfolioStatistics(investments, portfolio.monthlyPerformance),
     [investments, portfolio.monthlyPerformance]
   );
+
+  // Export options
+  const exportOptions = useMemo(() => ({
+    calculatorType: 'investmentTracker',
+    calculatorName: 'Investment Tracker',
+    inputs: { investments },
+    results: { portfolio, portfolioStats },
+    generateMarkdown: () => `# Investment Portfolio Report
+
+## Portfolio Summary
+- **Current Value**: ${formatCurrency(portfolio.currentValue)}
+- **Total Invested**: ${formatCurrency(portfolio.totalInvested)}
+- **Total Return**: ${formatCurrency(portfolio.totalReturn)} (${formatPercentage(portfolio.returnPercentage)})
+- **Number of Investments**: ${investments.length}
+- **Risk Score**: ${portfolio.riskScore.toFixed(1)}/10
+- **Diversification Score**: ${portfolio.diversificationScore.toFixed(1)}/10
+
+## Performance Metrics
+- **Sharpe Ratio**: ${portfolioStats.sharpeRatio.toFixed(2)}
+- **Volatility**: ${formatPercentage(portfolioStats.volatility)}
+
+## Holdings Summary
+Total investments tracked: ${investments.length}
+
+---
+*Generated on ${new Date().toLocaleDateString()}*
+`,
+  }), [investments, portfolio, portfolioStats]);
 
   const handleAddInvestment = () => {
     setSelectedInvestment(null);
@@ -315,15 +344,18 @@ const InvestmentTracker: React.FC = () => {
     <Container size="xl" py="md">
       <Stack gap="xl">
         {/* Header */}
-        <Box>
-          <Title order={1} size="h2" mb="sm">
-            Investment Portfolio Tracker
-          </Title>
-          <Text c="dimmed">
-            Track your investments across platforms with comprehensive analytics
-            and insights.
-          </Text>
-        </Box>
+        <Group justify="space-between" align="flex-start" wrap="wrap">
+          <Box>
+            <Title order={1} size="h2" mb="sm">
+              Investment Portfolio Tracker
+            </Title>
+            <Text c="dimmed">
+              Track your investments across platforms with comprehensive analytics
+              and insights.
+            </Text>
+          </Box>
+          <ExportPanel options={exportOptions} variant="menu" />
+        </Group>
 
         {/* Tabs */}
         <Tabs

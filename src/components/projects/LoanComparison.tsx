@@ -15,7 +15,7 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { AlertCircle, CheckCircle, DollarSign } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Area,
   AreaChart,
@@ -32,6 +32,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import {
+  ExportPanel,
+} from '../calculator';
+import { decodeStateFromURL, formatCurrency } from '../../utils/calculatorExport';
 
 interface LoanData {
   principal: number;
@@ -76,6 +80,19 @@ const LoanComparison: React.FC = () => {
     loanType: 'fixed',
     extraPayment: 0,
   });
+
+  // URL state support
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const calcState = params.get('calc');
+    if (calcState) {
+      const decoded = decodeStateFromURL(calcState);
+      if (decoded && decoded.calculatorType === 'loanComparison') {
+        if (decoded.inputs.loan1) setLoan1(decoded.inputs.loan1);
+        if (decoded.inputs.loan2) setLoan2(decoded.inputs.loan2);
+      }
+    }
+  }, []);
 
   // Loan calculation function
   const calculateLoan = (loan: LoanData): LoanCalculation => {
@@ -136,6 +153,38 @@ const LoanComparison: React.FC = () => {
 
   const loan1Calc = useMemo(() => calculateLoan(loan1), [loan1]);
   const loan2Calc = useMemo(() => calculateLoan(loan2), [loan2]);
+
+  // Export options
+  const exportOptions = useMemo(() => ({
+    calculatorType: 'loanComparison',
+    calculatorName: 'Loan Comparison',
+    inputs: { loan1, loan2 },
+    results: { loan1: loan1Calc, loan2: loan2Calc },
+    generateMarkdown: () => `# Loan Comparison Report
+
+## Loan 1: ${loan1.loanType}
+- Principal: ${formatCurrency(loan1.principal)}
+- Interest Rate: ${loan1.interestRate}%
+- Term: ${loan1.termYears} years
+- Monthly Payment: ${formatCurrency(loan1Calc.monthlyPayment)}
+- Total Interest: ${formatCurrency(loan1Calc.totalInterest)}
+- Total Cost: ${formatCurrency(loan1Calc.totalCost)}
+
+## Loan 2: ${loan2.loanType}
+- Principal: ${formatCurrency(loan2.principal)}
+- Interest Rate: ${loan2.interestRate}%
+- Term: ${loan2.termYears} years
+- Monthly Payment: ${formatCurrency(loan2Calc.monthlyPayment)}
+- Total Interest: ${formatCurrency(loan2Calc.totalInterest)}
+- Total Cost: ${formatCurrency(loan2Calc.totalCost)}
+
+## Winner
+${loan1Calc.totalCost < loan2Calc.totalCost ? `✅ Loan 1 saves ${formatCurrency(loan2Calc.totalCost - loan1Calc.totalCost)}` : `✅ Loan 2 saves ${formatCurrency(loan1Calc.totalCost - loan2Calc.totalCost)}`}
+
+---
+*Generated on ${new Date().toLocaleDateString()}*
+`,
+  }), [loan1, loan2, loan1Calc, loan2Calc]);
 
   // Generate recommendations
   const recommendations = useMemo(() => {
@@ -251,7 +300,7 @@ const LoanComparison: React.FC = () => {
     <Container size="xl" py="xl">
       <Stack gap="xl">
         {/* Header */}
-        <Group gap="md">
+        <Group justify="space-between" align="flex-start" wrap="wrap">
           <Box>
             <Title order={1} size="h1">
               Loan Comparison Tool
@@ -260,6 +309,7 @@ const LoanComparison: React.FC = () => {
               Compare two loan structures side-by-side with detailed analysis
             </Text>
           </Box>
+          <ExportPanel options={exportOptions} variant="menu" />
         </Group>
 
         {/* Loan Input Forms */}

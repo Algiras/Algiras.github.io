@@ -25,7 +25,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 
 import {
   Area,
@@ -42,6 +42,16 @@ import {
   YAxis,
 } from 'recharts';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import {
+  AnimatedCurrency,
+  AnimatedMetric,
+  ExportPanel,
+  InputHelper,
+  InsightList,
+  FINANCIAL_HELPERS,
+} from '../calculator';
+import { generateRetirementInsights } from '../../utils/insightGenerator';
+import { generateRetirementMarkdown, decodeStateFromURL } from '../../utils/calculatorExport';
 
 interface RetirementInput {
   currentAge: number;
@@ -123,6 +133,18 @@ const RetirementPlanner: React.FC = () => {
 
   // Ensure non-null value (hook always returns initialValue if null)
   const inputs = inputsStorage ?? defaultInputs;
+
+  // URL state support - load from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const calcState = params.get('calc');
+    if (calcState) {
+      const decoded = decodeStateFromURL(calcState);
+      if (decoded && decoded.calculatorType === 'retirement') {
+        setInputs(decoded.inputs as RetirementInput);
+      }
+    }
+  }, [setInputs]);
 
   const resetToDefaults = () => {
     setInputs(defaultInputs);
@@ -283,6 +305,76 @@ const RetirementPlanner: React.FC = () => {
       scenarioAnalysis,
     };
   }, [inputs]);
+
+  // Generate smart insights
+  const insights = useMemo(() => {
+    if (!results) return [];
+    const surplus = results.shortfall < 0 ? Math.abs(results.shortfall) : 0;
+    return generateRetirementInsights(
+      {
+        currentAge: inputs.currentAge,
+        retirementAge: inputs.retirementAge,
+        lifeExpectancy: inputs.lifeExpectancy,
+        currentSavings: inputs.currentSavings,
+        monthlyContribution: inputs.monthlyContribution,
+        expectedReturn: inputs.annualReturn,
+        inflationRate: inputs.inflationRate,
+        desiredMonthlyIncome: inputs.retirementIncome,
+      },
+      {
+        savingsAtRetirement: results.totalSavingsAtRetirement,
+        totalNeeded: results.totalNeeded,
+        surplus: surplus > 0 ? surplus : undefined,
+        shortfall: results.shortfall > 0 ? results.shortfall : undefined,
+        monthlyIncomeGenerated: results.monthlyRetirementIncome,
+      }
+    );
+  }, [inputs, results]);
+
+  // Export options
+  const exportOptions = useMemo(() => {
+    const surplus = (results?.shortfall || 0) < 0 ? Math.abs(results?.shortfall || 0) : 0;
+    return {
+      calculatorType: 'retirement',
+      calculatorName: 'Retirement Planner',
+      inputs: {
+        currentAge: inputs.currentAge,
+        retirementAge: inputs.retirementAge,
+        lifeExpectancy: inputs.lifeExpectancy,
+        currentSavings: inputs.currentSavings,
+        monthlyContribution: inputs.monthlyContribution,
+        expectedReturn: inputs.annualReturn,
+        inflationRate: inputs.inflationRate,
+        desiredMonthlyIncome: inputs.retirementIncome,
+      },
+      results: {
+        savingsAtRetirement: results?.totalSavingsAtRetirement || 0,
+        totalNeeded: results?.totalNeeded || 0,
+        surplus: surplus,
+        shortfall: (results?.shortfall || 0) > 0 ? (results?.shortfall || 0) : 0,
+        monthlyIncomeGenerated: results?.monthlyRetirementIncome || 0,
+      },
+      generateMarkdown: () => generateRetirementMarkdown(
+        {
+          currentAge: inputs.currentAge,
+          retirementAge: inputs.retirementAge,
+          lifeExpectancy: inputs.lifeExpectancy,
+          currentSavings: inputs.currentSavings,
+          monthlyContribution: inputs.monthlyContribution,
+          expectedReturn: inputs.annualReturn,
+          inflationRate: inputs.inflationRate,
+          desiredMonthlyIncome: inputs.retirementIncome,
+        },
+        {
+          savingsAtRetirement: results?.totalSavingsAtRetirement || 0,
+          totalNeeded: results?.totalNeeded || 0,
+          surplus: surplus,
+          shortfall: (results?.shortfall || 0) > 0 ? (results?.shortfall || 0) : 0,
+          monthlyIncomeGenerated: results?.monthlyRetirementIncome || 0,
+        }
+      ),
+    };
+  }, [inputs, results]);
 
   const chartData = useMemo(() => {
     if (!results) return [];
@@ -452,35 +544,47 @@ const RetirementPlanner: React.FC = () => {
                 />
               </Group>
 
-              <NumberInput
-                label="Current Retirement Savings ($)"
-                value={inputs.currentSavings}
-                onChange={value =>
-                  setInputs(prev => ({
-                    ...prev,
-                    currentSavings: Number(value) || 0,
-                  }))
-                }
-                min={0}
-                step={1000}
-                thousandSeparator=","
-                leftSection={<DollarSign size={16} />}
-              />
-
-              <Group grow>
+              <div>
+                <Group gap={4} mb={4}>
+                  <Text size="sm" fw={500}>Current Retirement Savings ($)</Text>
+                  <InputHelper
+                    helpText="Total amount currently saved in all retirement accounts (401k, IRA, etc.)"
+                  />
+                </Group>
                 <NumberInput
-                  label="Monthly Contribution ($)"
-                  value={inputs.monthlyContribution}
+                  value={inputs.currentSavings}
                   onChange={value =>
                     setInputs(prev => ({
                       ...prev,
-                      monthlyContribution: Number(value) || 0,
+                      currentSavings: Number(value) || 0,
                     }))
                   }
                   min={0}
-                  step={50}
+                  step={1000}
+                  thousandSeparator=","
                   leftSection={<DollarSign size={16} />}
                 />
+              </div>
+
+              <Group grow>
+                <div>
+                  <Group gap={4} mb={4}>
+                    <Text size="sm" fw={500}>Monthly Contribution ($)</Text>
+                    <InputHelper {...FINANCIAL_HELPERS.contribution} />
+                  </Group>
+                  <NumberInput
+                    value={inputs.monthlyContribution}
+                    onChange={value =>
+                      setInputs(prev => ({
+                        ...prev,
+                        monthlyContribution: Number(value) || 0,
+                      }))
+                    }
+                    min={0}
+                    step={50}
+                    leftSection={<DollarSign size={16} />}
+                  />
+                </div>
                 <NumberInput
                   label="Employer Match ($)"
                   value={inputs.employerMatch}
@@ -670,80 +774,67 @@ const RetirementPlanner: React.FC = () => {
               </Group>
 
               {results && (
-                <Stack gap="md" mt="md">
-                  <Card
-                    withBorder
-                    p="md"
-                    className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
-                  >
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Retirement Savings
-                      </Text>
-                      <Text size="xl" fw={700} c="purple">
-                        ${results.totalSavingsAtRetirement.toLocaleString()}
-                      </Text>
-                    </Group>
-                  </Card>
+                <Stack gap="lg" mt="md">
+                  <Group justify="space-between" align="flex-start">
+                    <AnimatedCurrency
+                      value={results.totalSavingsAtRetirement}
+                      label="Retirement Savings"
+                      description={`At age ${inputs.retirementAge}`}
+                      size="lg"
+                      decimals={0}
+                      colorScheme="positive"
+                    />
+                    <ExportPanel options={exportOptions} variant="menu" />
+                  </Group>
 
-                  <Card
-                    withBorder
-                    p="md"
-                    className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-                  >
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Years to Retirement
-                      </Text>
-                      <Text size="xl" fw={700} c="green">
-                        {results.yearsToRetirement}
-                      </Text>
-                    </Group>
-                  </Card>
-
-                  <Card
-                    withBorder
-                    p="md"
-                    className={`bg-gradient-to-r ${
-                      results.shortfall > 0
-                        ? 'from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20'
-                        : 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20'
-                    }`}
-                  >
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        {results.shortfall > 0 ? 'Shortfall' : 'Surplus'}
-                      </Text>
-                      <Text
-                        size="lg"
-                        fw={600}
-                        c={results.shortfall > 0 ? 'red' : 'green'}
-                      >
-                        ${Math.abs(results.shortfall).toLocaleString()}
-                      </Text>
-                    </Group>
-                  </Card>
-
-                  <Card
-                    withBorder
-                    p="md"
-                    className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20"
-                  >
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Retirement Duration
-                      </Text>
-                      <Text size="lg" fw={600} c="blue">
-                        {results.retirementDuration} years
-                      </Text>
-                    </Group>
-                  </Card>
+                  <Grid gutter="md">
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <AnimatedMetric
+                        value={results.yearsToRetirement}
+                        label="Years to Retirement"
+                        description={`${results.yearsToRetirement} years until age ${inputs.retirementAge}`}
+                        size="md"
+                        suffix=" years"
+                        decimals={0}
+                        colorScheme="positive"
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <AnimatedCurrency
+                        value={Math.abs(results.shortfall)}
+                        label={results.shortfall > 0 ? 'Shortfall' : 'Surplus'}
+                        description={results.shortfall > 0 ? '⚠️ Additional savings needed' : '✓ On track!'}
+                        size="md"
+                        decimals={0}
+                        colorScheme={results.shortfall > 0 ? 'negative' : 'positive'}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={12}>
+                      <AnimatedMetric
+                        value={results.retirementDuration}
+                        label="Retirement Duration"
+                        description={`From age ${inputs.retirementAge} to ${inputs.lifeExpectancy}`}
+                        size="md"
+                        suffix=" years"
+                        decimals={0}
+                        colorScheme="neutral"
+                      />
+                    </Grid.Col>
+                  </Grid>
                 </Stack>
               )}
             </Stack>
           </Grid.Col>
         </Grid>
       </Card>
+
+      {/* Smart Insights Section */}
+      {results && insights.length > 0 && (
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Title order={4} mb="md">💡 Smart Insights</Title>
+          <InsightList insights={insights} />
+        </Card>
+      )}
 
       {results && (
         <Card shadow="sm" padding="lg" radius="md" withBorder>

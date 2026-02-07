@@ -1,0 +1,399 @@
+/**
+ * Calculator Animations
+ * Shared animation styles for financial calculator enhancements
+ */
+
+/* ============================================================================
+ * METRIC ANIMATIONS
+ * ============================================================================ */
+
+@keyframes metricReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes metricPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.calculator-metric {
+  animation: metricReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.calculator-metric:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease-out;
+}
+
+/* ============================================================================
+ * CHART ANIMATIONS
+ * ============================================================================ */
+
+@keyframes chartSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chartFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.calculator-chart {
+  animation: chartSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================================================
+ * INSIGHT ANIMATIONS
+ * ============================================================================ */
+
+@keyframes insightSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes insightPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+}
+
+.insight-card {
+  animation: insightSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.insight-card--pulse {
+  animation: insightPulse 2s ease-out infinite;
+}
+
+/* ============================================================================
+ * BADGE ANIMATIONS
+ * ============================================================================ */
+
+@keyframes badgeAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes badgeBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.calculator-badge {
+  animation: badgeAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.calculator-badge--bounce {
+  animation: badgeBounce 0.6s ease-in-out both;
+}
+
+/* ============================================================================
+ * TABLE ANIMATIONS
+ * ============================================================================ */
+
+@keyframes tableRowStagger {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.calculator-table-row {
+  animation: tableRowStagger 0.3s ease-out both;
+}
+
+/* Stagger delay for rows */
+.calculator-table-row:nth-child(1) { animation-delay: 0.05s; }
+.calculator-table-row:nth-child(2) { animation-delay: 0.10s; }
+.calculator-table-row:nth-child(3) { animation-delay: 0.15s; }
+.calculator-table-row:nth-child(4) { animation-delay: 0.20s; }
+.calculator-table-row:nth-child(5) { animation-delay: 0.25s; }
+.calculator-table-row:nth-child(n+6) { animation-delay: 0.30s; }
+
+/* ============================================================================
+ * CELEBRATION ANIMATIONS
+ * ============================================================================ */
+
+@keyframes celebrationConfetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes celebrationPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes celebrationShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.celebration-confetti {
+  animation: celebrationConfetti 3s ease-out forwards;
+}
+
+.celebration-pop {
+  animation: celebrationPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.celebration-shake {
+  animation: celebrationShake 0.5s ease-in-out both;
+}
+
+/* ============================================================================
+ * ENTRANCE ANIMATIONS
+ * ============================================================================ */
+
+@keyframes calculatorEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calculator-entrance {
+  animation: calculatorEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Orchestrate multiple elements */
+.calculator-entrance--header { animation-delay: 0s; }
+.calculator-entrance--inputs { animation-delay: 0.1s; }
+.calculator-entrance--results { animation-delay: 0.2s; }
+.calculator-entrance--insights { animation-delay: 0.3s; }
+.calculator-entrance--charts { animation-delay: 0.4s; }
+
+/* ============================================================================
+ * PROGRESS INDICATORS
+ * ============================================================================ */
+
+@keyframes progressFill {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--progress-value);
+  }
+}
+
+@keyframes progressPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.calculator-progress-bar {
+  animation: progressFill 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.calculator-progress-pulse {
+  animation: progressPulse 2s ease-in-out infinite;
+}
+
+/* ============================================================================
+ * HOVER EFFECTS
+ * ============================================================================ */
+
+.calculator-card-hover {
+  transition: all 0.2s ease-out;
+}
+
+.calculator-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.calculator-button-hover {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease-out;
+}
+
+.calculator-button-hover::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease-out, height 0.4s ease-out;
+}
+
+.calculator-button-hover:hover::before {
+  width: 200%;
+  height: 200%;
+}
+
+/* ============================================================================
+ * LOADING STATES
+ * ============================================================================ */
+
+@keyframes calculatorSkeleton {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.calculator-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: calculatorSkeleton 1.5s ease-in-out infinite;
+}
+
+@keyframes calculatorSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.calculator-spinner {
+  animation: calculatorSpinner 1s linear infinite;
+}
+
+/* ============================================================================
+ * UTILITY CLASSES
+ * ============================================================================ */
+
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in {
+  animation: chartFadeIn 0.4s ease-out both;
+}
+
+.slide-up {
+  animation: calculatorEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ============================================================================
+ * DARK MODE ADJUSTMENTS
+ * ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .calculator-card-hover:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .calculator-skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.02) 25%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.02) 75%
+    );
+  }
+}
+
+/* ============================================================================
+ * REDUCED MOTION
+ * ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .calculator-entrance,
+  .calculator-metric,
+  .insight-card,
+  .calculator-chart {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -11,6 +11,7 @@ import MortgageCalculator from './components/projects/MortgageCalculator';
 import RefinanceCalculator from './components/projects/RefinanceCalculator';
 import RetirementPlanner from './components/projects/RetirementPlanner';
 import ROICalculator from './components/projects/ROICalculator';
+import { CalculatorDemo } from './components/calculator';
 import RouteTransition from './components/RouteTransition';
 import ScrollToTop from './components/ScrollToTop';
 import ToolWrapper from './components/ToolWrapper';
@@ -94,6 +95,14 @@ function App() {
               element={
                 <ToolWrapper category="finance">
                   <RefinanceCalculator />
+                </ToolWrapper>
+              }
+            />
+            <Route
+              path="/calculator-demo"
+              element={
+                <ToolWrapper category="finance">
+                  <CalculatorDemo />
                 </ToolWrapper>
               }
             />

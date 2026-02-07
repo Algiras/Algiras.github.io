@@ -10,6 +10,9 @@ import { initializeAnalytics } from './utils/analytics';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 
+// Calculator enhancement CSS
+import './styles/calculator-animations.css';
+
 // Mantine imports
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { useColorScheme, useLocalStorage } from '@mantine/hooks';
@@ -34,7 +37,7 @@ const Root = () => {
   const systemScheme = useColorScheme();
   const [scheme] = useLocalStorage<'light' | 'dark'>({
     key: 'color-scheme',
-    defaultValue: systemScheme === 'dark' ? 'dark' : 'light',
+    defaultValue: systemScheme === 'dark' ? 'dark' : 'dark',
   });
   return (
     <React.StrictMode>

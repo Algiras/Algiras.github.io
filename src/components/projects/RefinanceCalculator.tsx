@@ -23,7 +23,7 @@ import {
   RotateCcw,
   TrendingUp,
 } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   Area,
   AreaChart,
@@ -36,6 +36,13 @@ import {
   YAxis,
 } from 'recharts';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import {
+  AnimatedCurrency,
+  AnimatedMetric,
+  ExportPanel,
+  InsightList,
+} from '../calculator';
+import { decodeStateFromURL, formatCurrency } from '../../utils/calculatorExport';
 
 interface RefinanceInput {
   currentLoan: {
@@ -114,6 +121,18 @@ const RefinanceCalculator: React.FC = () => {
 
   // Ensure non-null value (hook always returns initialValue if null)
   const inputs = inputsStorage ?? defaultInputs;
+
+  // URL state support
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const calcState = params.get('calc');
+    if (calcState) {
+      const decoded = decodeStateFromURL(calcState);
+      if (decoded && decoded.calculatorType === 'refinance') {
+        setInputs(decoded.inputs as RefinanceInput);
+      }
+    }
+  }, [setInputs]);
 
   const resetToDefaults = () => {
     setInputs(defaultInputs);
@@ -255,6 +274,81 @@ const RefinanceCalculator: React.FC = () => {
       schedule,
     };
   }, [inputs]);
+
+  // Generate refinance-specific insights
+  const insights = useMemo(() => {
+    const insightsList = [];
+    const worthIt = results.savings.netSavings > 0;
+
+    if (worthIt) {
+      insightsList.push({
+        type: 'success' as const,
+        title: 'Refinancing Recommended',
+        description: `You'll save ${formatCurrency(results.savings.netSavings)} over the life of the loan. Break-even point: ${results.savings.breakEvenMonths.toFixed(1)} months.`,
+      });
+    } else {
+      insightsList.push({
+        type: 'warning' as const,
+        title: 'Refinancing May Not Be Worth It',
+        description: `Total costs exceed savings. Proceed with caution.`,
+      });
+    }
+
+    if (results.savings.breakEvenMonths < 12) {
+      insightsList.push({
+        type: 'tip' as const,
+        title: 'Quick Break-Even',
+        description: `You'll recover closing costs in just ${results.savings.breakEvenMonths.toFixed(1)} months. This is an excellent refinance opportunity!`,
+      });
+    } else if (results.savings.breakEvenMonths > 36) {
+      insightsList.push({
+        type: 'info' as const,
+        title: 'Long Break-Even Period',
+        description: `It will take ${(results.savings.breakEvenMonths / 12).toFixed(1)} years to recover closing costs. Consider if you plan to stay in the home that long.`,
+      });
+    }
+
+    if (results.savings.monthly > 0) {
+      insightsList.push({
+        type: 'success' as const,
+        title: 'Lower Monthly Payment',
+        description: `Your monthly payment will drop by ${formatCurrency(results.savings.monthly)}, freeing up cash flow.`,
+      });
+    }
+
+    return insightsList;
+  }, [results]);
+
+  // Export options
+  const exportOptions = useMemo(() => ({
+    calculatorType: 'refinance',
+    calculatorName: 'Refinance Calculator',
+    inputs,
+    results,
+    generateMarkdown: () => `# Refinance Analysis Report
+
+## Current Loan
+- Balance: ${formatCurrency(inputs.currentLoan.balance)}
+- Interest Rate: ${inputs.currentLoan.interestRate}%
+- Monthly Payment: ${formatCurrency(inputs.currentLoan.monthlyPayment)}
+- Months Remaining: ${inputs.currentLoan.monthsRemaining}
+
+## New Loan
+- Interest Rate: ${inputs.newLoan.interestRate}%
+- Term: ${inputs.newLoan.termYears} years
+- Monthly Payment: ${formatCurrency(results.newLoan.monthlyPayment)}
+- Closing Costs: ${formatCurrency(inputs.newLoan.closingCosts + (inputs.newLoan.includePointsInCosts ? inputs.newLoan.points : 0))}
+
+## Analysis
+- **Total Savings**: ${formatCurrency(results.savings.netSavings)}
+- **Break-Even Point**: ${results.savings.breakEvenMonths.toFixed(1)} months
+- **Monthly Savings**: ${formatCurrency(results.savings.monthly)}
+- **Recommendation**: ${results.savings.netSavings > 0 ? '✅ Refinance recommended' : '⚠️ Consider alternatives'}
+
+---
+*Generated on ${new Date().toLocaleDateString()}*
+`,
+  }), [inputs, results]);
 
   const chartData = useMemo(() => {
     return results.schedule.map((item, index) => ({
@@ -619,43 +713,39 @@ const RefinanceCalculator: React.FC = () => {
                 </Group>
               </Card>
 
-              <Card
-                withBorder
-                p="md"
-                className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-              >
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Monthly Savings
-                  </Text>
-                  <Text size="xl" fw={700} c="green">
-                    $
-                    {results.savings.monthly.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </Text>
-                </Group>
-              </Card>
+              <AnimatedCurrency
+                value={results.savings.monthly}
+                label="Monthly Savings"
+                description="Lower monthly payment"
+                size="lg"
+                decimals={2}
+                colorScheme="positive"
+              />
 
-              <Card
-                withBorder
-                p="md"
-                className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20"
-              >
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Break-Even Point
-                  </Text>
-                  <Text size="lg" fw={600} c="purple">
-                    {results.savings.breakEvenMonths.toFixed(1)} months
-                  </Text>
-                </Group>
-              </Card>
+              <AnimatedMetric
+                value={results.savings.breakEvenMonths}
+                label="Break-Even Point"
+                description="Months to recover closing costs"
+                size="md"
+                suffix=" months"
+                decimals={1}
+                colorScheme={results.savings.breakEvenMonths < 24 ? 'positive' : 'neutral'}
+              />
             </Stack>
           </Grid.Col>
         </Grid>
       </Card>
+
+      {/* Smart Insights Section */}
+      {insights.length > 0 && (
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Group justify="space-between" mb="md">
+            <Title order={4}>💡 Smart Insights</Title>
+            <ExportPanel options={exportOptions} variant="menu" />
+          </Group>
+          <InsightList insights={insights} />
+        </Card>
+      )}
 
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <Tabs defaultValue="comparison" className="w-full">

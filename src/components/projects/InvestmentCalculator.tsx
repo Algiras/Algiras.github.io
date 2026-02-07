@@ -21,7 +21,7 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 
 import {
   Area,
@@ -41,6 +41,15 @@ import {
 
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { calculateInvestmentGrowth } from '../../utils/financialCalculations';
+import {
+  AnimatedCurrency,
+  ExportPanel,
+  InputHelper,
+  InsightList,
+  FINANCIAL_HELPERS,
+} from '../calculator';
+import { generateInvestmentInsights } from '../../utils/insightGenerator';
+import { generateInvestmentMarkdown, decodeStateFromURL } from '../../utils/calculatorExport';
 
 interface InvestmentInput {
   initialAmount: number;
@@ -75,6 +84,18 @@ const InvestmentCalculator: React.FC = () => {
 
   // Ensure non-null value (hook always returns initialValue if null)
   const inputs = inputsStorage ?? defaultInputs;
+
+  // URL state support - load from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const calcState = params.get('calc');
+    if (calcState) {
+      const decoded = decodeStateFromURL(calcState);
+      if (decoded && decoded.calculatorType === 'investment') {
+        setInputs(decoded.inputs as InvestmentInput);
+      }
+    }
+  }, [setInputs]);
 
   const resetToDefaults = () => {
     setInputs(defaultInputs);
@@ -162,6 +183,60 @@ const InvestmentCalculator: React.FC = () => {
       yearlyBreakdown,
     };
   }, [inputs]);
+
+  // Generate smart insights
+  const insights = useMemo(() => {
+    if (!results) return [];
+    return generateInvestmentInsights(
+      {
+        initialInvestment: inputs.initialAmount,
+        monthlyContribution: inputs.monthlyContribution,
+        annualReturn: inputs.annualInterestRate,
+        years: inputs.investmentPeriod,
+        inflationRate: inputs.inflationRate,
+      },
+      {
+        finalValue: results.futureValue,
+        totalContributions: results.totalContributions,
+        totalInterest: results.totalInterest,
+        inflationAdjustedValue: results.realValue,
+      }
+    );
+  }, [inputs, results]);
+
+  // Export options
+  const exportOptions = useMemo(() => ({
+    calculatorType: 'investment',
+    calculatorName: 'Investment Calculator',
+    inputs: {
+      initialInvestment: inputs.initialAmount,
+      monthlyContribution: inputs.monthlyContribution,
+      annualReturn: inputs.annualInterestRate,
+      years: inputs.investmentPeriod,
+      inflationRate: inputs.inflationRate,
+    },
+    results: {
+      finalValue: results?.futureValue || 0,
+      totalContributions: results?.totalContributions || 0,
+      totalInterest: results?.totalInterest || 0,
+      inflationAdjustedValue: results?.realValue || 0,
+    },
+    generateMarkdown: () => generateInvestmentMarkdown(
+      {
+        initialInvestment: inputs.initialAmount,
+        monthlyContribution: inputs.monthlyContribution,
+        annualReturn: inputs.annualInterestRate,
+        years: inputs.investmentPeriod,
+        inflationRate: inputs.inflationRate,
+      },
+      {
+        finalValue: results?.futureValue || 0,
+        totalContributions: results?.totalContributions || 0,
+        totalInterest: results?.totalInterest || 0,
+        inflationAdjustedValue: results?.realValue || 0,
+      }
+    ),
+  }), [inputs, results]);
 
   const chartData = useMemo(() => {
     if (!results) return [];
@@ -306,40 +381,54 @@ const InvestmentCalculator: React.FC = () => {
         <Grid>
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Stack gap="md">
-              <NumberInput
-                label="Initial Investment ($)"
-                value={inputs.initialAmount}
-                onChange={value =>
-                  setInputs(prev => ({
-                    ...prev,
-                    initialAmount: Number(value) || 0,
-                  }))
-                }
-                min={0}
-                step={100}
-                thousandSeparator=","
-                leftSection={<DollarSign size={16} />}
-              />
-
-              <NumberInput
-                label="Monthly Contribution ($)"
-                value={inputs.monthlyContribution}
-                onChange={value =>
-                  setInputs(prev => ({
-                    ...prev,
-                    monthlyContribution: Number(value) || 0,
-                  }))
-                }
-                min={0}
-                step={50}
-                thousandSeparator=","
-                leftSection={<DollarSign size={16} />}
-              />
+              <div>
+                <Group gap={4} mb={4}>
+                  <Text size="sm" fw={500}>Initial Investment ($)</Text>
+                  <InputHelper
+                    helpText="Starting amount you'll invest upfront"
+                    currentAverage="$5,000 typical"
+                  />
+                </Group>
+                <NumberInput
+                  value={inputs.initialAmount}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      initialAmount: Number(value) || 0,
+                    }))
+                  }
+                  min={0}
+                  step={100}
+                  thousandSeparator=","
+                  leftSection={<DollarSign size={16} />}
+                />
+              </div>
 
               <div>
-                <Text size="sm" fw={500} mb="xs">
-                  Annual Interest Rate (%)
-                </Text>
+                <Group gap={4} mb={4}>
+                  <Text size="sm" fw={500}>Monthly Contribution ($)</Text>
+                  <InputHelper {...FINANCIAL_HELPERS.contribution} />
+                </Group>
+                <NumberInput
+                  value={inputs.monthlyContribution}
+                  onChange={value =>
+                    setInputs(prev => ({
+                      ...prev,
+                      monthlyContribution: Number(value) || 0,
+                    }))
+                  }
+                  min={0}
+                  step={50}
+                  thousandSeparator=","
+                  leftSection={<DollarSign size={16} />}
+                />
+              </div>
+
+              <div>
+                <Group gap={4} mb="xs">
+                  <Text size="sm" fw={500}>Annual Interest Rate (%)</Text>
+                  <InputHelper {...FINANCIAL_HELPERS.rateOfReturn} />
+                </Group>
                 <Slider
                   value={inputs.annualInterestRate}
                   onChange={value =>
@@ -437,57 +526,55 @@ const InvestmentCalculator: React.FC = () => {
               />
 
               {results && (
-                <Stack gap="md" mt="md">
-                  <Card
-                    withBorder
-                    p="md"
-                    className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
-                  >
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Future Value
-                      </Text>
-                      <Text size="xl" fw={700} c="blue">
-                        ${results.futureValue.toLocaleString()}
-                      </Text>
-                    </Group>
-                  </Card>
+                <Stack gap="lg" mt="md">
+                  <Group justify="space-between" align="flex-start">
+                    <AnimatedCurrency
+                      value={results.futureValue}
+                      label="Future Value"
+                      description={`After ${inputs.investmentPeriod} years`}
+                      size="lg"
+                      decimals={0}
+                      colorScheme="positive"
+                    />
+                    <ExportPanel options={exportOptions} variant="menu" />
+                  </Group>
 
-                  <Card
-                    withBorder
-                    p="md"
-                    className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
-                  >
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Total Interest
-                      </Text>
-                      <Text size="lg" fw={600} c="green">
-                        ${results.totalInterest.toLocaleString()}
-                      </Text>
-                    </Group>
-                  </Card>
-
-                  <Card
-                    withBorder
-                    p="md"
-                    className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20"
-                  >
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Real Value (Inflation-Adjusted)
-                      </Text>
-                      <Text size="lg" fw={600}>
-                        ${results.realValue.toLocaleString()}
-                      </Text>
-                    </Group>
-                  </Card>
+                  <Grid gutter="md">
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <AnimatedCurrency
+                        value={results.totalInterest}
+                        label="Total Interest Earned"
+                        description="Investment growth"
+                        size="md"
+                        decimals={0}
+                        colorScheme="positive"
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <AnimatedCurrency
+                        value={results.realValue}
+                        label="Real Value"
+                        description={`Adjusted for ${inputs.inflationRate}% inflation`}
+                        size="md"
+                        decimals={0}
+                        colorScheme="neutral"
+                      />
+                    </Grid.Col>
+                  </Grid>
                 </Stack>
               )}
             </Stack>
           </Grid.Col>
         </Grid>
       </Card>
+
+      {/* Smart Insights Section */}
+      {results && insights.length > 0 && (
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Title order={4} mb="md">💡 Smart Insights</Title>
+          <InsightList insights={insights} />
+        </Card>
+      )}
 
       {results && (
         <Card shadow="sm" padding="lg" radius="md" withBorder>
