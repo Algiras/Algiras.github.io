@@ -1,8 +1,33 @@
-# Algimantas CV
+# Algimantas K. - Portfolio
 
-Personal CV website
+Personal portfolio website and collection of open-source projects.
 
-## License
+## 🎯 Featured Projects
+
+**Knowledge & AI Systems**
+- 🧠 [RKnowledge](https://algiras.github.io/RKnowledge/) - Knowledge graph extraction & visualization
+- 🤖 [Skillz](https://algiras.github.io/skillz/) - Self-extending MCP server
+- 📚 [Memory Palace](https://algiras.github.io/memory-palace/) - Durable knowledge system
+- 📊 [EmbedEval](https://algiras.github.io/embedeval/) - LLM evaluation framework
+
+**Tools & Documentation**
+- ✅ [Clean Docs](https://algiras.github.io/clean-docs/) - Documentation validator & CI/CD tool
+
+**Creative Works**
+- 📖 [Complex Parenting](https://algiras.github.io/complex-parenting/) - Guide for Double Diagnosis
+- 🐺 [Wolf Saga](https://algiras.github.io/wolf-saga/) - Epic dark fantasy (Lithuanian)
+
+## 📡 For AI & LLMs
+
+**AI-Readable Portfolio:** See [.well-known/llms.txt](.well-known/llms.txt) for complete project discovery and descriptions.
+
+## 🔗 Connect
+
+- **GitHub:** [github.com/Algiras](https://github.com/Algiras)
+- **LinkedIn:** [linkedin.com/in/algimantas-karpavicius](https://linkedin.com/in/algimantas-karpavicius)
+- **Portfolio:** [algiras.github.io](https://algiras.github.io/)
+
+## 📝 License
 
 This project is open source and available under the MIT License.
 
