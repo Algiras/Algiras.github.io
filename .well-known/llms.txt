@@ -1,0 +1,73 @@
+# Algimantas K. - Portfolio & Public Projects
+
+Personal portfolio and collection of open-source projects focused on AI, knowledge systems, documentation, and creative works.
+
+## Featured Projects
+
+### 🧠 Knowledge & Memory Systems
+
+**RKnowledge** - Knowledge Graph Extraction & Analysis
+- Production-grade CLI for extracting concepts and relationships from documents
+- Neo4j integration with interactive visualization
+- https://algiras.github.io/RKnowledge/
+- https://github.com/Algiras/RKnowledge
+
+**Memory Palace + Red Queen** - Durable Knowledge System
+- Ancient method of loci combined with adversarial testing
+- Claude Code skill for interview prep and learning
+- https://algiras.github.io/memory-palace/
+- https://github.com/Algiras/memory-palace
+
+### 🤖 AI Tools & Agents
+
+**Skillz** - Self-Extending MCP Server
+- MCP-compliant server for runtime tool creation and execution
+- Let your AI create its own capabilities
+- https://algiras.github.io/skillz/
+- https://github.com/Algiras/skillz
+
+**EmbedEval** - LLM Output Evaluation Framework
+- Binary pass/fail evaluation with error analysis
+- Trace-centric, evaluation-first approach
+- https://algiras.github.io/embedeval/
+- https://github.com/Algiras/embedeval
+
+### 📚 Documentation & Quality
+
+**Clean Docs** - Documentation Quality Validator
+- CLI tool for code snippet validation and broken link detection
+- CI/CD integration (GitHub Actions, GitLab CI)
+- https://algiras.github.io/clean-docs/
+- https://github.com/Algiras/clean-docs
+
+### 📖 Creative & Educational Works
+
+**Complex Parenting** - A Guide for the Double Diagnosis
+- Comprehensive guide for parents raising teens with Bipolar Disorder and Autism/ADHD
+- Clinical research meets lived experience
+- https://algiras.github.io/complex-parenting/
+- https://github.com/Algiras/complex-parenting
+
+**Geležinio Vilko Saga** - Epic Dark Fantasy
+- Multi-book series set in 14th-century Lithuania
+- Available in multiple formats (online, PDF, EPUB, audiobook)
+- https://algiras.github.io/wolf-saga/
+- https://github.com/Algiras/wolf-saga
+
+## Technologies & Expertise
+
+- **Languages:** Rust, Python, TypeScript, Scala, Java
+- **AI/ML:** Claude API, LLM evaluation, knowledge graphs, RAG systems
+- **Tools:** MCP (Model Context Protocol), Neo4j, tree-sitter, Bazel
+- **Practices:** Documentation quality, code validation, evaluation frameworks
+
+## Connect
+
+- GitHub: https://github.com/Algiras
+- Portfolio: https://algiras.github.io/
+- Main Repo: https://github.com/Algiras/Algiras.github.io
+
+## License
+
+Most projects: MIT License
+See individual repositories for specific licensing details.
