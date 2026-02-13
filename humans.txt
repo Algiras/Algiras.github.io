@@ -1,0 +1,15 @@
+/* TEAM */
+Developer: Algimantas K.
+GitHub: https://github.com/Algiras
+Website: https://algiras.github.io/
+
+/* THANKS */
+Thanks to:
+- The open source community
+- Claude AI for assistance
+- All collaborators and contributors
+
+/* SITE */
+Language: English (with Lithuanian content)
+Last Updated: 2026-02-13
+Standards: HTML5, CSS3, Responsive Design
