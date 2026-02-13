@@ -1,0 +1,28 @@
+# Algimantas K. - Portfolio & CV
+
+## Overview
+Personal portfolio website showcasing projects, CV, and skills in software engineering, AI/ML, and full-stack development.
+
+## Featured Projects
+1. **RKnowledge** - Knowledge graph extraction and visualization
+2. **Skillz** - Self-extending MCP server for dynamic tool creation
+3. **Memory Palace + Red Queen** - Durable knowledge system with adversarial testing
+4. **Clean Docs** - Documentation quality validation and maintenance
+5. **EmbedEval** - LLM output evaluation framework
+6. **Wolf Saga** - Epic fantasy narrative
+7. **Complex Parenting** - Comprehensive parenting guide
+
+## Repository
+https://github.com/Algiras/Algiras.github.io
+
+## Technologies
+- React/Next.js
+- TypeScript
+- Modern web standards
+- Optional: Kokoro TTS integration
+
+## Contact & Links
+Visit the site for contact information and project links.
+
+## License
+MIT
