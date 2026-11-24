@@ -53,36 +53,59 @@ const ResearchPage: React.FC = () => {
 
   const papers: ResearchPaper[] = [
     {
-      title: 'Geležinio Vilko Saga (Iron Wolf Saga)',
-      authors: ['Algimantas Krasnauskas'],
-      year: 2024,
-      venue: 'Epic Dark Fantasy Novel',
+      title: 'The Iron Wolf Saga / Geležinio Vilko Saga (Books I–VI)',
+      authors: ['Algimantas Krasauskas'],
+      year: 2026,
+      venue: 'Epic Historical Dark Fantasy · 6-Book Series',
       description:
-        'An epic dark fantasy tale set in 14th century Lithuania. Follow the Iron Wolf saga through battles, magic, and the forging of a nation. Available in Lithuanian with full audiobook narration.',
-      pdfUrl: 'https://algiras.github.io/wolf-saga/',
+        'A six-book historical dark fantasy saga spanning late-medieval Lithuania—following The Wolf’s Exile, The Golden Shadow, The Green Wood, The Invisible Crown, The Wolf’s Legacy, and The Holy Forest. Published in English on Amazon and free to read in Lithuanian.',
+      pdfUrl: 'https://www.amazon.com/author/algimantas-krasauskas',
+      downloadUrl: 'https://algiras.github.io/wolf-saga/',
       audiobookUrl: 'https://www.youtube.com/watch?v=7FTLqyPXSr0',
-      tags: ['Lithuanian Literature', 'Dark Fantasy', 'Historical Fiction', 'Audiobook'],
+      tags: ['Historical Fantasy', 'Dark Fantasy', '6-Book Series', 'Lithuanian & English'],
       color: 'violet',
     },
     {
+      title: "The Harbormaster's Seal (The Drift Chronicles, Book 1)",
+      authors: ['Algimantas Krasauskas'],
+      year: 2026,
+      venue: 'Speculative Fiction Novel',
+      description:
+        'Opening novel of The Drift Chronicles—exploring maritime intrigue, institutional secrets, and choices forged under pressure.',
+      pdfUrl: 'https://www.amazon.com/author/algimantas-krasauskas',
+      tags: ['Speculative Fiction', 'The Drift Chronicles', 'Novel'],
+      color: 'blue',
+    },
+    {
+      title: 'So You Think You Can Build a Country?: What It Really Takes to Make a Nation Work',
+      authors: ['Algimantas Krasauskas'],
+      year: 2026,
+      venue: 'Non-Fiction · Governance & Statecraft',
+      description:
+        'A practical inquiry into what turns fragile institutions into resilient nations—bridging economic incentives, rule of law, civic trust, and execution.',
+      pdfUrl: 'https://www.amazon.com/dp/B0HQWQ85GW',
+      tags: ['Non-Fiction', 'Statecraft', 'Economics', 'Governance'],
+      color: 'indigo',
+    },
+    {
       title: 'The Shadow of Extremism',
-      authors: ['Algimantas Krasnauskas'],
+      authors: ['Algimantas Krasauskas'],
       year: 2025,
       venue: 'Comparative Religious Analysis',
       description:
-        'A 200-page comparative analysis exploring extremism across major world religions. Created in 2 days using AI-assisted research, this work examines patterns, causes, and manifestations of religious extremism through a balanced, scholarly lens.',
+        'A 200-page comparative analysis exploring extremism across major world religions, examining patterns, causes, and manifestations through a balanced scholarly lens.',
       pdfUrl: 'https://algiras.github.io/the-shadow-of-extremism/',
       downloadUrl: 'https://github.com/Algiras/the-shadow-of-extremism/releases',
-      tags: ['Religion', 'Extremism', 'Comparative Analysis', 'AI-Assisted'],
+      tags: ['Religion', 'Extremism', 'Comparative Analysis', 'Non-Fiction'],
       color: 'orange',
     },
     {
       title: 'Complex Parenting: A Guide to Raising Teens with Bipolar and Autism/ADHD',
-      authors: ['Algimantas Krasnauskas'],
+      authors: ['Algimantas Krasauskas'],
       year: 2025,
       venue: 'Parenting Guide',
       description:
-        'A comprehensive, evidence-based guide for parents navigating the challenges of raising teenagers with Bipolar disorder and Autism/ADHD. Combines personal experience with research-backed strategies, offering practical advice and emotional support.',
+        'A comprehensive, evidence-based guide for parents navigating the challenges of raising teenagers with Bipolar disorder and Autism/ADHD.',
       pdfUrl: 'https://algiras.github.io/complex-parenting/',
       downloadUrl: 'https://github.com/Algiras/complex-parenting/releases',
       tags: ['Parenting', 'Mental Health', 'Autism', 'ADHD', 'Bipolar'],
@@ -90,7 +113,7 @@ const ResearchPage: React.FC = () => {
     },
     {
       title: 'Skillz Research',
-      authors: ['Algimantas Krasnauskas'],
+      authors: ['Algimantas Krasauskas'],
       year: 2024,
       venue: 'Technical Report',
       description:
@@ -270,7 +293,7 @@ const ResearchPage: React.FC = () => {
             ))}
           </SimpleGrid>
 
-          {/* Coming Soon Section */}
+          {/* Official Author Page & Inquiries Section */}
           <AnimatedSection delay={200} animationType="scaleIn">
             <Box
               mt="xl"
@@ -284,15 +307,49 @@ const ResearchPage: React.FC = () => {
             >
               <Stack align="center" gap="md">
                 <ThemeIcon size={60} radius="md" variant="light" color="violet">
-                  <FileText size={30} />
+                  <BookOpen size={30} />
                 </ThemeIcon>
                 <Title order={3} size="h4">
-                  More Coming Soon
+                  Official Author Page &amp; Inquiries
                 </Title>
-                <Text size="sm" c="dimmed" maw={500}>
-                  Stay tuned for more publications exploring software engineering, AI, literature,
-                  and research across diverse topics.
+                <Text size="sm" c="dimmed" maw={560}>
+                  For official author communication, rights, or review copies, contact{' '}
+                  <a href="mailto:kras.algim@gmail.com" style={{ fontWeight: 600 }}>
+                    kras.algim@gmail.com
+                  </a>
+                  .
                 </Text>
+                <Group gap="md" justify="center" wrap="wrap">
+                  <Button
+                    component="a"
+                    href="https://algiras.github.io/author/"
+                    leftSection={<BookOpen size={18} />}
+                    variant="gradient"
+                    gradient={{ from: 'blue', to: 'cyan' }}
+                  >
+                    Official Author Page
+                  </Button>
+                  <Button
+                    component="a"
+                    href="https://www.amazon.com/author/algimantas-krasauskas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    rightSection={<ExternalLink size={14} />}
+                    variant="outline"
+                  >
+                    Amazon Author Page
+                  </Button>
+                  <Button
+                    component="a"
+                    href="https://www.goodreads.com/author/show/73059719.Algimantas_Krasauskas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    rightSection={<ExternalLink size={14} />}
+                    variant="light"
+                  >
+                    Goodreads
+                  </Button>
+                </Group>
               </Stack>
             </Box>
           </AnimatedSection>

@@ -14,13 +14,13 @@ export const useRouteBasedTitle = () => {
     const pathname = location.pathname;
 
     // Generate title based on current route
-    let title = 'Algimantas Krasnauskas';
+    let title = 'Algimantas Krasauskas';
 
     if (pathname === '/') {
-      title = 'Algimantas Krasnauskas - Software Engineer';
+      title = 'Algimantas Krasauskas - Author & Software Engineer';
     } else if (pathname.startsWith('/finance')) {
       if (pathname === '/finance') {
-        title = 'Finance Tools - Algimantas Krasnauskas';
+        title = 'Finance Tools - Algimantas Krasauskas';
       } else if (pathname.includes('investment-calculator')) {
         title = 'Investment Calculator - Finance Tools';
       } else if (pathname.includes('investment-tracker')) {
@@ -36,18 +36,18 @@ export const useRouteBasedTitle = () => {
       }
     } else if (pathname.startsWith('/documents')) {
       if (pathname === '/documents') {
-        title = 'Document Tools - Algimantas Krasnauskas';
+        title = 'Document Tools - Algimantas Krasauskas';
       } else if (pathname.includes('markdown-to-pdf')) {
         title = 'Markdown to PDF - Document Tools';
       }
     } else if (pathname.startsWith('/games')) {
       if (pathname === '/games') {
-        title = 'Games - Algimantas Krasnauskas';
+        title = 'Games - Algimantas Krasauskas';
       } else if (pathname.includes('akotchi')) {
         title = 'Akotchi Game - Games';
       }
     } else if (pathname.startsWith('/ai')) {
-      title = 'AI Voice Assistant - Algimantas Krasnauskas';
+      title = 'AI Voice Assistant - Algimantas Krasauskas';
     }
 
     document.title = title;

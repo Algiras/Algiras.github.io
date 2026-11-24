@@ -93,8 +93,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Container size="lg" h="100%">
           <Group h="100%" justify="center" gap="sm">
             <Text size="xs" c="dimmed">
-              © {currentYear} Algimantas Krasnauskas
+              © {currentYear} Algimantas Krasauskas
             </Text>
+            <Text size="xs" c="dimmed">·</Text>
+            <Anchor
+              href="/author/"
+              size="xs"
+              c="dimmed"
+            >
+              Author
+            </Anchor>
             <Text size="xs" c="dimmed">·</Text>
             <Anchor
               href="https://github.com/Algiras"
